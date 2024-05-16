@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GlobalContext = createContext();
@@ -7,6 +7,10 @@ export const useGlobalContext = () => useContext(GlobalContext);
 const getCurrentUser = async () => {
   const user = await AsyncStorage.getItem('user');
   return user;
+};
+
+const setCurrentUser = async (user) => {
+  await AsyncStorage.setItem('user', JSON.stringify(user));
 };
 
 const GlobalProvider = ({ children }) => {
@@ -36,11 +40,12 @@ const GlobalProvider = ({ children }) => {
   return (
     <GlobalContext.Provider
       value={{
-        isLoggedIn: isLoggedIn,
-        setIsLogged: setIsLoggedIn,
+        isLoggedIn,
+        setIsLoggedIn,
         user,
         setUser,
         loading,
+        setCurrentUser
       }}
     >
       {children}
