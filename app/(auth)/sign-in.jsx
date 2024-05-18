@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { images, BASE_URL } from '../../constants';
 import { router } from 'expo-router';
-import FormFIeld from '../../components/FormField';
+import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import axios from 'axios';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -71,7 +71,7 @@ const SignIn = () => {
               Welcome to SRATRC
             </Text>
 
-            <FormFIeld
+            <FormField
               text="Phone Number"
               prefix="+91"
               value={form.phone}
