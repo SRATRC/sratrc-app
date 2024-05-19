@@ -84,7 +84,7 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
         textStyle={{
           color: '#000000',
           fontSize: 12,
-          fontFamily: 'poppins-medium'
+          fontFamily: 'Poppins-Medium'
         }}
       />
 
