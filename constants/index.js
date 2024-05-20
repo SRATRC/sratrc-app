@@ -1,4 +1,4 @@
-const BASE_URL = 'https://fe89-136-233-9-99.ngrok-free.app/api/v1';
+const BASE_URL = 'https://sratrc-portal-backend-dev.onrender.com/api/v1';
 
 import icons from './icons';
 import images from './images';

@@ -12,7 +12,7 @@ const CustomChipGroup = ({ chips, selectedChip, handleChipPress }) => {
         {chips.map((chip, index) => (
           <TouchableOpacity
             key={index}
-            className={`bg-gray-200 rounded-[8px] px-6 py-3 mr-2 ${
+            className={`bg-gray-200 rounded-[12px] px-6 py-3 mr-2 ${
               selectedChip === chip ? 'bg-secondary' : ''
             }`}
             activeOpacity={1}

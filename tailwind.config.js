@@ -11,20 +11,18 @@ module.exports = {
           200: '#FF8E01'
         },
         black: {
-          DEFAULT: '#000',
+          DEFAULT: '#000000',
           100: '#1E1E2D',
           200: '#232533'
         },
         white: {
-          DEFAULT: '#FFF',
+          DEFAULT: '#FFFFFF',
           100: '#F5F5F5'
         },
         gray: {
-          100: '#CDCDE0',
-          400: '#9ca3af'
-        },
-        blue: {
-          500: '#3b82f6'
+          100: '#FAFAFC',
+          200: '#E5E7EB',
+          400: '#9CA3AF'
         }
       },
       fontFamily: {

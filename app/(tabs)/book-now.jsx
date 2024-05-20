@@ -13,6 +13,8 @@ import MultiSwitch from 'react-native-multiple-switch';
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment';
 import CustomChipGroup from '../../components/CustomChipGroup';
+import CustomDropdown from '../../components/CustomDropdown';
+import CustomButton from '../../components/CustomButton';
 
 const BookNow = () => {
   const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
@@ -26,11 +28,14 @@ const BookNow = () => {
   const [value, setValue] = useState(items[0]);
 
   return (
-    <SafeAreaView className="h-full bg-white">
+    <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView alwaysBounceVertical={false}>
+        <ScrollView
+          alwaysBounceVertical={false}
+          showsVerticalScrollIndicator={false}
+        >
           <View className="w-full px-4 my-6">
             <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
 
@@ -57,12 +62,26 @@ const BookNow = () => {
 };
 
 const RoomBooking = ({ items, value, onSwitchChange }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [selected, setSelected] = useState('');
   const [startDay, setStartDay] = useState(null);
   const [endDay, setEndDay] = useState(null);
   const [markedDates, setMarkedDates] = useState({});
   const { width } = useWindowDimensions();
   const today = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
+
+  const roomTypeList = [
+    { key: 'AC', value: 'AC' },
+    { key: 'Non AC', value: 'Non AC' }
+  ];
+  const [roomType, setRoomType] = useState();
+
+  const floorTypeList = [
+    { key: 'Yes', value: 'Yes' },
+    { key: 'No', value: 'No' }
+  ];
+  const [floorType, setFloorType] = useState();
 
   return (
     <View className="flex-1 justify-center items-center mt-10">
@@ -71,96 +90,130 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
         value={value}
         onChange={(val) => onSwitchChange(val)}
         containerStyle={{
-          backgroundColor: '#E5E7EB',
+          backgroundColor: colors.gray_200,
           height: 40,
           borderRadius: 15,
           borderWidth: 2,
-          borderColor: '#E5E7EB'
+          padding: 0,
+          borderColor: colors.gray_200
         }}
         sliderStyle={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'white',
           borderRadius: 20
         }}
         textStyle={{
-          color: '#000000',
+          color: 'black',
           fontSize: 12,
           fontFamily: 'Poppins-Medium'
         }}
       />
 
       {value === items[0] && (
-        <Calendar
-          className="mt-5"
-          style={{
-            width: width * 0.9
-          }}
-          minDate={today}
-          onDayPress={(day) => {
-            if (startDay && !endDay) {
-              const date = {};
-              for (
-                const d = moment(startDay);
-                d.isSameOrBefore(day.dateString);
-                d.add(1, 'days')
-              ) {
-                date[d.format('YYYY-MM-DD')] = {
-                  color: colors.orange,
-                  textColor: 'white'
-                };
+        <View>
+          <Calendar
+            className="mt-5"
+            style={{
+              width: width * 0.9
+            }}
+            minDate={today}
+            onDayPress={(day) => {
+              if (startDay && !endDay) {
+                const date = {};
+                for (
+                  const d = moment(startDay);
+                  d.isSameOrBefore(day.dateString);
+                  d.add(1, 'days')
+                ) {
+                  date[d.format('YYYY-MM-DD')] = {
+                    color: colors.orange,
+                    textColor: 'white'
+                  };
 
-                if (d.format('YYYY-MM-DD') === startDay)
-                  date[d.format('YYYY-MM-DD')].startingDay = true;
-                if (d.format('YYYY-MM-DD') === day.dateString)
-                  date[d.format('YYYY-MM-DD')].endingDay = true;
-              }
-
-              setMarkedDates(date);
-              setEndDay(day.dateString);
-            } else {
-              setStartDay(day.dateString);
-              setEndDay(null);
-              setMarkedDates({
-                [day.dateString]: {
-                  color: colors.orange,
-                  textColor: 'white',
-                  startingDay: true,
-                  endingDay: true
+                  if (d.format('YYYY-MM-DD') === startDay)
+                    date[d.format('YYYY-MM-DD')].startingDay = true;
+                  if (d.format('YYYY-MM-DD') === day.dateString)
+                    date[d.format('YYYY-MM-DD')].endingDay = true;
                 }
-              });
-            }
-          }}
-          markedDates={markedDates}
-          markingType="period"
-          theme={{
-            arrowColor: colors.orange,
-            todayTextColor: colors.orange
-          }}
-        />
+
+                setMarkedDates(date);
+                setEndDay(day.dateString);
+              } else {
+                setStartDay(day.dateString);
+                setEndDay(null);
+                setMarkedDates({
+                  [day.dateString]: {
+                    color: colors.orange,
+                    textColor: 'white',
+                    startingDay: true,
+                    endingDay: true
+                  }
+                });
+              }
+            }}
+            markedDates={markedDates}
+            markingType="period"
+            theme={{
+              arrowColor: colors.orange,
+              todayTextColor: colors.orange
+            }}
+          />
+
+          <CustomDropdown
+            otherStyles="mt-7"
+            text={'Room Type'}
+            placeholder={'Select Room Type'}
+            data={roomTypeList}
+            setSelected={(val) => setRoomType(val)}
+          />
+
+          <CustomDropdown
+            otherStyles="mt-7"
+            text={'Book Only if Ground Floor is Available'}
+            placeholder={'Select Floor Type'}
+            data={floorTypeList}
+            setSelected={(val) => setFloorType(val)}
+          />
+          <CustomButton
+            text="Book Now"
+            handlePress={() => {}}
+            containerStyles="mt-7"
+            isLoading={isSubmitting}
+          />
+        </View>
       )}
 
       {value === items[1] && (
-        <Calendar
-          className="mt-5"
-          style={{
-            width: width * 0.9
-          }}
-          minDate={today}
-          onDayPress={(day) => {
-            setSelected(day.dateString);
-          }}
-          markedDates={{
-            [selected]: {
-              textColor: 'white',
-              selected: true,
-              disableTouchEvent: true,
-              selectedColor: colors.orange
-            }
-          }}
-          theme={{
-            arrowColor: colors.orange,
-            todayTextColor: colors.orange
-          }}
-        />
+        <View>
+          <Calendar
+            className="mt-5"
+            style={{
+              width: width * 0.9
+            }}
+            minDate={today}
+            onDayPress={(day) => {
+              setSelected(day.dateString);
+            }}
+            markedDates={{
+              [selected]: {
+                textColor: 'white',
+                selected: true,
+                disableTouchEvent: true,
+                selectedColor: colors.orange
+              }
+            }}
+            theme={{
+              arrowColor: colors.orange,
+              todayTextColor: colors.orange
+            }}
+          />
+
+          <CustomButton
+            text="Book Now"
+            handlePress={() => {}}
+            containerStyles="mt-10"
+            isLoading={isSubmitting}
+          />
+        </View>
       )}
     </View>
   );
