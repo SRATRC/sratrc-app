@@ -4,17 +4,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  useWindowDimensions
+  Alert
 } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { types, colors } from '../../constants';
 import MultiSwitch from 'react-native-multiple-switch';
-import { Calendar } from 'react-native-calendars';
-import moment from 'moment';
 import CustomChipGroup from '../../components/CustomChipGroup';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
+import CustomCalender from '../../components/CustomCalender';
+import handleAPICall from '../../utils/HandleApiCall';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const BookNow = () => {
   const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
@@ -24,8 +25,7 @@ const BookNow = () => {
     types.booking_type_travel
   ];
 
-  const items = ['Select Dates', 'One Day Visit'];
-  const [value, setValue] = useState(items[0]);
+  const { user } = useGlobalContext();
 
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
@@ -46,11 +46,7 @@ const BookNow = () => {
             />
 
             {selectedChip === types.booking_type_room && (
-              <RoomBooking
-                items={items}
-                value={value}
-                onSwitchChange={(val) => setValue(val)}
-              />
+              <RoomBooking user={user} />
             )}
             {selectedChip === types.booking_type_food && <FormComponent2 />}
             {selectedChip === types.booking_type_travel && <FormComponent3 />}
@@ -61,34 +57,36 @@ const BookNow = () => {
   );
 };
 
-const RoomBooking = ({ items, value, onSwitchChange }) => {
+const RoomBooking = ({ user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [selected, setSelected] = useState('');
-  const [startDay, setStartDay] = useState(null);
-  const [endDay, setEndDay] = useState(null);
-  const [markedDates, setMarkedDates] = useState({});
-  const { width } = useWindowDimensions();
-  const today = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
+  const items = ['Select Dates', 'One Day Visit'];
+  const [value, setValue] = useState(items[0]);
+
+  const [selectedDay, setSelectedDay] = useState();
+  const [multiDayForm, setMultiDayForm] = useState({
+    startDay: '',
+    endDay: '',
+    roomType: '',
+    floorType: ''
+  });
 
   const roomTypeList = [
-    { key: 'AC', value: 'AC' },
-    { key: 'Non AC', value: 'Non AC' }
+    { key: 'ac', value: 'AC' },
+    { key: 'nac', value: 'Non AC' }
   ];
-  const [roomType, setRoomType] = useState();
 
   const floorTypeList = [
-    { key: 'Yes', value: 'Yes' },
-    { key: 'No', value: 'No' }
+    { key: 'SC', value: 'Yes' },
+    { key: 'n', value: 'No' }
   ];
-  const [floorType, setFloorType] = useState();
 
   return (
     <View className="flex-1 justify-center items-center mt-10">
       <MultiSwitch
         items={items}
         value={value}
-        onChange={(val) => onSwitchChange(val)}
+        onChange={(val) => setValue(val)}
         containerStyle={{
           backgroundColor: colors.gray_200,
           height: 40,
@@ -110,52 +108,16 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
 
       {value === items[0] && (
         <View>
-          <Calendar
-            className="mt-5"
-            style={{
-              width: width * 0.9
-            }}
-            minDate={today}
-            onDayPress={(day) => {
-              if (startDay && !endDay) {
-                const date = {};
-                for (
-                  const d = moment(startDay);
-                  d.isSameOrBefore(day.dateString);
-                  d.add(1, 'days')
-                ) {
-                  date[d.format('YYYY-MM-DD')] = {
-                    color: colors.orange,
-                    textColor: 'white'
-                  };
-
-                  if (d.format('YYYY-MM-DD') === startDay)
-                    date[d.format('YYYY-MM-DD')].startingDay = true;
-                  if (d.format('YYYY-MM-DD') === day.dateString)
-                    date[d.format('YYYY-MM-DD')].endingDay = true;
-                }
-
-                setMarkedDates(date);
-                setEndDay(day.dateString);
-              } else {
-                setStartDay(day.dateString);
-                setEndDay(null);
-                setMarkedDates({
-                  [day.dateString]: {
-                    color: colors.orange,
-                    textColor: 'white',
-                    startingDay: true,
-                    endingDay: true
-                  }
-                });
-              }
-            }}
-            markedDates={markedDates}
-            markingType="period"
-            theme={{
-              arrowColor: colors.orange,
-              todayTextColor: colors.orange
-            }}
+          <CustomCalender
+            type={'period'}
+            startDay={multiDayForm.startDay}
+            setStartDay={(day) =>
+              setMultiDayForm((prev) => ({ ...prev, startDay: day }))
+            }
+            endDay={multiDayForm.endDay}
+            setEndDay={(day) =>
+              setMultiDayForm((prev) => ({ ...prev, endDay: day }))
+            }
           />
 
           <CustomDropdown
@@ -163,7 +125,9 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
             text={'Room Type'}
             placeholder={'Select Room Type'}
             data={roomTypeList}
-            setSelected={(val) => setRoomType(val)}
+            setSelected={(val) =>
+              setMultiDayForm({ ...multiDayForm, roomType: val })
+            }
           />
 
           <CustomDropdown
@@ -171,11 +135,50 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
             text={'Book Only if Ground Floor is Available'}
             placeholder={'Select Floor Type'}
             data={floorTypeList}
-            setSelected={(val) => setFloorType(val)}
+            setSelected={(val) =>
+              setMultiDayForm({ ...multiDayForm, floorType: val })
+            }
           />
+
           <CustomButton
             text="Book Now"
-            handlePress={() => {}}
+            handlePress={async () => {
+              if (
+                !multiDayForm.startDay ||
+                !multiDayForm.endDay ||
+                !multiDayForm.roomType ||
+                !multiDayForm.floorType
+              ) {
+                Alert.alert('Please fill all fields');
+                return;
+              }
+
+              setIsSubmitting(true);
+
+              const onSuccess = (data) => {
+                Alert.alert('Booking Successful');
+              };
+
+              const onFinally = () => {
+                setIsSubmitting(false);
+              };
+
+              await handleAPICall(
+                'POST',
+                '/stay/room',
+                null,
+                {
+                  cardno: user.cardno,
+                  checkin_date: multiDayForm.startDay,
+                  checkout_date: multiDayForm.endDay,
+                  room_type: multiDayForm.roomType,
+                  floor_pref:
+                    multiDayForm.floorType == 'n' ? '' : multiDayForm.floorType
+                },
+                onSuccess,
+                onFinally
+              );
+            }}
             containerStyles="mt-7"
             isLoading={isSubmitting}
           />
@@ -184,32 +187,42 @@ const RoomBooking = ({ items, value, onSwitchChange }) => {
 
       {value === items[1] && (
         <View>
-          <Calendar
-            className="mt-5"
-            style={{
-              width: width * 0.9
-            }}
-            minDate={today}
-            onDayPress={(day) => {
-              setSelected(day.dateString);
-            }}
-            markedDates={{
-              [selected]: {
-                textColor: 'white',
-                selected: true,
-                disableTouchEvent: true,
-                selectedColor: colors.orange
-              }
-            }}
-            theme={{
-              arrowColor: colors.orange,
-              todayTextColor: colors.orange
-            }}
+          <CustomCalender
+            selectedDay={selectedDay}
+            setSelectedDay={(day) => setSelectedDay(day)}
           />
 
           <CustomButton
             text="Book Now"
-            handlePress={() => {}}
+            handlePress={async () => {
+              if (!selectedDay) {
+                Alert.alert('Please fill all fields');
+                return;
+              }
+
+              setIsSubmitting(true);
+
+              const onSuccess = (data) => {
+                Alert.alert('Booking Successful');
+              };
+
+              const onFinally = () => {
+                setIsSubmitting(false);
+              };
+
+              await handleAPICall(
+                'POST',
+                '/stay/room',
+                null,
+                {
+                  cardno: user.cardno,
+                  checkin_date: selectedDay,
+                  checkout_date: selectedDay
+                },
+                onSuccess,
+                onFinally
+              );
+            }}
             containerStyles="mt-10"
             isLoading={isSubmitting}
           />

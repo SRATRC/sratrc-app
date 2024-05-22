@@ -17,7 +17,7 @@ const CustomDropdown = ({
         search={false}
         setSelected={(val) => setSelected(val)}
         data={data}
-        save="value"
+        save="key"
         placeholder={placeholder}
         boxStyles={{
           borderRadius: 12,

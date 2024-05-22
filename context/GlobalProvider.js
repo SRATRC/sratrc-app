@@ -5,7 +5,8 @@ const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
 
 const getCurrentUser = async () => {
-  const user = await AsyncStorage.getItem('user');
+  const data = await AsyncStorage.getItem('user');
+  user = data ? JSON.parse(data) : null;
   return user;
 };
 

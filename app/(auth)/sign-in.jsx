@@ -10,12 +10,12 @@ import {
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { images, BASE_URL } from '../../constants';
+import { images } from '../../constants';
 import { router } from 'expo-router';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-import axios from 'axios';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import handleAPICall from '../../utils/HandleApiCall';
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -24,6 +24,7 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { setUser, setIsLoggedIn } = useGlobalContext();
+
   const submit = async () => {
     if (!form.phone || form.phone.length < 10) {
       Alert.alert('Error', 'Please fill the fields corectly');
@@ -31,28 +32,24 @@ const SignIn = () => {
     }
 
     setIsSubmitting(true);
-    try {
-      const res = await axios({
-        method: 'GET',
-        url: `${BASE_URL}/client/verify?mobno=${form.phone}`
-      });
-      if (res.status == 200) {
-        setUser(res.data.data);
-        setIsLoggedIn(true);
-        router.push('/confirmation');
-      } else {
-        Alert.alert('Error', res.data.message);
-      }
-    } catch (error) {
-      if (error.response == 404) {
-        Alert.alert('Error', 'User not found');
-      } else {
-        Alert.alert('Error', error.message);
-      }
-      console.log(error);
-    } finally {
+
+    const onSuccess = (data) => {
+      setUser(data.data);
+      setIsLoggedIn(true);
+      router.push('/confirmation');
+    };
+
+    const onFinally = () => {
       setIsSubmitting(false);
-    }
+    };
+
+    await handleAPICall(
+      'GET',
+      '/client/verify',
+      { mobno: form.phone },
+      onSuccess,
+      onFinally
+    );
   };
 
   return (
