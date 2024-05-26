@@ -16,6 +16,7 @@ import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import CustomMultiSelectDropdown from '../../components/CustomMultiSelectDropdown';
 
 const BookNow = () => {
   const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
@@ -29,30 +30,30 @@ const BookNow = () => {
 
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <ScrollView
+        alwaysBounceVertical={false}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          alwaysBounceVertical={false}
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="w-full px-4 my-6">
-            <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
+        <View className="w-full px-4 my-6">
+          <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
 
-            <CustomChipGroup
-              chips={chips}
-              selectedChip={selectedChip}
-              handleChipPress={(chip) => setSelectedChip(chip)}
-            />
+          <CustomChipGroup
+            chips={chips}
+            selectedChip={selectedChip}
+            handleChipPress={(chip) => setSelectedChip(chip)}
+          />
 
-            {selectedChip === types.booking_type_room && (
-              <RoomBooking user={user} />
-            )}
-            {selectedChip === types.booking_type_food && <FormComponent2 />}
-            {selectedChip === types.booking_type_travel && <FormComponent3 />}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          {selectedChip === types.booking_type_room && (
+            <RoomBooking user={user} />
+          )}
+          {selectedChip === types.booking_type_food && (
+            <FormComponent2 user={user} />
+          )}
+          {selectedChip === types.booking_type_travel && (
+            <FormComponent3 user={user} />
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -232,11 +233,114 @@ const RoomBooking = ({ user }) => {
   );
 };
 
-const FormComponent2 = () => {
-  // Form component for Chip 2
+const FormComponent2 = ({ user }) => {
+  const [foodForm, setFoodForm] = useState({
+    startDay: '',
+    endDay: '',
+    spicy: '',
+    hightea: ''
+  });
+  const [type, setType] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const foodTypeList = [
+    { key: 'breakfast', value: 'breakfast' },
+    { key: 'lunch', value: 'lunch' },
+    { key: 'dinner', value: 'dinner' }
+  ];
+
+  const spiceyList = [
+    { key: 'Regular', value: 'Regular' },
+    { key: 'Non Spicy', value: 'Non Spicy' }
+  ];
+
+  const highteaList = [
+    { key: 'TEA', value: 'Tea' },
+    { key: 'COFFEE', value: 'Coffee' },
+    { key: 'NONE', value: 'None' }
+  ];
+
   return (
-    <View className="flex-1 justify-center items-center mt-5">
-      <Text>Form for Chip 2</Text>
+    <View className="flex-1 justify-center items-center">
+      <CustomCalender
+        type={'period'}
+        startDay={foodForm.startDay}
+        setStartDay={(day) =>
+          setFoodForm((prev) => ({ ...prev, startDay: day }))
+        }
+        endDay={foodForm.endDay}
+        setEndDay={(day) => setFoodForm((prev) => ({ ...prev, endDay: day }))}
+      />
+
+      <CustomMultiSelectDropdown
+        otherStyles="mt-7 w-full px-1"
+        text={'Food Type'}
+        placeholder={'Select Food Type'}
+        data={foodTypeList}
+        setSelected={(val) => setType(val)}
+        type={type}
+      />
+
+      <CustomDropdown
+        otherStyles="mt-7 w-full px-1"
+        text={'Spice Level'}
+        placeholder={'How much spice do you want?'}
+        data={spiceyList}
+        setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
+      />
+
+      <CustomDropdown
+        otherStyles="mt-7 w-full px-1"
+        text={'Hightea'}
+        placeholder={'Hightea'}
+        data={highteaList}
+        setSelected={(val) => setFoodForm({ ...foodForm, hightea: val })}
+      />
+
+      <CustomButton
+        text="Book Now"
+        handlePress={async () => {
+          if (
+            !foodForm.startDay ||
+            !foodForm.endDay ||
+            !type ||
+            !foodForm.spicy ||
+            !foodForm.hightea
+          ) {
+            Alert.alert('Please fill all fields');
+            return;
+          }
+          setIsSubmitting(true);
+
+          const onSuccess = (data) => {
+            Alert.alert('Booking Successful');
+          };
+
+          const onFinally = () => {
+            setIsSubmitting(false);
+          };
+
+          await handleAPICall(
+            'POST',
+            '/food/book',
+            null,
+            {
+              cardno: user.cardno,
+              start_date: foodForm.startDay,
+              end_date: foodForm.endDay,
+              breakfast: type.includes('breakfast') ? 1 : 0,
+              lunch: type.includes('lunch') ? 1 : 0,
+              dinner: type.includes('dinner') ? 1 : 0,
+              spicy: foodForm.spicy == 'Regular' ? 1 : 0,
+              high_tea: foodForm.hightea
+            },
+            onSuccess,
+            onFinally
+          );
+        }}
+        containerStyles="mt-7 w-full px-1"
+        isLoading={isSubmitting}
+      />
     </View>
   );
 };
