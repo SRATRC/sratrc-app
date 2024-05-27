@@ -11,6 +11,7 @@ const FormField = ({
   keyboardType,
   maxLength,
   prefix,
+  containerStyles,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,13 @@ const FormField = ({
   return (
     <View className={`space-y-2 ${otherStyles}`}>
       <Text className="text-base text-gray-600 font-pmedium">{text}</Text>
-      <View className="focus:border-2 bg-white w-full h-16 px-4 rounded-2xl focus:border-secondary items-center flex-row shadow-lg shadow-gray-200">
+      <View
+        className={`focus:border-2 w-full h-16 px-4 rounded-2xl focus:border-secondary items-center flex-row ${
+          containerStyles
+            ? containerStyles
+            : 'shadow-lg shadow-gray-200 bg-white'
+        }`}
+      >
         <Text className="font-pregular text-base pr-2">{prefix}</Text>
         <TextInput
           className="flex-1 font-pregular text-base"

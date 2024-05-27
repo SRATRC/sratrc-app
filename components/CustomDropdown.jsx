@@ -8,21 +8,24 @@ const CustomDropdown = ({
   text,
   placeholder,
   data,
-  setSelected
+  setSelected,
+  save
 }) => {
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
+    <View className={`w-full space-y-2 ${otherStyles}`}>
       <Text className="text-base text-gray-600 font-pmedium">{text}</Text>
       <SelectList
         search={false}
         setSelected={(val) => setSelected(val)}
         data={data}
-        save="key"
+        save={save ? save : 'key'}
         placeholder={placeholder}
         boxStyles={{
           borderRadius: 12,
           backgroundColor: colors.gray_100,
-          borderWidth: 0
+          borderWidth: 0,
+          height: 60,
+          alignItems: 'center'
         }}
         inputStyles={{ color: colors.gray_400, fontFamily: 'Poppins-Medium' }}
         dropdownStyles={{
