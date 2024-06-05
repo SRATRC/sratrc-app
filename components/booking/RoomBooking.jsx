@@ -105,7 +105,7 @@ const RoomBooking = ({ user }) => {
 
               setIsSubmitting(true);
 
-              const onSuccess = (data) => {
+              const onSuccess = (_data) => {
                 Alert.alert('Booking Successful');
               };
 
@@ -129,7 +129,7 @@ const RoomBooking = ({ user }) => {
                 onFinally
               );
             }}
-            containerStyles="mt-7"
+            containerStyles="mt-7 min-h-[62px]"
             isLoading={isSubmitting}
           />
         </View>
@@ -173,7 +173,7 @@ const RoomBooking = ({ user }) => {
                 onFinally
               );
             }}
-            containerStyles="mt-10"
+            containerStyles="mt-10 min-h-[62px]"
             isLoading={isSubmitting}
           />
         </View>

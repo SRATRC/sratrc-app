@@ -71,7 +71,7 @@ const TravelBooking = ({ user }) => {
         data={luggageList}
         setSelected={(val) => setTravelForm({ ...travelForm, luggage: val })}
       />
-      //TODO: add a keyboardAvoidingView for this field
+      {/* TODO: add a keyboardAvoidingView for this field */}
       <FormField
         text="Any Special Request?"
         value={travelForm.special_request}
@@ -129,7 +129,7 @@ const TravelBooking = ({ user }) => {
             onFinally
           );
         }}
-        containerStyles="mt-7 w-full px-1"
+        containerStyles="mt-7 w-full px-1 min-h-[62px]"
         isLoading={isSubmitting}
       />
     </View>

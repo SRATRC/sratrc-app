@@ -17,6 +17,7 @@ const handleAPICall = async (
       url: url,
       params: params,
       data: body,
+      timeout: 10000,
       validateStatus: () => true
     });
     if (res.status === 200 || res.status === 201) {

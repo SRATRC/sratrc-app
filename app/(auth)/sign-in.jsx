@@ -83,7 +83,7 @@ const SignIn = () => {
             <CustomButton
               text="Sign In"
               handlePress={submit}
-              containerStyles="mt-7"
+              containerStyles="mt-7 min-h-[62px]"
               isLoading={isSubmitting}
             />
           </View>

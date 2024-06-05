@@ -46,7 +46,7 @@ const FoodBooking = ({ user }) => {
       />
 
       <CustomMultiSelectDropdown
-        otherStyles="mt-7 w-full px-1"
+        otherStyles="mt-5 w-full px-1"
         text={'Food Type'}
         placeholder={'Select Food Type'}
         data={foodTypeList}
@@ -55,7 +55,7 @@ const FoodBooking = ({ user }) => {
       />
 
       <CustomDropdown
-        otherStyles="mt-7 w-full px-1"
+        otherStyles="mt-5 w-full px-1"
         text={'Spice Level'}
         placeholder={'How much spice do you want?'}
         data={spiceyList}
@@ -63,7 +63,7 @@ const FoodBooking = ({ user }) => {
       />
 
       <CustomDropdown
-        otherStyles="mt-7 w-full px-1"
+        otherStyles="mt-5 w-full px-1"
         text={'Hightea'}
         placeholder={'Hightea'}
         data={highteaList}
@@ -111,7 +111,7 @@ const FoodBooking = ({ user }) => {
             onFinally
           );
         }}
-        containerStyles="mt-7 w-full px-1"
+        containerStyles="mt-7 w-full px-1 min-h-[62px]"
         isLoading={isSubmitting}
       />
     </View>

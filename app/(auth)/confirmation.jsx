@@ -52,7 +52,7 @@ const Confirmation = () => {
           <CustomButton
             text="Confirm"
             handlePress={submit}
-            containerStyles="mt-7"
+            containerStyles="mt-7 min-h-[62px]"
             isLoading={isSubmitting}
           />
         </View>

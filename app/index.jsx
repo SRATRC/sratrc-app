@@ -7,7 +7,7 @@ import 'react-native-reanimated';
 
 export default function Index() {
   const { loading, isLoggedIn } = useGlobalContext();
-  if (!loading && isLoggedIn) return <Redirect href="/book-now" />;
+  if (!loading && isLoggedIn) return <Redirect href="/home" />;
   if (!loading && !isLoggedIn) return <Redirect href="/sign-in" />;
 
   return (

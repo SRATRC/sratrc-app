@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
 
+// TODO: convert to FlatList
 const CustomChipGroup = ({ chips, selectedChip, handleChipPress }) => {
   return (
     <View>
