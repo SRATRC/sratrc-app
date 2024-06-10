@@ -1,4 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Platform
+} from 'react-native';
 import React, { useState } from 'react';
 import { icons } from '../constants';
 
@@ -12,7 +19,10 @@ const FormField = ({
   maxLength,
   prefix,
   containerStyles,
-  ...props
+  inputStyles,
+  autoCapitalize,
+  autoComplete,
+  autoCorrect
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -20,21 +30,28 @@ const FormField = ({
     <View className={`space-y-2 ${otherStyles}`}>
       <Text className="text-base text-gray-600 font-pmedium">{text}</Text>
       <View
-        className={`focus:border-2 w-full h-16 px-4 rounded-2xl focus:border-secondary items-center flex-row ${
+        className={`focus:border-2 w-full h-16 px-4 space-x-2 rounded-2xl focus:border-secondary items-center flex-row ${
           containerStyles
             ? containerStyles
-            : 'shadow-lg shadow-gray-200 bg-white'
+            : Platform.OS === 'ios'
+            ? 'shadow-lg shadow-gray-200 bg-white'
+            : 'shadow-2xl shadow-gray-400 bg-white'
         }`}
       >
-        <Text className="font-pregular text-base pr-2">{prefix}</Text>
+        <Text className="font-pmedium text-base text-gray-400">{prefix}</Text>
         <TextInput
-          className="flex-1 font-pregular text-base"
+          className={`flex-1 ${
+            inputStyles ? inputStyles : 'font-pregular text-base'
+          } `}
           value={value}
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           onChangeText={handleChangeText}
           keyboardType={keyboardType}
           maxLength={maxLength}
+          autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          autoCorrect={autoCorrect}
           secureTextEntry={text === 'Password' && !showPassword}
         />
 

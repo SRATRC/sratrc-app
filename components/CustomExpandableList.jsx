@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  Platform
+} from 'react-native';
 import React, { useState } from 'react';
 import { icons } from '../constants';
 import CustomButton from './CustomButton';
@@ -25,7 +32,13 @@ const ExpandableListItem = ({ item }) => {
   };
 
   return (
-    <View className="mb-5 p-3 shadow-lg shadow-gray-200 bg-white rounded-2xl">
+    <View
+      className={`mb-5 p-3 bg-white rounded-2xl ${
+        Platform.OS === 'ios'
+          ? 'shadow-lg shadow-gray-200'
+          : 'shadow-2xl shadow-gray-400'
+      }`}
+    >
       <TouchableOpacity
         onPress={toggleExpand}
         className="overflow-hidden flex-row justify-between"

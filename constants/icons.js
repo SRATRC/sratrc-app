@@ -13,6 +13,18 @@ import eye from '../assets/icons/eye.png';
 import play from '../assets/icons/play.png';
 import expandArrow from '../assets/icons/expand-arrow.png';
 import collapseArrow from '../assets/icons/collapse-arrow.png';
+import ac from '../assets/icons/ac.png';
+import adhyayan from '../assets/icons/adhyayan.png';
+import food from '../assets/icons/food.png';
+import arrowUp from '../assets/icons/arrow-up.png';
+import arrowDown from '../assets/icons/arrow-down.png';
+import elder from '../assets/icons/elder.png';
+import room from '../assets/icons/room.png';
+import travel from '../assets/icons/travel.png';
+import charge from '../assets/icons/charge.png';
+import id from '../assets/icons/id.png';
+import yellowArrowUp from '../assets/icons/yellow-arrow-up.png';
+import yellowArrowDown from '../assets/icons/yellow-arrow-down.png';
 
 export default {
   play,
@@ -29,5 +41,17 @@ export default {
   eyeHide,
   eye,
   expandArrow,
-  collapseArrow
+  collapseArrow,
+  ac,
+  adhyayan,
+  food,
+  arrowUp,
+  arrowDown,
+  elder,
+  room,
+  travel,
+  charge,
+  id,
+  yellowArrowUp,
+  yellowArrowDown
 };

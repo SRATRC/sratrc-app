@@ -24,82 +24,80 @@ const TabIcon = ({ icon, color, name, focused }) => {
 
 const TabsLayout = () => {
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: '#FFA001',
-          tabBarInactiveTintColor: '#BFBFBF',
-          tabBarStyle: {
-            backgroundColor: '#FFFCF5',
-            borderTopColor: '#EEAA0B',
-            borderTopWidth: 1,
-            height: Platform.OS === 'ios' ? 90 : 60
-          }
+    <Tabs
+      screenOptions={{
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#FFA001',
+        tabBarInactiveTintColor: '#BFBFBF',
+        tabBarStyle: {
+          backgroundColor: '#FFFCF5',
+          borderTopColor: '#EEAA0B',
+          borderTopWidth: 1,
+          height: Platform.OS === 'ios' ? 90 : 60
+        }
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              icon={icons.home}
+              color={color}
+              name="Home"
+              focused={focused}
+            />
+          )
         }}
-      >
-        <Tabs.Screen
-          name="home"
-          options={{
-            title: 'Home',
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.home}
-                color={color}
-                name="Home"
-                focused={focused}
-              />
-            )
-          }}
-        />
-        <Tabs.Screen
-          name="book-now"
-          options={{
-            title: 'Book Now',
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.plus}
-                color={color}
-                name="Book Now"
-                focused={focused}
-              />
-            )
-          }}
-        />
-        <Tabs.Screen
-          name="bookings"
-          options={{
-            title: 'Bookings',
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.bookmark}
-                color={color}
-                name="Bookings"
-                focused={focused}
-              />
-            )
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: 'Profile',
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.profile}
-                color={color}
-                name="Profile"
-                focused={focused}
-              />
-            )
-          }}
-        />
-      </Tabs>
-    </>
+      />
+      <Tabs.Screen
+        name="book-now"
+        options={{
+          title: 'Book Now',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              icon={icons.plus}
+              color={color}
+              name="Book Now"
+              focused={focused}
+            />
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          title: 'Bookings',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              icon={icons.bookmark}
+              color={color}
+              name="Bookings"
+              focused={focused}
+            />
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              icon={icons.profile}
+              color={color}
+              name="Profile"
+              focused={focused}
+            />
+          )
+        }}
+      />
+    </Tabs>
   );
 };
 

@@ -10,6 +10,7 @@ import FoodBooking from '../../components/booking/FoodBooking';
 import TravelBooking from '../../components/booking/TravelBooking';
 import AdhyayanBooking from '../../components/booking/AdhyayanBooking';
 
+//TODO: whole screen is being re-rendered on a chip selection
 const BookNow = () => {
   const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
   const chips = [

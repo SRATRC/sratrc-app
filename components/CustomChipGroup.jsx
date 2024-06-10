@@ -1,34 +1,32 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import React from 'react';
 
-// TODO: convert to FlatList
 const CustomChipGroup = ({ chips, selectedChip, handleChipPress }) => {
   return (
-    <View>
-      <ScrollView
-        className="flex flex-row flex-wrap mt-5"
+    <View className="mt-5">
+      <FlatList
+        data={chips}
         horizontal
         showsHorizontalScrollIndicator={false}
-      >
-        {chips.map((chip, index) => (
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
           <TouchableOpacity
-            key={index}
             className={`bg-gray-200 rounded-[12px] px-6 py-3 mr-2 ${
-              selectedChip === chip ? 'bg-secondary' : ''
+              selectedChip === item ? 'bg-secondary' : ''
             }`}
             activeOpacity={1}
-            onPress={() => handleChipPress(chip)}
+            onPress={() => handleChipPress(item)}
           >
             <Text
               className={`font-pmedium ${
-                selectedChip === chip ? 'text-white' : 'text-gray-400'
+                selectedChip === item ? 'text-white' : 'text-gray-400'
               }`}
             >
-              {chip}
+              {item}
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   );
 };

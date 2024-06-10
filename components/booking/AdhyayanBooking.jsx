@@ -5,7 +5,8 @@ import {
   Image,
   SectionList,
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { icons } from '../../constants';
@@ -120,7 +121,13 @@ const ExpandableListItem = ({ item }) => {
   };
 
   return (
-    <View className="mb-5 p-3 shadow-md shadow-gray-200 bg-white rounded-2xl">
+    <View
+      className={`mb-5 p-3 bg-white rounded-2xl ${
+        Platform.OS === 'ios'
+          ? 'shadow-md shadow-gray-200'
+          : 'shadow-xl shadow-gray-400'
+      }`}
+    >
       <TouchableOpacity
         onPress={toggleExpand}
         className="overflow-hidden flex-row justify-between"

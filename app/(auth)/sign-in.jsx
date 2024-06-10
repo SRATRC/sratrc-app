@@ -11,7 +11,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { images } from '../../constants';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -86,6 +86,19 @@ const SignIn = () => {
               containerStyles="mt-7 min-h-[62px]"
               isLoading={isSubmitting}
             />
+
+            <View className="flex flex-row items-center justify-start mt-2 space-x-2">
+              <Text className="text-sm font-pregular">
+                Do not have an account?
+              </Text>
+
+              <Link
+                href="/guestReferral"
+                className="text-secondary-100 text-sm font-pmedium"
+              >
+                sign up
+              </Link>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

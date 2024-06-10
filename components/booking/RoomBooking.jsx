@@ -6,8 +6,13 @@ import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
+import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const RoomBooking = ({ user }) => {
+  const router = useRouter();
+  const { setData } = useGlobalContext();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const items = ['Select Dates', 'One Day Visit'];
@@ -93,41 +98,44 @@ const RoomBooking = ({ user }) => {
           <CustomButton
             text="Book Now"
             handlePress={async () => {
-              if (
-                !multiDayForm.startDay ||
-                !multiDayForm.endDay ||
-                !multiDayForm.roomType ||
-                !multiDayForm.floorType
-              ) {
-                Alert.alert('Please fill all fields');
-                return;
-              }
+              setData((prev) => ({ ...prev, booking: multiDayForm }));
+              router.push('/details/room');
 
-              setIsSubmitting(true);
+              // if (
+              //   !multiDayForm.startDay ||
+              //   !multiDayForm.endDay ||
+              //   !multiDayForm.roomType ||
+              //   !multiDayForm.floorType
+              // ) {
+              //   Alert.alert('Please fill all fields');
+              //   return;
+              // }
 
-              const onSuccess = (_data) => {
-                Alert.alert('Booking Successful');
-              };
+              // setIsSubmitting(true);
 
-              const onFinally = () => {
-                setIsSubmitting(false);
-              };
+              // const onSuccess = (_data) => {
+              //   Alert.alert('Booking Successful');
+              // };
 
-              await handleAPICall(
-                'POST',
-                '/stay/room',
-                null,
-                {
-                  cardno: user.cardno,
-                  checkin_date: multiDayForm.startDay,
-                  checkout_date: multiDayForm.endDay,
-                  room_type: multiDayForm.roomType,
-                  floor_pref:
-                    multiDayForm.floorType == 'n' ? '' : multiDayForm.floorType
-                },
-                onSuccess,
-                onFinally
-              );
+              // const onFinally = () => {
+              //   setIsSubmitting(false);
+              // };
+
+              // await handleAPICall(
+              //   'POST',
+              //   '/stay/room',
+              //   null,
+              //   {
+              //     cardno: user.cardno,
+              //     checkin_date: multiDayForm.startDay,
+              //     checkout_date: multiDayForm.endDay,
+              //     room_type: multiDayForm.roomType,
+              //     floor_pref:
+              //       multiDayForm.floorType == 'n' ? '' : multiDayForm.floorType
+              //   },
+              //   onSuccess,
+              //   onFinally
+              // );
             }}
             containerStyles="mt-7 min-h-[62px]"
             isLoading={isSubmitting}

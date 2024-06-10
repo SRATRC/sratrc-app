@@ -1,6 +1,6 @@
-import { Link, Redirect } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../context/GlobalProvider';
 import 'react-native-reanimated';
@@ -14,8 +14,7 @@ export default function Index() {
     <SafeAreaView>
       <StatusBar style="dark" />
       <View className="justify-center items-center h-full">
-        <Text>Edit app/index.tsx to edit this screen.</Text>
-        <Link href="/sign-in">Go to home</Link>
+        <ActivityIndicator />
       </View>
     </SafeAreaView>
   );

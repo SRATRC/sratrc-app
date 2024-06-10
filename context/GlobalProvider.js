@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter, useSegments } from 'expo-router';
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -14,10 +15,17 @@ const setCurrentUser = async (user) => {
   await AsyncStorage.setItem('user', JSON.stringify(user));
 };
 
+const removeItem = async (key) => {
+  await AsyncStorage.removeItem(key);
+};
+
 const GlobalProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
+  // const rootSegment = useSegments()[0];
+  // const router = useRouter();
 
   useEffect(() => {
     getCurrentUser()
@@ -38,6 +46,14 @@ const GlobalProvider = ({ children }) => {
       });
   }, []);
 
+  // useEffect(() => {
+  //   if (!user && !isLoggedIn && rootSegment !== '(auth)') {
+  //     router.replace('/sign-in');
+  //   } else if (user && isLoggedIn && rootSegment !== '(tabs)') {
+  //     router.replace('/');
+  //   }
+  // }, [user, rootSegment]);
+
   return (
     <GlobalContext.Provider
       value={{
@@ -45,8 +61,11 @@ const GlobalProvider = ({ children }) => {
         setIsLoggedIn,
         user,
         setUser,
+        data,
+        setData,
         loading,
-        setCurrentUser
+        setCurrentUser,
+        removeItem
       }}
     >
       {children}

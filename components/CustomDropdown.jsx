@@ -9,7 +9,8 @@ const CustomDropdown = ({
   placeholder,
   data,
   setSelected,
-  save
+  save,
+  boxbg
 }) => {
   return (
     <View className={`w-full space-y-2 ${otherStyles}`}>
@@ -22,18 +23,26 @@ const CustomDropdown = ({
         placeholder={placeholder}
         boxStyles={{
           borderRadius: 12,
-          backgroundColor: colors.gray_100,
+          backgroundColor: boxbg ? boxbg : colors.gray_100,
           borderWidth: 0,
           height: 60,
           alignItems: 'center'
         }}
-        inputStyles={{ color: colors.gray_400, fontFamily: 'Poppins-Medium' }}
+        inputStyles={{
+          color: colors.gray_400,
+          fontFamily: 'Poppins-Medium',
+          fontSize: 16
+        }}
         dropdownStyles={{
           borderRadius: 12,
           backgroundColor: colors.gray_100,
           borderWidth: 0
         }}
-        dropdownTextStyles={{ color: colors.gray_400 }}
+        dropdownTextStyles={{
+          color: colors.gray_400,
+          fontFamily: 'Poppins-Medium',
+          fontSize: 16
+        }}
         maxHeight={data.length * 50 < 150 ? data.length * 50 : 150}
       />
     </View>
