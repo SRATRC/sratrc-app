@@ -31,11 +31,13 @@ const CustomDropdown = ({
         inputStyles={{
           color: colors.gray_400,
           fontFamily: 'Poppins-Medium',
-          fontSize: 16
+          fontSize: 16,
+          flex: 1,
+          paddingEnd: 4
         }}
         dropdownStyles={{
           borderRadius: 12,
-          backgroundColor: colors.gray_100,
+          backgroundColor: boxbg ? boxbg : colors.gray_100,
           borderWidth: 0
         }}
         dropdownTextStyles={{

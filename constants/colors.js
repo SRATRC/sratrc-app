@@ -9,6 +9,8 @@ const black_200 = '#232533';
 
 const white_100 = '#F5F5F5';
 
+const zinc_100 = '#f4f4f5';
+
 export default {
   orange,
   gray_100,
@@ -16,5 +18,6 @@ export default {
   gray_400,
   black_100,
   black_200,
-  white_100
+  white_100,
+  zinc_100
 };

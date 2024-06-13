@@ -25,6 +25,11 @@ import charge from '../assets/icons/charge.png';
 import id from '../assets/icons/id.png';
 import yellowArrowUp from '../assets/icons/yellow-arrow-up.png';
 import yellowArrowDown from '../assets/icons/yellow-arrow-down.png';
+import person from '../assets/icons/person.png';
+import description from '../assets/icons/description.png';
+import marker from '../assets/icons/marker.png';
+import request from '../assets/icons/request.png';
+import luggage from '../assets/icons/luggage.png';
 
 export default {
   play,
@@ -53,5 +58,10 @@ export default {
   charge,
   id,
   yellowArrowUp,
-  yellowArrowDown
+  yellowArrowDown,
+  person,
+  description,
+  marker,
+  request,
+  luggage
 };

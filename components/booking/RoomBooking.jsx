@@ -1,6 +1,6 @@
 import { View, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { colors } from '../../constants';
+import { colors, types } from '../../constants';
 import MultiSwitch from 'react-native-multiple-switch';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
@@ -98,18 +98,18 @@ const RoomBooking = ({ user }) => {
           <CustomButton
             text="Book Now"
             handlePress={async () => {
-              setData((prev) => ({ ...prev, booking: multiDayForm }));
-              router.push('/details/room');
+              if (
+                !multiDayForm.startDay ||
+                !multiDayForm.endDay ||
+                !multiDayForm.roomType ||
+                !multiDayForm.floorType
+              ) {
+                Alert.alert('Please fill all fields');
+                return;
+              }
 
-              // if (
-              //   !multiDayForm.startDay ||
-              //   !multiDayForm.endDay ||
-              //   !multiDayForm.roomType ||
-              //   !multiDayForm.floorType
-              // ) {
-              //   Alert.alert('Please fill all fields');
-              //   return;
-              // }
+              setData((prev) => ({ ...prev, room: multiDayForm }));
+              router.push(`/details/${types.ROOM_DETAILS_TYPE}`);
 
               // setIsSubmitting(true);
 

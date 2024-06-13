@@ -103,7 +103,7 @@ const guestRegistration = () => {
             <TouchableOpacity onPress={showDatePicker}>
               <FormDisplayField
                 text="Date Of Birth"
-                value={form.dob ? form.dob.split('T')[0] : 'Date of Birth'}
+                value={form.dob ? form.dob : 'Date of Birth'}
                 otherStyles="mt-7"
               />
             </TouchableOpacity>

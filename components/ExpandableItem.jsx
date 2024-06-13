@@ -2,7 +2,13 @@ import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
 import { useState } from 'react';
 import { icons } from '../constants';
 
-const ExpandableItem = ({ children, item, containerStyles }) => {
+const ExpandableItem = ({
+  children,
+  item,
+  containerStyles,
+  backgroundColor,
+  shadowShown
+}) => {
   const [expanded, setExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -11,11 +17,13 @@ const ExpandableItem = ({ children, item, containerStyles }) => {
 
   return (
     <View
-      className={`mb-5 p-3 bg-white rounded-2xl ${
-        Platform.OS === 'ios'
+      className={`mb-5 p-3 rounded-2xl ${
+        shadowShown == false
+          ? ''
+          : Platform.OS === 'ios'
           ? 'shadow-lg shadow-gray-200'
           : 'shadow-2xl shadow-gray-400'
-      }`}
+      } ${backgroundColor ? backgroundColor : 'bg-white'}`}
     >
       <TouchableOpacity
         onPress={toggleExpand}

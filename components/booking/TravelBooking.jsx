@@ -5,8 +5,14 @@ import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import FormField from '../../components/FormField';
 import handleAPICall from '../../utils/HandleApiCall';
+import { types } from '../../constants';
+import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const TravelBooking = ({ user }) => {
+  const router = useRouter();
+  const { setData } = useGlobalContext();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [travelForm, setTravelForm] = useState({
@@ -69,6 +75,7 @@ const TravelBooking = ({ user }) => {
         text={'Luggage'}
         placeholder={'Select any luggage'}
         data={luggageList}
+        save={'value'}
         setSelected={(val) => setTravelForm({ ...travelForm, luggage: val })}
       />
       {/* TODO: add a keyboardAvoidingView for this field */}
@@ -103,31 +110,34 @@ const TravelBooking = ({ user }) => {
             Alert.alert('Please fill all fields');
             return;
           }
-          setIsSubmitting(true);
 
-          const onSuccess = (data) => {
-            Alert.alert('Booking Successful');
-          };
+          setData((prev) => ({ ...prev, travel: travelForm }));
+          router.push(`/details/${types.TRAVEL_DETAILS_TYPE}`);
+          // setIsSubmitting(true);
 
-          const onFinally = () => {
-            setIsSubmitting(false);
-          };
+          // const onSuccess = (data) => {
+          //   Alert.alert('Booking Successful');
+          // };
 
-          await handleAPICall(
-            'POST',
-            '/travel/booking',
-            null,
-            {
-              cardno: user.cardno,
-              date: travelForm.date,
-              pickup_point: travelForm.pickup,
-              drop_point: travelForm.drop,
-              luggage: travelForm.luggage,
-              comments: travelForm.special_request
-            },
-            onSuccess,
-            onFinally
-          );
+          // const onFinally = () => {
+          //   setIsSubmitting(false);
+          // };
+
+          // await handleAPICall(
+          //   'POST',
+          //   '/travel/booking',
+          //   null,
+          //   {
+          //     cardno: user.cardno,
+          //     date: travelForm.date,
+          //     pickup_point: travelForm.pickup,
+          //     drop_point: travelForm.drop,
+          //     luggage: travelForm.luggage,
+          //     comments: travelForm.special_request
+          //   },
+          //   onSuccess,
+          //   onFinally
+          // );
         }}
         containerStyles="mt-7 w-full px-1 min-h-[62px]"
         isLoading={isSubmitting}

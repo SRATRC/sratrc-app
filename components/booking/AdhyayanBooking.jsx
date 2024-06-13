@@ -5,13 +5,14 @@ import {
   Image,
   SectionList,
   ActivityIndicator,
-  Alert,
   Platform
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { icons } from '../../constants';
+import { icons, types } from '../../constants';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { useRouter } from 'expo-router';
 
 const AdhyayanBooking = ({ user }) => {
   const [adhyayanList, setAdhyayanList] = useState([]);
@@ -89,6 +90,9 @@ const AdhyayanBooking = ({ user }) => {
 };
 
 const ExpandableListItem = ({ item }) => {
+  const router = useRouter();
+  const { setData } = useGlobalContext();
+
   const [expanded, setExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -97,27 +101,33 @@ const ExpandableListItem = ({ item }) => {
   };
 
   const registerAdhyayan = async () => {
-    setIsSubmitting(true);
+    setData((prev) => ({
+      ...prev,
+      adhyayan: item
+    }));
+    router.push(`/details/${types.ADHYAYAN_DETAILS_TYPE}`);
 
-    const onSuccess = (_data) => {
-      Alert.alert('Booking Successful');
-    };
+    // setIsSubmitting(true);
 
-    const onFinally = () => {
-      setIsSubmitting(false);
-    };
+    // const onSuccess = (_data) => {
+    //   Alert.alert('Booking Successful');
+    // };
 
-    await handleAPICall(
-      'POST',
-      '/adhyayan/register',
-      null,
-      {
-        cardno: user.cardno,
-        shibir_id: item.id
-      },
-      onSuccess,
-      onFinally
-    );
+    // const onFinally = () => {
+    //   setIsSubmitting(false);
+    // };
+
+    // await handleAPICall(
+    //   'POST',
+    //   '/adhyayan/register',
+    //   null,
+    //   {
+    //     cardno: user.cardno,
+    //     shibir_id: item.id
+    //   },
+    //   onSuccess,
+    //   onFinally
+    // );
   };
 
   return (

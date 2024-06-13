@@ -5,13 +5,14 @@ import {
   ScrollView,
   Platform,
   Image,
-  Alert
+  Alert,
+  TouchableOpacity
 } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { images } from '../../constants';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -75,8 +76,9 @@ const SignIn = () => {
               value={form.phone}
               handleChangeText={(e) => setForm({ ...form, phone: e })}
               otherStyles="mt-7"
+              inputStyles="font-pmedium text-base text-gray-400"
               keyboardType="number-pad"
-              placeholder="87990-02450"
+              placeholder="Enter Your Phone Number"
               maxLength={10}
             />
 
@@ -92,12 +94,11 @@ const SignIn = () => {
                 Do not have an account?
               </Text>
 
-              <Link
-                href="/guestReferral"
-                className="text-secondary-100 text-sm font-pmedium"
-              >
-                sign up
-              </Link>
+              <TouchableOpacity onPress={() => router.push('/guestReferral')}>
+                <Text className="text-secondary-100 text-sm font-pmedium">
+                  sign up
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
