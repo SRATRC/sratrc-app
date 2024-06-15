@@ -112,7 +112,7 @@ const TravelBooking = ({ user }) => {
           }
 
           setData((prev) => ({ ...prev, travel: travelForm }));
-          router.push(`/details/${types.TRAVEL_DETAILS_TYPE}`);
+          router.push(`/${types.TRAVEL_DETAILS_TYPE}`);
           // setIsSubmitting(true);
 
           // const onSuccess = (data) => {

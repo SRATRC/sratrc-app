@@ -109,7 +109,7 @@ const RoomBooking = ({ user }) => {
               }
 
               setData((prev) => ({ ...prev, room: multiDayForm }));
-              router.push(`/details/${types.ROOM_DETAILS_TYPE}`);
+              router.push(`/${types.ROOM_DETAILS_TYPE}`);
 
               // setIsSubmitting(true);
 

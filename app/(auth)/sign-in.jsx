@@ -89,7 +89,7 @@ const SignIn = () => {
               isLoading={isSubmitting}
             />
 
-            <View className="flex flex-row items-center justify-start mt-2 space-x-2">
+            {/* <View className="flex flex-row items-center justify-start mt-2 space-x-2">
               <Text className="text-sm font-pregular">
                 Do not have an account?
               </Text>
@@ -99,7 +99,7 @@ const SignIn = () => {
                   sign up
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

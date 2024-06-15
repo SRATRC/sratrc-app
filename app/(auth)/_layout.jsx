@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 const AuthLayout = () => {
   return (
     <>
+      <StatusBar style="dark" />
       <Stack>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         <Stack.Screen name="confirmation" options={{ headerShown: false }} />
@@ -14,8 +15,6 @@ const AuthLayout = () => {
           options={{ headerShown: false }}
         />
       </Stack>
-
-      <StatusBar style="dark" />
     </>
   );
 };

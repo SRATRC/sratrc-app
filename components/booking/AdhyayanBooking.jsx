@@ -105,7 +105,7 @@ const ExpandableListItem = ({ item }) => {
       ...prev,
       adhyayan: item
     }));
-    router.push(`/details/${types.ADHYAYAN_DETAILS_TYPE}`);
+    router.push(`/${types.ADHYAYAN_DETAILS_TYPE}`);
 
     // setIsSubmitting(true);
 
