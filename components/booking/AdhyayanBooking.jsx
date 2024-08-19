@@ -22,7 +22,6 @@ const AdhyayanBooking = ({ user }) => {
 
   useEffect(() => {
     if (!listEnded) requestAPI();
-    console.log('CURRENT PAGE', page);
   }, [page]);
 
   const requestAPI = async () => {
@@ -88,6 +87,8 @@ const AdhyayanBooking = ({ user }) => {
     </View>
   );
 };
+
+//TODO: Migrate to use of ExpandableItem
 
 const ExpandableListItem = ({ item }) => {
   const router = useRouter();

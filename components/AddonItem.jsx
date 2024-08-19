@@ -1,24 +1,21 @@
-import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
+import { View, TouchableOpacity, Image, Platform } from 'react-native';
 import { useState } from 'react';
 import { icons } from '../constants';
 import * as Haptics from 'expo-haptics';
 
-const ExpandableItem = ({
+const AddonItem = ({
   children,
   visibleContent,
   containerStyles,
   backgroundColor,
   shadowShown,
-  onToggle
+  onCollapse
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [selected, setSelected] = useState(false);
 
-  const toggleExpand = () => {
-    const newExpandedState = !expanded;
-    setExpanded(newExpandedState);
-    if (onToggle) {
-      onToggle(newExpandedState);
-    }
+  const toggleSelection = () => {
+    setSelected(!selected);
+    if (onCollapse) onCollapse();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -32,24 +29,24 @@ const ExpandableItem = ({
           : 'shadow-2xl shadow-gray-400'
       } ${backgroundColor ? backgroundColor : 'bg-white'}`}
     >
-      <TouchableOpacity
-        onPress={toggleExpand}
-        className="overflow-hidden flex-row justify-between"
-      >
+      <View className="overflow-hidden flex-row justify-between">
         <View className="flex-1 flex-row items-center space-x-4">
           {visibleContent}
         </View>
-        <View className="bg-gray-100 items-center justify-center rounded-md w-8 h-8">
+        <TouchableOpacity
+          onPress={toggleSelection}
+          className="items-center justify-center"
+        >
           <Image
-            source={expanded ? icons.collapseArrow : icons.expandArrow}
-            className="w-4 h-4"
+            source={selected ? icons.remove : icons.addon}
+            className="w-6 h-6"
             resizeMode="contain"
           />
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
       <View
         className={`${containerStyles}`}
-        style={{ display: expanded ? 'flex' : 'none' }}
+        style={{ display: selected ? 'flex' : 'none' }}
       >
         {children}
       </View>
@@ -57,4 +54,4 @@ const ExpandableItem = ({
   );
 };
 
-export default ExpandableItem;
+export default AddonItem;

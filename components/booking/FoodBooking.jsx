@@ -51,7 +51,6 @@ const FoodBooking = ({ user }) => {
         placeholder={'Select Food Type'}
         data={foodTypeList}
         setSelected={(val) => setType(val)}
-        type={type}
       />
 
       <CustomDropdown
@@ -75,8 +74,7 @@ const FoodBooking = ({ user }) => {
         handlePress={async () => {
           if (
             !foodForm.startDay ||
-            !foodForm.endDay ||
-            !type ||
+            type.length == 0 ||
             !foodForm.spicy ||
             !foodForm.hightea
           ) {
@@ -85,7 +83,7 @@ const FoodBooking = ({ user }) => {
           }
           setIsSubmitting(true);
 
-          const onSuccess = (data) => {
+          const onSuccess = (_data) => {
             Alert.alert('Booking Successful');
           };
 
@@ -100,7 +98,7 @@ const FoodBooking = ({ user }) => {
             {
               cardno: user.cardno,
               start_date: foodForm.startDay,
-              end_date: foodForm.endDay,
+              end_date: foodForm.endDay ? foodForm.endDay : foodForm.startDay,
               breakfast: type.includes('breakfast') ? 1 : 0,
               lunch: type.includes('lunch') ? 1 : 0,
               dinner: type.includes('dinner') ? 1 : 0,

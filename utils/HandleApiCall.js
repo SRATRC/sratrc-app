@@ -12,6 +12,7 @@ const handleAPICall = async (
 ) => {
   try {
     const url = `${BASE_URL}${endpoint}`;
+
     const res = await axios({
       method: method,
       url: url,

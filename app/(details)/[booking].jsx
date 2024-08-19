@@ -5,23 +5,29 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, icons, types } from '../../constants';
-import ExpandableItem from '../../components/ExpandableItem';
+import AddonItem from '../../components/AddonItem';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomMultiSelectDropdown from '../../components/CustomMultiSelectDropdown';
-import HorizontalSeparator from '../../components/HorizontalSeparator';
 import CustomButton from '../../components/CustomButton';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import FormDisplayField from '../../components/FormDisplayField';
 import FormField from '../../components/FormField';
 import moment from 'moment';
-import prices from '../../constants/prices';
+import handleAPICall from '../../utils/HandleApiCall';
+import RoomBookingDetails from '../../components/booking details cards/RoomBookingDetails';
+import PageHeader from '../../components/PageHeader';
+import TravelBookingDetails from '../../components/booking details cards/TravelBookingDetails';
+import AdhyayanBookingDetails from '../../components/booking details cards/AdhyayanBookingDetails';
 
 const details = () => {
   const { booking } = useLocalSearchParams();
@@ -38,7 +44,8 @@ const details = () => {
     spicy: '',
     hightea: ''
   });
-  const [type, setType] = useState([]);
+
+  const [meals, setMeals] = useState([]);
 
   const foodTypeList = [
     { key: 'breakfast', value: 'breakfast' },
@@ -59,9 +66,10 @@ const details = () => {
 
   // ROOM BOOKING VARIABLES
   const [roomForm, setRoomForm] = useState({
+    startDay: '',
+    endDay: '',
     roomType: '',
-    groundFloor: '',
-    checkoutDate: ''
+    floorType: ''
   });
 
   const roomTypeList = [
@@ -75,27 +83,24 @@ const details = () => {
   ];
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState({
-    room: false,
-    pickup: false,
-    drop: false
+    checkin: false,
+    checkout: false,
+    foodStart: false,
+    foodEnd: false,
+    travel: false
   });
 
   // TRAVEL BOOKING VARIABLES
-  const [travelPickupForm, setTravelPickupForm] = useState({
+  const [travelForm, setTravelForm] = useState({
     date: '',
     pickup: '',
-    luggage: '',
-    special_request: ''
-  });
-
-  const [travelDropForm, setTravelDropForm] = useState({
-    date: '',
     drop: '',
     luggage: '',
     special_request: ''
   });
 
   const locationData = [
+    { key: 'rc', value: 'RC' },
     { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
     { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
     { key: 'mullund', value: 'Mullund Airoli Junction' },
@@ -117,6 +122,66 @@ const details = () => {
     { key: 'none', value: 'NONE' }
   ];
 
+  // ADHYAYAN BOOKING VARIABLES
+  const [adhyayanBookingList, setAdhyayanBookingList] = useState([]);
+  const [adhyayanList, setAdhyayanList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isFetching, setIsFetching] = useState(false);
+  const [listEnded, setListEnded] = useState(false);
+
+  useEffect(() => {
+    if (!listEnded && !isFetching) requestAPI();
+  }, [page]);
+
+  const requestAPI = async () => {
+    console.log('PAGE', page);
+
+    setIsFetching(true);
+
+    const onSuccess = (res) => {
+      if (res.data.length == 0) setListEnded(true);
+      setAdhyayanList((prevAdhyayanList) => [...prevAdhyayanList, ...res.data]);
+    };
+
+    const onFinally = () => {
+      setIsFetching(false);
+    };
+
+    if (booking != types.ADHYAYAN_DETAILS_TYPE) {
+      await handleAPICall(
+        'GET',
+        '/adhyayan/getrange',
+        {
+          cardno: user.cardno,
+          start_date:
+            booking == types.ROOM_DETAILS_TYPE
+              ? data.room.startDay
+              : data.travel.date,
+          end_date: booking == types.ROOM_DETAILS_TYPE ? data.room.endDay : '',
+          page
+        },
+        null,
+        onSuccess,
+        onFinally
+      );
+    }
+  };
+
+  const renderItem = ({ item }) => <Text>Hello</Text>;
+
+  const renderFooter = () => (
+    <View className="items-center">
+      {isFetching && <ActivityIndicator />}
+      {listEnded && <Text>No more adhyayans at the moment</Text>}
+    </View>
+  );
+
+  const fetchMoreData = () => {
+    if (!listEnded && !isFetching) {
+      setPage(page + 1);
+    }
+  };
+
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
       <KeyboardAvoidingView
@@ -126,18 +191,16 @@ const details = () => {
           alwaysBounceVertical={false}
           showsVerticalScrollIndicator={false}
         >
-          <View className="w-full px-4 my-6 items-center">
-            <Text className="text-2xl font-psemibold">Booking Details</Text>
-          </View>
+          <PageHeader title="Booking Details" icon={icons.backArrow} />
 
           {booking === types.ROOM_DETAILS_TYPE && (
-            <RoomBookingPrimary data={data} setData={setData} />
+            <RoomBookingDetails data={data} setData={setData} />
           )}
           {booking === types.ADHYAYAN_DETAILS_TYPE && (
-            <AdhyayanBookingPrimary data={data} />
+            <AdhyayanBookingDetails data={data} />
           )}
           {booking === types.TRAVEL_DETAILS_TYPE && (
-            <TravelBookingPrimary data={data} setData={setData} />
+            <TravelBookingDetails data={data} setData={setData} />
           )}
 
           <View className="w-full px-4">
@@ -147,51 +210,119 @@ const details = () => {
 
             {/* ROOM BOOKING COMPONENT */}
             {booking !== types.ROOM_DETAILS_TYPE && (
-              <ExpandableItem
-                item={{
-                  icon: icons.room,
-                  title: 'Raj Sharan Booking'
+              <AddonItem
+                onCollapse={() => {
+                  setRoomForm({
+                    roomType: '',
+                    floorType: '',
+                    startDay: '',
+                    endDay: ''
+                  });
+                  setData((prev) => {
+                    const { room, ...rest } = prev;
+                    return rest;
+                  });
                 }}
+                visibleContent={
+                  <View className="flex flex-row items-center space-x-4">
+                    <Image
+                      source={icons.room}
+                      className="w-10 h-10"
+                      resizeMode="contain"
+                    />
+                    <Text className="font-pmedium">Raj Sharan Booking</Text>
+                  </View>
+                }
                 containerStyles={'mt-3'}
               >
                 <TouchableOpacity
                   onPress={() =>
                     setDatePickerVisibility({
                       ...isDatePickerVisible,
-                      room: true
+                      checkin: true
                     })
                   }
                 >
                   <FormDisplayField
-                    text="Checkout Date"
+                    text="Checkin Date"
                     value={
-                      roomForm.checkoutDate
-                        ? roomForm.checkoutDate
-                        : 'Checkout Date'
+                      roomForm.startDay ? roomForm.startDay : 'Checkin Date'
                     }
-                    otherStyles="mt-7"
+                    otherStyles="mt-5"
                     backgroundColor="bg-gray-100"
                   />
                 </TouchableOpacity>
                 <DateTimePickerModal
-                  isVisible={isDatePickerVisible.room}
+                  isVisible={isDatePickerVisible.checkin}
                   mode="date"
                   onConfirm={(date) => {
                     setRoomForm({
                       ...roomForm,
-                      checkoutDate: moment(date).format('YYYY-MM-DD')
+                      startDay:
+                        moment(date) < moment().add(1, 'days').toDate()
+                          ? moment().add(1, 'days').format('YYYY-MM-DD')
+                          : moment(date).format('YYYY-MM-DD')
                     });
                     setDatePickerVisibility({
                       ...isDatePickerVisible,
-                      room: false
+                      checkin: false
                     });
                   }}
                   onCancel={() =>
                     setDatePickerVisibility({
                       ...isDatePickerVisible,
-                      room: false
+                      checkin: false
                     })
                   }
+                  minimumDate={moment().add(1, 'days').toDate()}
+                />
+
+                <TouchableOpacity
+                  disabled={roomForm.startDay == ''}
+                  onPress={() =>
+                    setDatePickerVisibility({
+                      ...isDatePickerVisible,
+                      checkout: true
+                    })
+                  }
+                >
+                  <FormDisplayField
+                    text="Checkout Date"
+                    value={roomForm.endDay ? roomForm.endDay : 'Checkout Date'}
+                    otherStyles="mt-5"
+                    backgroundColor="bg-gray-100"
+                  />
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible.checkout}
+                  mode="date"
+                  onConfirm={(date) => {
+                    if (moment(date) <= moment(roomForm.startDay)) {
+                      Alert.alert(
+                        'Error',
+                        'Checkout date should be after checkin date'
+                      );
+                    } else {
+                      setRoomForm({
+                        ...roomForm,
+                        endDay:
+                          moment(date) < moment().add(1, 'days').toDate()
+                            ? moment().add(1, 'days').format('YYYY-MM-DD')
+                            : moment(date).format('YYYY-MM-DD')
+                      });
+                      setDatePickerVisibility({
+                        ...isDatePickerVisible,
+                        checkout: false
+                      });
+                    }
+                  }}
+                  onCancel={() =>
+                    setDatePickerVisibility({
+                      ...isDatePickerVisible,
+                      checkout: false
+                    })
+                  }
+                  minimumDate={moment().add(1, 'days').toDate()}
                 />
 
                 <CustomDropdown
@@ -210,27 +341,127 @@ const details = () => {
                   placeholder={'Select Floor Type'}
                   data={floorTypeList}
                   setSelected={(val) =>
-                    setRoomForm({ ...roomForm, groundFloor: val })
+                    setRoomForm({ ...roomForm, floorType: val })
                   }
                 />
-              </ExpandableItem>
+              </AddonItem>
             )}
 
             {/* FOOD BOOKING COMPONENT */}
-            <ExpandableItem
-              item={{
-                icon: icons.food,
-                title: 'Raj Prasad Booking'
+            <AddonItem
+              onCollapse={() => {
+                setFoodForm({
+                  startDay: '',
+                  endDay: '',
+                  spicy: '',
+                  hightea: ''
+                });
+                setMeals([]);
+
+                setData((prev) => {
+                  const { food, ...rest } = prev;
+                  return rest;
+                });
               }}
+              visibleContent={
+                <View className="flex flex-row items-center space-x-4">
+                  <Image
+                    source={icons.food}
+                    className="w-10 h-10"
+                    resizeMode="contain"
+                  />
+                  <Text className="font-pmedium">Raj Prasad Booking</Text>
+                </View>
+              }
               containerStyles={'mt-3'}
             >
+              <TouchableOpacity
+                onPress={() =>
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodStart: true
+                  })
+                }
+              >
+                <FormDisplayField
+                  text="Start Date"
+                  value={foodForm.startDay ? foodForm.startDay : 'Start Date'}
+                  otherStyles="mt-5"
+                  backgroundColor="bg-gray-100"
+                />
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible.foodStart}
+                mode="date"
+                onConfirm={(date) => {
+                  setFoodForm({
+                    ...foodForm,
+                    startDay:
+                      moment(date) < moment().add(1, 'days').toDate()
+                        ? moment().add(1, 'days').format('YYYY-MM-DD')
+                        : moment(date).format('YYYY-MM-DD')
+                  });
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodStart: false
+                  });
+                }}
+                onCancel={() =>
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodStart: false
+                  })
+                }
+                minimumDate={moment().add(1, 'days').toDate()}
+              />
+
+              <TouchableOpacity
+                disabled={foodForm.startDay == ''}
+                onPress={() =>
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodEnd: true
+                  })
+                }
+              >
+                <FormDisplayField
+                  text="End Date"
+                  value={foodForm.endDay ? foodForm.endDay : 'End Date'}
+                  otherStyles="mt-5"
+                  backgroundColor="bg-gray-100"
+                />
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible.foodEnd}
+                mode="date"
+                onConfirm={(date) => {
+                  setFoodForm({
+                    ...foodForm,
+                    endDay:
+                      moment(date) < moment().add(1, 'days').toDate()
+                        ? moment().add(1, 'days').format('YYYY-MM-DD')
+                        : moment(date).format('YYYY-MM-DD')
+                  });
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodEnd: false
+                  });
+                }}
+                onCancel={() =>
+                  setDatePickerVisibility({
+                    ...isDatePickerVisible,
+                    foodEnd: false
+                  })
+                }
+                minimumDate={moment().add(1, 'days').toDate()}
+              />
+
               <CustomMultiSelectDropdown
                 otherStyles="mt-5 w-full px-1"
                 text={'Food Type'}
                 placeholder={'Select Food Type'}
                 data={foodTypeList}
-                setSelected={(val) => setType(val)}
-                type={type}
+                setSelected={(val) => setMeals(val)}
               />
 
               <CustomDropdown
@@ -250,29 +481,62 @@ const details = () => {
                   setFoodForm({ ...foodForm, hightea: val })
                 }
               />
-            </ExpandableItem>
+            </AddonItem>
 
             {/* ADHYAYAN BOOKING COMPONENT */}
             {booking !== types.ADHYAYAN_DETAILS_TYPE && (
-              <ExpandableItem
-                item={{
-                  icon: icons.adhyayan,
-                  title: 'Raj Adhyayan Booking'
+              <AddonItem
+                onCollapse={() => {
+                  setAdhyayanList([]);
+                  setData((prev) => {
+                    const { adhyayan, ...rest } = prev;
+                    return rest;
+                  });
                 }}
+                visibleContent={
+                  <View className="flex flex-row items-center space-x-4">
+                    <Image
+                      source={icons.adhyayan}
+                      className="w-10 h-10"
+                      resizeMode="contain"
+                    />
+                    <Text className="font-pmedium">Raj Adhyayan Booking</Text>
+                  </View>
+                }
                 containerStyles={'mt-3'}
-              ></ExpandableItem>
+              >
+                <FlatList
+                  className="py-2 mt-5 flex-grow-1"
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                  nestedScrollEnabled={true}
+                  data={adhyayanList}
+                  renderItem={renderItem}
+                  keyExtractor={(item) => item.id}
+                  ListFooterComponent={renderFooter}
+                  // onEndReachedThreshold={0.1}
+                  // onEndReached={fetchMoreData}
+                />
+              </AddonItem>
             )}
 
             {/* TRAVEL BOOKING COMPONENT */}
             {booking !== types.TRAVEL_DETAILS_TYPE && (
-              <View
-                className={`mb-5 p-3 bg-white rounded-2xl ${
-                  Platform.OS === 'ios'
-                    ? 'shadow-lg shadow-gray-200'
-                    : 'shadow-2xl shadow-gray-400'
-                }`}
-              >
-                <View className="overflow-hidden flex-row justify-between">
+              <AddonItem
+                onCollapse={() => {
+                  setTravelForm({
+                    date: '',
+                    pickup: '',
+                    drop: '',
+                    luggage: '',
+                    special_request: ''
+                  });
+                  setData((prev) => {
+                    const { travel, ...rest } = prev;
+                    return rest;
+                  });
+                }}
+                visibleContent={
                   <View className="flex flex-row items-center space-x-4">
                     <Image
                       source={icons.travel}
@@ -281,173 +545,173 @@ const details = () => {
                     />
                     <Text className="font-pmedium">Raj Pravas Booking</Text>
                   </View>
-                </View>
-                <View className="mt-3">
-                  {/* Mumbai to RC */}
-                  <ExpandableItem
-                    item={{
-                      icon: icons.yellowArrowUp,
-                      title: 'Mumbai to Research Centre'
-                    }}
-                    containerStyles={'mt-3'}
+                }
+                containerStyles={'mt-3'}
+              >
+                <TouchableOpacity
+                  onPress={() =>
+                    setDatePickerVisibility({
+                      ...isDatePickerVisible,
+                      travel: true
+                    })
+                  }
+                >
+                  <FormDisplayField
+                    text="Date"
+                    value={travelForm.date ? travelForm.date : 'Travel Date'}
+                    otherStyles="mt-7"
                     backgroundColor="bg-gray-100"
-                    shadowShown={false}
-                  >
-                    <TouchableOpacity
-                      onPress={() =>
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          pickup: true
-                        })
-                      }
-                    >
-                      <FormDisplayField
-                        text="Date"
-                        value={
-                          travelPickupForm.date
-                            ? travelPickupForm.date
-                            : 'Travel Date'
-                        }
-                        otherStyles="mt-7"
-                        backgroundColor="bg-zinc-100"
-                      />
-                    </TouchableOpacity>
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible.pickup}
-                      mode="date"
-                      onConfirm={(date) => {
-                        setTravelPickupForm({
-                          ...travelPickupForm,
-                          date: moment(date).format('YYYY-MM-DD')
-                        });
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          pickup: false
-                        });
-                      }}
-                      onCancel={() =>
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          pickup: false
-                        })
-                      }
-                    />
+                  />
+                </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible.travel}
+                  mode="date"
+                  onConfirm={(date) => {
+                    setTravelForm({
+                      ...travelForm,
+                      date:
+                        moment(date) < moment().add(1, 'days').toDate()
+                          ? moment().add(1, 'days').format('YYYY-MM-DD')
+                          : moment(date).format('YYYY-MM-DD')
+                    });
+                    setDatePickerVisibility({
+                      ...isDatePickerVisible,
+                      travel: false
+                    });
+                  }}
+                  onCancel={() =>
+                    setDatePickerVisibility({
+                      ...isDatePickerVisible,
+                      travel: false
+                    })
+                  }
+                  minimumDate={moment().add(1, 'days').toDate()}
+                />
 
-                    <CustomDropdown
-                      otherStyles="mt-7"
-                      text={'Pickup Location'}
-                      placeholder={'Select Location'}
-                      save={'value'}
-                      data={locationData}
-                      setSelected={(val) =>
-                        setTravelPickupForm({
-                          ...travelPickupForm,
-                          pickup: val
-                        })
-                      }
-                      boxbg={colors.zinc_100}
-                    />
+                <CustomDropdown
+                  otherStyles="mt-7"
+                  text={'Pickup Location'}
+                  placeholder={'Select Location'}
+                  save={'value'}
+                  data={locationData}
+                  setSelected={(val) =>
+                    setTravelForm({
+                      ...travelForm,
+                      pickup: val
+                    })
+                  }
+                  boxbg={colors.gray_100}
+                />
 
-                    <FormField
-                      text="Any Special Request?"
-                      value={travelPickupForm.special_request}
-                      handleChangeText={(e) =>
-                        setTravelPickupForm({
-                          ...travelPickupForm,
-                          special_request: e
-                        })
-                      }
-                      otherStyles="mt-7"
-                      containerStyles="bg-zinc-100"
-                      keyboardType="default"
-                      placeholder="please specify your request here..."
-                    />
-                  </ExpandableItem>
+                <CustomDropdown
+                  otherStyles="mt-7"
+                  text={'Drop Location'}
+                  placeholder={'Select Location'}
+                  save={'value'}
+                  data={locationData}
+                  setSelected={(val) =>
+                    setTravelForm({
+                      ...travelForm,
+                      drop: val
+                    })
+                  }
+                  boxbg={colors.gray_100}
+                />
 
-                  {/* RC to Mumbai */}
-                  <ExpandableItem
-                    item={{
-                      icon: icons.yellowArrowDown,
-                      title: 'Research Centre to Mumbai'
-                    }}
-                    containerStyles={'mt-3'}
-                    backgroundColor="bg-gray-100"
-                    shadowShown={false}
-                  >
-                    <TouchableOpacity
-                      onPress={() =>
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          drop: true
-                        })
-                      }
-                    >
-                      <FormDisplayField
-                        text="Date"
-                        value={
-                          travelDropForm.date
-                            ? travelDropForm.date
-                            : 'Travel Date'
-                        }
-                        otherStyles="mt-7"
-                        backgroundColor="bg-zinc-100"
-                      />
-                    </TouchableOpacity>
-                    <DateTimePickerModal
-                      isVisible={isDatePickerVisible.drop}
-                      mode="date"
-                      onConfirm={(date) => {
-                        setTravelDropForm({
-                          ...travelDropForm,
-                          date: moment(date).format('YYYY-MM-DD')
-                        });
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          drop: false
-                        });
-                      }}
-                      onCancel={() =>
-                        setDatePickerVisibility({
-                          ...isDatePickerVisible,
-                          drop: false
-                        })
-                      }
-                    />
+                <CustomDropdown
+                  otherStyles="mt-7"
+                  text={'Luggage'}
+                  placeholder={'Select any luggage'}
+                  data={luggageList}
+                  save={'value'}
+                  setSelected={(val) =>
+                    setTravelForm({ ...travelForm, luggage: val })
+                  }
+                />
 
-                    <CustomDropdown
-                      otherStyles="mt-7"
-                      text={'Pickup Location'}
-                      placeholder={'Select Location'}
-                      save={'value'}
-                      data={locationData}
-                      setSelected={(val) =>
-                        setTravelDropForm({ ...travelDropForm, pickup: val })
-                      }
-                      boxbg={colors.zinc_100}
-                    />
-
-                    <FormField
-                      text="Any Special Request?"
-                      value={travelDropForm.special_request}
-                      handleChangeText={(e) =>
-                        setTravelDropForm({
-                          ...travelDropForm,
-                          special_request: e
-                        })
-                      }
-                      otherStyles="mt-7"
-                      containerStyles="bg-zinc-100"
-                      keyboardType="default"
-                      placeholder="please specify your request here..."
-                    />
-                  </ExpandableItem>
-                </View>
-              </View>
+                <FormField
+                  text="Any Special Request?"
+                  value={travelForm.special_request}
+                  handleChangeText={(e) =>
+                    setTravelForm({
+                      ...travelForm,
+                      special_request: e
+                    })
+                  }
+                  otherStyles="mt-7"
+                  containerStyles="bg-gray-100"
+                  keyboardType="default"
+                  placeholder="please specify your request here..."
+                />
+              </AddonItem>
             )}
 
             <CustomButton
               text="Confirm"
               handlePress={() => {
+                setIsSubmitting(true);
+
+                const isRoomFormEmpty = () => {
+                  return Object.values(roomForm).some((value) => value != '');
+                };
+
+                const isFoodFormEmpty = () => {
+                  return (
+                    Object.values(foodForm).some((value) => value != '') ||
+                    meals.length != 0
+                  );
+                };
+
+                const isTravelFormEmpty = () => {
+                  return Object.values(travelForm).some((value) => value != '');
+                };
+
+                if (booking !== types.ROOM_DETAILS_TYPE && isRoomFormEmpty()) {
+                  if (Object.values(roomForm).some((value) => value == '')) {
+                    Alert.alert('Please fill all the fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setData((prev) => ({ ...prev, room: roomForm }));
+                }
+                if (
+                  booking !== types.ADHYAYAN_DETAILS_TYPE &&
+                  adhyayanBookingList.length != 0
+                ) {
+                  setData((prev) => ({
+                    ...prev,
+                    adhyayan: adhyayanBookingList
+                  }));
+                }
+                if (isFoodFormEmpty()) {
+                  if (Object.values(foodForm).some((value) => value == '')) {
+                    Alert.alert('Please fill all the fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setData((prev) => ({
+                    ...prev,
+                    food: { ...foodForm, meals: meals }
+                  }));
+                }
+                if (
+                  booking !== types.TRAVEL_DETAILS_TYPE &&
+                  isTravelFormEmpty()
+                ) {
+                  if (
+                    travelForm.date == '' ||
+                    travelForm.pickup == '' ||
+                    travelForm.drop == '' ||
+                    travelForm.luggage == ''
+                  ) {
+                    Alert.alert('Please fill all the fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setData((prev) => ({ ...prev, travel: travelForm }));
+                }
+
+                setIsSubmitting(false);
                 router.push('/bookingConfirmation');
               }}
               containerStyles="mb-8 min-h-[62px]"
@@ -457,241 +721,6 @@ const details = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-};
-
-const RoomBookingPrimary = ({ data, setData }) => {
-  const formattedStartDate = moment(data.room.startDay).format('Do MMMM');
-  const formattedEndDate = moment(data.room.endDay).format('Do MMMM, YYYY');
-
-  const charge =
-    moment(data.room.endDay).diff(moment(data.room.startDay), 'days') *
-    (data.room.roomType === 'ac'
-      ? prices.AC_ROOM_PRICE
-      : prices.NAC_ROOM_PRICE);
-
-  useEffect(() => {
-    setData((prevData) => ({
-      ...prevData,
-      room: { ...prevData.room, charge }
-    }));
-  }, [data.room.startDay, data.room.endDay, data.room.roomType]);
-
-  return (
-    <View className="w-full px-4">
-      <Text className="text-xl font-psemibold text-secondary">
-        Raj Sharan Booking
-      </Text>
-      <View
-        className={`flex flex-col bg-white rounded-2xl mt-4 ${
-          Platform.OS === 'ios'
-            ? 'shadow-lg shadow-gray-200'
-            : 'shadow-2xl shadow-gray-400'
-        }`}
-      >
-        <View className="flex p-4 flex-row items-center space-x-4">
-          <Image
-            source={icons.room}
-            className="w-10 h-10"
-            resizeMode="contain"
-          />
-          <View className="w-full flex-1">
-            <Text className="font-pmedium text-md">
-              {`${formattedStartDate} - ${formattedEndDate}`}
-            </Text>
-          </View>
-        </View>
-
-        <HorizontalSeparator otherStyles={'mb-4'} />
-
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image source={icons.ac} className="w-4 h-4" resizeMode="contain" />
-          <Text className="text-gray-400 font-pregular">Room Type: </Text>
-          <Text className="text-black font-pmedium">
-            {data.room.roomType === 'ac' ? 'AC ROOM' : 'Non AC ROOM'}
-          </Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.elder}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">
-            Ground Floor Booking:
-          </Text>
-          <Text className="text-black font-pmedium">
-            {data.room.floorType === 'SC' ? 'Ground Floor' : 'Any Floor'}
-          </Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.charge}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Charges:</Text>
-          <Text className="text-black font-pmedium">₹ {charge}</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const AdhyayanBookingPrimary = ({ data }) => {
-  const formattedStartDate = moment(data.adhyayan.start_date).format('Do MMMM');
-  const formattedEndDate = moment(data.adhyayan.end_date).format(
-    'Do MMMM, YYYY'
-  );
-
-  return (
-    <View className="w-full px-4">
-      <Text className="text-xl font-psemibold text-secondary">
-        Raj Adhyayan Booking
-      </Text>
-      <View
-        className={`flex flex-col bg-white rounded-2xl mt-4 ${
-          Platform.OS === 'ios'
-            ? 'shadow-lg shadow-gray-200'
-            : 'shadow-2xl shadow-gray-400'
-        }`}
-      >
-        <View className="flex p-4 flex-row space-x-4">
-          <Image
-            source={icons.adhyayan}
-            className="w-10 h-10"
-            resizeMode="contain"
-          />
-          <View className="w-full flex-1">
-            <View className="flex flex-row items-center space-x-2">
-              <Text className="text-black font-psemibold">Name:</Text>
-              <Text
-                className="text-secondary font-pmedium flex-1"
-                numberOfLines={1}
-              >
-                {data.adhyayan.name}
-              </Text>
-            </View>
-            <Text className="font-pmedium text-gray-400">
-              {`${formattedStartDate} - ${formattedEndDate}`}
-            </Text>
-          </View>
-        </View>
-
-        <HorizontalSeparator otherStyles={'mb-4'} />
-
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.person}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Swadhyay Karta:</Text>
-          <Text className="text-black font-pmedium">
-            {data.adhyayan.speaker}
-          </Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.charge}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Charges:</Text>
-          <Text className="text-black font-pmedium">
-            ₹ {data.adhyayan.amount}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const TravelBookingPrimary = ({ data, setData }) => {
-  const formattedDate = moment(data.travel.date).format('Do MMMM, YYYY');
-
-  const charge = prices.TRAVEL_COST;
-
-  useEffect(() => {
-    setData((prevData) => ({
-      ...prevData,
-      travel: { ...prevData.travel, charge }
-    }));
-  }, [data.travel.date]);
-
-  return (
-    <View className="w-full px-4">
-      <Text className="text-xl font-psemibold text-secondary">
-        Raj Pravas Booking
-      </Text>
-      <View
-        className={`flex flex-col bg-white rounded-2xl mt-4 ${
-          Platform.OS === 'ios'
-            ? 'shadow-lg shadow-gray-200'
-            : 'shadow-2xl shadow-gray-400'
-        }`}
-      >
-        <View className="flex p-4 flex-row items-center space-x-4">
-          <Image
-            source={icons.travel}
-            className="w-10 h-10"
-            resizeMode="contain"
-          />
-          <View className="w-full flex-1">
-            <Text className="font-pmedium text-md">{formattedDate}</Text>
-          </View>
-        </View>
-
-        <HorizontalSeparator otherStyles={'mb-4'} />
-
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.marker}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">
-            {data.travel.pickup == 'RC' ? 'Drop Point' : 'Pickup Point'}
-          </Text>
-          <Text className="text-black font-pmedium flex-1" numberOfLines={1}>
-            {data.travel.pickup == 'RC'
-              ? `${data.travel.drop}`
-              : `${data.travel.pickup}`}
-          </Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.luggage}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Luggage</Text>
-          <Text className="text-black font-pmedium">{data.travel.luggage}</Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.request}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Special Request:</Text>
-          <Text className="text-black font-pmedium flex-1" numberOfLines={1}>
-            {data.travel.special_request ? data.travel.special_request : 'None'}
-          </Text>
-        </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.charge}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Charges:</Text>
-          <Text className="text-black font-pmedium">
-            ₹ {data.travel.charge}
-          </Text>
-        </View>
-      </View>
-    </View>
   );
 };
 

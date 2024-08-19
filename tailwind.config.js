@@ -7,6 +7,7 @@ module.exports = {
         primary: '#161622',
         secondary: {
           DEFAULT: '#F1AC09',
+          50: '#FFEFDB',
           100: '#FF9001',
           200: '#FF8E01'
         },
@@ -23,6 +24,14 @@ module.exports = {
           100: '#FAFAFC',
           200: '#E5E7EB',
           400: '#9CA3AF'
+        },
+        green: {
+          100: '#E7FFEA',
+          200: '#05B617'
+        },
+        red: {
+          100: '#FFF1F1',
+          200: '#EB5757'
         }
       },
       fontFamily: {

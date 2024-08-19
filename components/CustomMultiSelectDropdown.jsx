@@ -8,8 +8,7 @@ const CustomMultiSelectDropdown = ({
   text,
   placeholder,
   data,
-  setSelected,
-  type
+  setSelected
 }) => {
   return (
     <View className={`space-y-2 ${otherStyles}`}>

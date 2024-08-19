@@ -25,11 +25,19 @@ import charge from '../assets/icons/charge.png';
 import id from '../assets/icons/id.png';
 import yellowArrowUp from '../assets/icons/yellow-arrow-up.png';
 import yellowArrowDown from '../assets/icons/yellow-arrow-down.png';
+import backArrow from '../assets/icons/arrow-back.png';
 import person from '../assets/icons/person.png';
 import description from '../assets/icons/description.png';
 import marker from '../assets/icons/marker.png';
 import request from '../assets/icons/request.png';
 import luggage from '../assets/icons/luggage.png';
+import spice from '../assets/icons/spice.png';
+import roomNumber from '../assets/icons/room_number.png';
+import meal from '../assets/icons/meal.png';
+import hightea from '../assets/icons/hightea.png';
+import cross from '../assets/icons/cross.png';
+import addon from '../assets/icons/addon.png';
+import remove from '../assets/icons/remove.png';
 
 export default {
   play,
@@ -47,6 +55,7 @@ export default {
   eye,
   expandArrow,
   collapseArrow,
+  backArrow,
   ac,
   adhyayan,
   food,
@@ -63,5 +72,12 @@ export default {
   description,
   marker,
   request,
-  luggage
+  luggage,
+  spice,
+  roomNumber,
+  meal,
+  hightea,
+  cross,
+  addon,
+  remove
 };

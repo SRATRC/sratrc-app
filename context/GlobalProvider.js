@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useSegments } from 'expo-router';
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -24,8 +23,6 @@ const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
-  // const rootSegment = useSegments()[0];
-  // const router = useRouter();
 
   useEffect(() => {
     getCurrentUser()
@@ -45,14 +42,6 @@ const GlobalProvider = ({ children }) => {
         setLoading(false);
       });
   }, []);
-
-  // useEffect(() => {
-  //   if (!user && !isLoggedIn && rootSegment !== '(auth)') {
-  //     router.replace('/sign-in');
-  //   } else if (user && isLoggedIn && rootSegment !== '(tabs)') {
-  //     router.replace('/');
-  //   }
-  // }, [user, rootSegment]);
 
   return (
     <GlobalContext.Provider

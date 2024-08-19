@@ -8,10 +8,14 @@ import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import CustomModal from '../CustomModal';
 
 const RoomBooking = ({ user }) => {
   const router = useRouter();
   const { setData } = useGlobalContext();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,7 +64,6 @@ const RoomBooking = ({ user }) => {
           fontFamily: 'Poppins-Medium'
         }}
       />
-
       {value === items[0] && (
         <View>
           <CustomCalender
@@ -104,45 +107,20 @@ const RoomBooking = ({ user }) => {
                 !multiDayForm.roomType ||
                 !multiDayForm.floorType
               ) {
-                Alert.alert('Please fill all fields');
+                setModalVisible(true);
+                setModalMessage('Please enter all details');
                 return;
               }
 
               setData((prev) => ({ ...prev, room: multiDayForm }));
               router.push(`/${types.ROOM_DETAILS_TYPE}`);
-
-              // setIsSubmitting(true);
-
-              // const onSuccess = (_data) => {
-              //   Alert.alert('Booking Successful');
-              // };
-
-              // const onFinally = () => {
-              //   setIsSubmitting(false);
-              // };
-
-              // await handleAPICall(
-              //   'POST',
-              //   '/stay/room',
-              //   null,
-              //   {
-              //     cardno: user.cardno,
-              //     checkin_date: multiDayForm.startDay,
-              //     checkout_date: multiDayForm.endDay,
-              //     room_type: multiDayForm.roomType,
-              //     floor_pref:
-              //       multiDayForm.floorType == 'n' ? '' : multiDayForm.floorType
-              //   },
-              //   onSuccess,
-              //   onFinally
-              // );
             }}
             containerStyles="mt-7 min-h-[62px]"
             isLoading={isSubmitting}
           />
         </View>
       )}
-
+      {/* TODO: should i send to add-on page for single day? */}
       {value === items[1] && (
         <View>
           <CustomCalender
@@ -186,6 +164,13 @@ const RoomBooking = ({ user }) => {
           />
         </View>
       )}
+
+      <CustomModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        message={modalMessage}
+        btnText={'Okay'}
+      />
     </View>
   );
 };

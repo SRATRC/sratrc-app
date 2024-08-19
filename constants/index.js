@@ -4,5 +4,6 @@ import icons from './icons';
 import images from './images';
 import types from './types';
 import colors from './colors';
+import status from './status';
 
-export { icons, images, BASE_URL, types, colors };
+export { icons, images, BASE_URL, types, colors, status };

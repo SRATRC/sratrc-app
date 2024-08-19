@@ -1,9 +1,16 @@
-import { View, Text, ScrollView, Image, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  Alert,
+  TouchableOpacity
+} from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { images } from '../../constants';
-import { router } from 'expo-router';
+import { icons, images } from '../../constants';
+import { router, useRouter } from 'expo-router';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -11,6 +18,8 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 const Confirmation = () => {
   const { user, setCurrentUser } = useGlobalContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const router = useRouter();
 
   const submit = async () => {
     setIsSubmitting(true);
@@ -26,6 +35,13 @@ const Confirmation = () => {
 
   return (
     <SafeAreaView className="h-full bg-white">
+      <TouchableOpacity onPress={() => router.back()}>
+        <Image
+          source={icons.backArrow}
+          className="w-5 h-5 p-2 m-5"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <ScrollView alwaysBounceVertical={false}>
         <View className="w-full justify-center min-h-[83vh] px-4 my-6">
           <Image

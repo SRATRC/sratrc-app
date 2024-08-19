@@ -78,7 +78,7 @@ const TravelBooking = ({ user }) => {
         save={'value'}
         setSelected={(val) => setTravelForm({ ...travelForm, luggage: val })}
       />
-      {/* TODO: add a keyboardAvoidingView for this field */}
+
       <FormField
         text="Any Special Request?"
         value={travelForm.special_request}
@@ -93,11 +93,13 @@ const TravelBooking = ({ user }) => {
       <CustomButton
         text="Book Now"
         handlePress={async () => {
+          setIsSubmitting(true);
           if (
             (travelForm.pickup == 'RC' && travelForm.drop == 'RC') ||
             (travelForm.pickup != 'RC' && travelForm.drop != 'RC')
           ) {
             Alert.alert('Invalid Pickup/Drop Locations');
+            setIsSubmitting(false);
             return;
           }
 
@@ -108,36 +110,12 @@ const TravelBooking = ({ user }) => {
             !travelForm.luggage
           ) {
             Alert.alert('Please fill all fields');
+            setIsSubmitting(false);
             return;
           }
 
           setData((prev) => ({ ...prev, travel: travelForm }));
           router.push(`/${types.TRAVEL_DETAILS_TYPE}`);
-          // setIsSubmitting(true);
-
-          // const onSuccess = (data) => {
-          //   Alert.alert('Booking Successful');
-          // };
-
-          // const onFinally = () => {
-          //   setIsSubmitting(false);
-          // };
-
-          // await handleAPICall(
-          //   'POST',
-          //   '/travel/booking',
-          //   null,
-          //   {
-          //     cardno: user.cardno,
-          //     date: travelForm.date,
-          //     pickup_point: travelForm.pickup,
-          //     drop_point: travelForm.drop,
-          //     luggage: travelForm.luggage,
-          //     comments: travelForm.special_request
-          //   },
-          //   onSuccess,
-          //   onFinally
-          // );
         }}
         containerStyles="mt-7 w-full px-1 min-h-[62px]"
         isLoading={isSubmitting}
