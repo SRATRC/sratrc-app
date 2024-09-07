@@ -25,6 +25,7 @@ import charge from '../assets/icons/charge.png';
 import id from '../assets/icons/id.png';
 import yellowArrowUp from '../assets/icons/yellow-arrow-up.png';
 import yellowArrowDown from '../assets/icons/yellow-arrow-down.png';
+import yellowArrowRight from '../assets/icons/yellow-arrow-right.png';
 import backArrow from '../assets/icons/arrow-back.png';
 import person from '../assets/icons/person.png';
 import description from '../assets/icons/description.png';
@@ -38,6 +39,11 @@ import hightea from '../assets/icons/hightea.png';
 import cross from '../assets/icons/cross.png';
 import addon from '../assets/icons/addon.png';
 import remove from '../assets/icons/remove.png';
+import qrcode from '../assets/icons/qrcode.png';
+import transactions from '../assets/icons/transactions.png';
+import help from '../assets/icons/help.png';
+import profileCircle from '../assets/icons/profileCircle.png';
+import language from '../assets/icons/language.png';
 
 export default {
   play,
@@ -68,6 +74,7 @@ export default {
   id,
   yellowArrowUp,
   yellowArrowDown,
+  yellowArrowRight,
   person,
   description,
   marker,
@@ -79,5 +86,10 @@ export default {
   hightea,
   cross,
   addon,
-  remove
+  remove,
+  qrcode,
+  transactions,
+  help,
+  profileCircle,
+  language
 };

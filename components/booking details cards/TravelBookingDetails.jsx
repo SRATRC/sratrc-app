@@ -1,21 +1,20 @@
 import { View, Text, Image, Platform } from 'react-native';
 import { useEffect } from 'react';
-import { icons } from '../../constants';
+import { icons, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
 import moment from 'moment';
-import prices from '../../constants/prices';
+import CustomTag from '../CustomTag';
 
 const TravelBookingDetails = ({ containerStyles }) => {
   const { data, setData } = useGlobalContext();
-  const charge = prices.TRAVEL_COST;
 
-  useEffect(() => {
-    setData((prevData) => ({
-      ...prevData,
-      travel: { ...prevData.travel, charge }
-    }));
-  }, [data.travel.date]);
+  // useEffect(() => {
+  //   setData((prevData) => ({
+  //     ...prevData,
+  //     travel: { ...prevData.travel, charge }
+  //   }));
+  // }, [data.travel.date]);
 
   return (
     <View className={`w-full px-4 ${containerStyles}`}>
@@ -35,7 +34,22 @@ const TravelBookingDetails = ({ containerStyles }) => {
             className="w-10 h-10"
             resizeMode="contain"
           />
-          <View className="w-full flex-1">
+          <View className="w-full flex-1 justify-center space-y-1">
+            {data.travel.booking_status && (
+              <CustomTag
+                text={data.travel.booking_status}
+                textStyles={
+                  data.travel.booking_status == status.STATUS_WAITING
+                    ? 'text-red-200'
+                    : 'text-green-200'
+                }
+                containerStyles={
+                  data.travel.booking_status == status.STATUS_WAITING
+                    ? 'bg-red-100'
+                    : 'bg-green-100'
+                }
+              />
+            )}
             <Text className="font-pmedium text-md">
               {moment(data.travel.date).format('Do MMMM, YYYY')}
             </Text>
@@ -79,17 +93,19 @@ const TravelBookingDetails = ({ containerStyles }) => {
             {data.travel.special_request ? data.travel.special_request : 'None'}
           </Text>
         </View>
-        <View className="flex px-6 pb-4 flex-row space-x-2">
-          <Image
-            source={icons.charge}
-            className="w-4 h-4"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-400 font-pregular">Charges:</Text>
-          <Text className="text-black font-pmedium">
-            ₹ {data.travel.charge}
-          </Text>
-        </View>
+        {data.travel.charge && (
+          <View className="flex px-6 pb-4 flex-row space-x-2">
+            <Image
+              source={icons.charge}
+              className="w-4 h-4"
+              resizeMode="contain"
+            />
+            <Text className="text-gray-400 font-pregular">Charges:</Text>
+            <Text className="text-black font-pmedium">
+              ₹ {data.travel.charge}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

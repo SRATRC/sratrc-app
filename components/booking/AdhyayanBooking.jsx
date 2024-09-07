@@ -13,8 +13,10 @@ import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
+import mergeLists from '../../utils/mergeLists';
 
-const AdhyayanBooking = ({ user }) => {
+const AdhyayanBooking = () => {
+  const { user } = useGlobalContext();
   const [adhyayanList, setAdhyayanList] = useState([]);
   const [page, setPage] = useState(1);
   const [isFetching, setIsFetching] = useState(false);
@@ -89,7 +91,6 @@ const AdhyayanBooking = ({ user }) => {
 };
 
 //TODO: Migrate to use of ExpandableItem
-
 const ExpandableListItem = ({ item }) => {
   const router = useRouter();
   const { setData } = useGlobalContext();
@@ -102,33 +103,14 @@ const ExpandableListItem = ({ item }) => {
   };
 
   const registerAdhyayan = async () => {
-    setData((prev) => ({
-      ...prev,
-      adhyayan: item
-    }));
-    router.push(`/${types.ADHYAYAN_DETAILS_TYPE}`);
-
-    // setIsSubmitting(true);
-
-    // const onSuccess = (_data) => {
-    //   Alert.alert('Booking Successful');
-    // };
-
-    // const onFinally = () => {
-    //   setIsSubmitting(false);
-    // };
-
-    // await handleAPICall(
-    //   'POST',
-    //   '/adhyayan/register',
-    //   null,
-    //   {
-    //     cardno: user.cardno,
-    //     shibir_id: item.id
-    //   },
-    //   onSuccess,
-    //   onFinally
-    // );
+    setData((prev) => {
+      const updated = { ...prev, adhyayan: [item] };
+      delete updated.room;
+      delete updated.travel;
+      delete updated.food;
+      return updated;
+    });
+    router.push(`/booking/${types.ADHYAYAN_DETAILS_TYPE}`);
   };
 
   return (
@@ -188,30 +170,5 @@ const ExpandableListItem = ({ item }) => {
     </View>
   );
 };
-
-function mergeLists(list1, list2) {
-  // Create an object to store values by titles
-  const mergedObj = {};
-
-  // Merge values from both lists
-  for (const list of [list1, list2]) {
-    for (const item of list) {
-      const { title, data } = item;
-      if (!mergedObj[title]) {
-        mergedObj[title] = data.slice(); // Create a copy of the array
-      } else {
-        mergedObj[title].push(...data);
-      }
-    }
-  }
-
-  // Convert merged object back to array
-  const finalList = Object.keys(mergedObj).map((title) => ({
-    title,
-    data: mergedObj[title]
-  }));
-
-  return finalList;
-}
 
 export default AdhyayanBooking;

@@ -1,25 +1,88 @@
-import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { types } from '../../constants';
+import { useQueryClient } from '@tanstack/react-query';
 import CustomChipGroup from '../../components/CustomChipGroup';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import RoomBookingCancellation from '../../components/cancel booking/RoomBookingCancellation';
 import FoodBookingCancellation from '../../components/cancel booking/FoodBookingCancellation';
 import TravelBookingCancellation from '../../components/cancel booking/TravelBookingCancellation';
 import AdhyayanBookingCancellation from '../../components/cancel booking/AdhyayanBookingCancellation';
 
-const Bookings = () => {
-  const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
-  const chips = [
-    types.booking_type_room,
-    types.booking_type_food,
-    types.booking_type_travel,
-    types.booking_type_adhyayan
-  ];
+const CHIPS = [
+  types.booking_type_room,
+  types.booking_type_food,
+  types.booking_type_travel,
+  types.booking_type_adhyayan
+];
 
-  const { user } = useGlobalContext();
+const BookingCategories = ({ onRefresh }) => {
+  const queryClient = useQueryClient();
+  const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
+
+  const handleChipClick = (chip) => {
+    setSelectedChip(chip);
+    invalidateSelectedData(chip);
+  };
+
+  const invalidateSelectedData = useCallback(
+    async (chip) => {
+      try {
+        // Invalidate queries based on the selected chip
+        if (chip === types.booking_type_room) {
+          await queryClient.invalidateQueries(['roomBooking']);
+        } else if (chip === types.booking_type_food) {
+          await queryClient.invalidateQueries(['foodBooking']);
+        } else if (chip === types.booking_type_travel) {
+          await queryClient.invalidateQueries(['travelBooking']);
+        } else if (chip === types.booking_type_adhyayan) {
+          await queryClient.invalidateQueries(['adhyayanBooking']);
+        }
+      } catch (error) {
+        console.error('Error invalidating queries:', error);
+      }
+    },
+    [queryClient]
+  );
+
+  const handleRefresh = () => {
+    invalidateSelectedData(selectedChip);
+  };
+
+  // Passing the handleRefresh function to parent
+  onRefresh.current = handleRefresh;
+
+  return (
+    <View className="w-full px-4 my-6">
+      <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
+
+      <CustomChipGroup
+        chips={CHIPS}
+        selectedChip={selectedChip}
+        handleChipPress={handleChipClick}
+      />
+
+      {selectedChip === types.booking_type_room && <RoomBookingCancellation />}
+      {selectedChip === types.booking_type_food && <FoodBookingCancellation />}
+      {selectedChip === types.booking_type_travel && (
+        <TravelBookingCancellation />
+      )}
+      {selectedChip === types.booking_type_adhyayan && (
+        <AdhyayanBookingCancellation />
+      )}
+    </View>
+  );
+};
+
+const Bookings = () => {
+  const refreshControlRef = React.useRef();
 
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
@@ -27,31 +90,19 @@ const Bookings = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
+          className="h-full"
           alwaysBounceVertical={false}
           showsVerticalScrollIndicator={false}
-        >
-          <View className="w-full px-4 my-6">
-            <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
-
-            <CustomChipGroup
-              chips={chips}
-              selectedChip={selectedChip}
-              handleChipPress={(chip) => setSelectedChip(chip)}
+          refreshControl={
+            <RefreshControl
+              refreshing={false}
+              onRefresh={() =>
+                refreshControlRef.current && refreshControlRef.current()
+              }
             />
-
-            {selectedChip === types.booking_type_room && (
-              <RoomBookingCancellation user={user} />
-            )}
-            {selectedChip === types.booking_type_food && (
-              <FoodBookingCancellation user={user} />
-            )}
-            {selectedChip === types.booking_type_travel && (
-              <TravelBookingCancellation user={user} />
-            )}
-            {selectedChip === types.booking_type_adhyayan && (
-              <AdhyayanBookingCancellation user={user} />
-            )}
-          </View>
+          }
+        >
+          <BookingCategories onRefresh={refreshControlRef} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

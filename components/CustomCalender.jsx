@@ -4,6 +4,8 @@ import moment from 'moment';
 import { colors } from '../constants';
 import { Calendar } from 'react-native-calendars';
 
+const MIN_DATE = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
+
 const CustomCalender = ({
   type,
   startDay,
@@ -14,8 +16,8 @@ const CustomCalender = ({
   setSelectedDay
 }) => {
   const { width } = useWindowDimensions();
-  const today = moment(new Date()).add(1, 'days').format('YYYY-MM-DD');
   const [markedDates, setMarkedDates] = useState({});
+  const [disableLeftArrow, setDisableLeftArrow] = useState(false);
 
   const handlePeriodPress = (day) => {
     if (startDay && !endDay) {
@@ -52,13 +54,24 @@ const CustomCalender = ({
     }
   };
 
+  const handleMonthChange = (month) => {
+    // Check if the current month is at or before the minimum allowed date
+    const currentMonth = moment(month.dateString).startOf('month');
+    const minMonth = moment(MIN_DATE).startOf('month');
+
+    setDisableLeftArrow(currentMonth.isSameOrBefore(minMonth));
+  };
+
   return (
     <Calendar
       className="mt-5"
       style={{
         width: width * 0.9
       }}
-      minDate={today}
+      minDate={MIN_DATE}
+      initialDate={MIN_DATE}
+      disableArrowLeft={disableLeftArrow}
+      onMonthChange={handleMonthChange}
       onDayPress={(day) => {
         if (type === 'period') {
           handlePeriodPress(day);

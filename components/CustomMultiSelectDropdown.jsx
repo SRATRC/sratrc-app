@@ -25,7 +25,9 @@ const CustomMultiSelectDropdown = ({
         boxStyles={{
           borderRadius: 12,
           backgroundColor: colors.gray_100,
-          borderWidth: 0
+          borderWidth: 0,
+          height: 60,
+          alignItems: 'center'
         }}
         inputStyles={{
           color: colors.gray_400,
@@ -39,7 +41,9 @@ const CustomMultiSelectDropdown = ({
         badgeStyles={{
           backgroundColor: colors.gray_400,
           color: colors.gray_400,
-          fontFamily: 'Poppins-Medium'
+          fontFamily: 'Poppins-Medium',
+          height: 25,
+          alignItems: 'center'
         }}
         dropdownTextStyles={{ color: colors.gray_400 }}
       />

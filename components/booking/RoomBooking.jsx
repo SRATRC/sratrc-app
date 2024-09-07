@@ -1,5 +1,6 @@
 import { View, Alert } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, types } from '../../constants';
 import MultiSwitch from 'react-native-multiple-switch';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -10,17 +11,34 @@ import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomModal from '../CustomModal';
 
-const RoomBooking = ({ user }) => {
+const SWITCH_OPTIONS = ['Select Dates', 'One Day Visit'];
+
+const ROOM_TYPE_LIST = [
+  { key: 'ac', value: 'AC' },
+  { key: 'nac', value: 'Non AC' }
+];
+
+const FLOOR_TYPE_LIST = [
+  { key: 'SC', value: 'Yes' },
+  { key: 'n', value: 'No' }
+];
+
+const RoomBooking = () => {
   const router = useRouter();
-  const { setData } = useGlobalContext();
+  const { user, setData } = useGlobalContext();
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsSubmitting(false);
+    }, [])
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const items = ['Select Dates', 'One Day Visit'];
-  const [value, setValue] = useState(items[0]);
+  const [value, setValue] = useState(SWITCH_OPTIONS[0]);
 
   const [selectedDay, setSelectedDay] = useState();
   const [multiDayForm, setMultiDayForm] = useState({
@@ -30,20 +48,10 @@ const RoomBooking = ({ user }) => {
     floorType: ''
   });
 
-  const roomTypeList = [
-    { key: 'ac', value: 'AC' },
-    { key: 'nac', value: 'Non AC' }
-  ];
-
-  const floorTypeList = [
-    { key: 'SC', value: 'Yes' },
-    { key: 'n', value: 'No' }
-  ];
-
   return (
     <View className="flex-1 justify-center mt-10">
       <MultiSwitch
-        items={items}
+        items={SWITCH_OPTIONS}
         value={value}
         onChange={(val) => setValue(val)}
         containerStyle={{
@@ -64,7 +72,7 @@ const RoomBooking = ({ user }) => {
           fontFamily: 'Poppins-Medium'
         }}
       />
-      {value === items[0] && (
+      {value === SWITCH_OPTIONS[0] && (
         <View>
           <CustomCalender
             type={'period'}
@@ -82,7 +90,7 @@ const RoomBooking = ({ user }) => {
             otherStyles="mt-7"
             text={'Room Type'}
             placeholder={'Select Room Type'}
-            data={roomTypeList}
+            data={ROOM_TYPE_LIST}
             setSelected={(val) =>
               setMultiDayForm({ ...multiDayForm, roomType: val })
             }
@@ -92,7 +100,7 @@ const RoomBooking = ({ user }) => {
             otherStyles="mt-7"
             text={'Book Only if Ground Floor is Available'}
             placeholder={'Select Floor Type'}
-            data={floorTypeList}
+            data={FLOOR_TYPE_LIST}
             setSelected={(val) =>
               setMultiDayForm({ ...multiDayForm, floorType: val })
             }
@@ -101,6 +109,7 @@ const RoomBooking = ({ user }) => {
           <CustomButton
             text="Book Now"
             handlePress={async () => {
+              setIsSubmitting(true);
               if (
                 !multiDayForm.startDay ||
                 !multiDayForm.endDay ||
@@ -109,19 +118,26 @@ const RoomBooking = ({ user }) => {
               ) {
                 setModalVisible(true);
                 setModalMessage('Please enter all details');
+                setIsSubmitting(false);
                 return;
               }
 
-              setData((prev) => ({ ...prev, room: multiDayForm }));
-              router.push(`/${types.ROOM_DETAILS_TYPE}`);
+              setData((prev) => {
+                const updated = { ...prev, room: multiDayForm };
+                delete updated.travel;
+                delete updated.adhyayan;
+                delete updated.food;
+                return updated;
+              });
+              router.push(`/booking/${types.ROOM_DETAILS_TYPE}`);
             }}
             containerStyles="mt-7 min-h-[62px]"
             isLoading={isSubmitting}
           />
         </View>
       )}
-      {/* TODO: should i send to add-on page for single day? */}
-      {value === items[1] && (
+
+      {value === SWITCH_OPTIONS[1] && (
         <View>
           <CustomCalender
             selectedDay={selectedDay}
@@ -138,7 +154,7 @@ const RoomBooking = ({ user }) => {
 
               setIsSubmitting(true);
 
-              const onSuccess = (data) => {
+              const onSuccess = (_data) => {
                 Alert.alert('Booking Successful');
               };
 

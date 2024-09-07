@@ -10,7 +10,8 @@ const CustomDropdown = ({
   data,
   setSelected,
   save,
-  boxbg
+  boxbg,
+  defaultOption
 }) => {
   return (
     <View className={`w-full space-y-2 ${otherStyles}`}>
@@ -21,6 +22,7 @@ const CustomDropdown = ({
         data={data}
         save={save ? save : 'key'}
         placeholder={placeholder}
+        defaultOption={defaultOption ? defaultOption : null}
         boxStyles={{
           borderRadius: 12,
           backgroundColor: boxbg ? boxbg : colors.gray_100,

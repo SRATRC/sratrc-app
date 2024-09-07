@@ -7,49 +7,107 @@ import {
   TouchableOpacity,
   SectionList
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query';
 import { icons } from '../../constants';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import LottieView from 'lottie-react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming
+} from 'react-native-reanimated';
 
 const FoodBookingCancellation = () => {
-  const [foodList, setFoodList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isFetching, setIsFetching] = useState(false);
-  const [listEnded, setListEnded] = useState(false);
+  const { user } = useGlobalContext();
+  const queryClient = useQueryClient();
+
   const [selectedItems, setSelectedItems] = useState([]);
 
-  useEffect(() => {
-    if (!listEnded && !isFetching) requestAPI();
-    console.log('CURRENT PAGE', page);
-  }, [page]);
-
-  const requestAPI = async () => {
-    setIsFetching(true);
-
-    const onSuccess = (res) => {
-      if (res.data.length == 0) setListEnded(true);
-      setFoodList((prevFoodList) => [...prevFoodList, ...res.data]);
-    };
-
-    const onFinally = () => {
-      setIsFetching(false);
-    };
-
-    await handleAPICall(
-      'GET',
-      '/food/get',
-      {
-        cardno: user.cardno,
-        page
-      },
-      null,
-      onSuccess,
-      onFinally
-    );
+  const fetchFoods = async ({ pageParam = 1 }) => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/food/get',
+        {
+          cardno: user.cardno,
+          page: pageParam
+        },
+        null,
+        (res) => {
+          // Ensure res is an array, if not, wrap it in an array
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
+        () => reject(new Error('Failed to fetch travels'))
+      );
+    });
   };
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: queryStatus,
+    isLoading,
+    isError
+  } = useInfiniteQuery({
+    queryKey: ['foods', user.cardno],
+    queryFn: fetchFoods,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      return pages.length + 1;
+    }
+  });
+
+  const cancelBookingMutation = useMutation({
+    mutationFn: () => {
+      return new Promise((resolve, reject) => {
+        handleAPICall(
+          'PATCH',
+          '/food/cancel',
+          null,
+          {
+            cardno: user.cardno,
+            food_data: selectedItems
+          },
+          (res) => resolve(res),
+          () => reject(new Error('Failed to cancel booking'))
+        );
+      });
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(['foods', user.cardno], (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) =>
+            page.filter(
+              (booking) =>
+                !selectedItems.some(
+                  (selected) =>
+                    selected.date === booking.date &&
+                    selected.mealType === booking.mealType
+                )
+            )
+          )
+        };
+      });
+      setSelectedItems([]);
+      queryClient.invalidateQueries(['foods', user.cardno]);
+    }
+  });
 
   const renderItem = ({ item, section }) => {
     const itemKey = `${item.date}-${item.mealType}`;
@@ -57,17 +115,41 @@ const FoodBookingCancellation = () => {
       (selected) => `${selected.date}-${selected.mealType}` === itemKey
     );
 
+    // Create a unique shared value for each tile
+    const shakeTranslateX = useSharedValue(0);
+
+    // Function to trigger the shake animation
+    const shake = useCallback(() => {
+      shakeTranslateX.value = withSequence(
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(0, { duration: 50 })
+      );
+    }, [shakeTranslateX]);
+
+    const rShakeStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ translateX: shakeTranslateX.value }]
+      };
+    }, [shakeTranslateX]);
+
     return (
-      <View
+      <Animated.View
+        style={[rShakeStyle]}
         className={`mb-5 p-3 rounded-2xl ${
-          Platform.OS === 'ios'
-            ? 'shadow-lg shadow-gray-200'
-            : 'shadow-2xl shadow-gray-400'
-        } bg-white ${isSelected ? 'bg-secondary-50' : ''}`}
+          section.title === 'upcoming'
+            ? Platform.OS === 'ios'
+              ? 'shadow-lg shadow-gray-200 bg-white'
+              : 'shadow-2xl shadow-gray-400 bg-white'
+            : 'bg-gray-300'
+        } ${isSelected ? 'bg-secondary-50' : ''}`}
       >
         <TouchableOpacity
+          activeOpacity={section.title !== 'upcoming' && 1}
           onPress={() => {
-            if (section.title == 'upcoming') {
+            if (section.title === 'upcoming') {
               const prevSelectedItems = [...selectedItems];
               const itemKey = `${item.date}-${item.mealType}`;
 
@@ -89,9 +171,11 @@ const FoodBookingCancellation = () => {
                   { date: item.date, mealType: item.mealType }
                 ]);
               }
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            } else {
+              shake();
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             }
-
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
           className="overflow-hidden flex-row justify-between"
         >
@@ -127,41 +211,47 @@ const FoodBookingCancellation = () => {
             </View>
           </View>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     );
   };
-
-  const renderEmpty = () => (
-    <View className="items-center">
-      {!isFetching && <Text>No bookings to cancel</Text>}
-    </View>
-  );
 
   const renderSectionHeader = ({ section: { title } }) => (
     <View className="flex-row justify-between">
       <Text className="font-psemibold text-lg mb-2 mx-1">{title}</Text>
-      {title == 'upcoming' && (
-        <Text className="font-plight text-gray-500 text-xs mb-2 mx-1">
-          Tap to cancel
-        </Text>
+      {title === 'upcoming' && (
+        <TouchableOpacity
+          activeOpacity={selectedItems.length <= 0 && 1}
+          onPress={() =>
+            selectedItems.length > 0 && cancelBookingMutation.mutate()
+          }
+        >
+          <Text
+            className={`font-plight text-xs mb-2 mx-1 ${
+              selectedItems.length > 0 ? 'text-secondary' : 'text-gray-500'
+            }`}
+          >
+            Tap to cancel
+          </Text>
+        </TouchableOpacity>
       )}
     </View>
   );
 
   const renderFooter = () => (
     <View className="items-center">
-      {isFetching && <ActivityIndicator />}
-      {listEnded && foodList.length !== 0 && (
+      {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
+      {!hasNextPage && data?.pages?.[0]?.length > 0 && (
         <Text>No more bookings at the moment</Text>
       )}
     </View>
   );
 
-  const fetchMoreData = () => {
-    if (!listEnded && !isFetching) {
-      setPage(page + 1);
-    }
-  };
+  if (isError)
+    return (
+      <Text className="text-red-500 text-lg font-pregular">
+        An error occurred
+      </Text>
+    );
 
   return (
     <View className="w-full">
@@ -170,15 +260,33 @@ const FoodBookingCancellation = () => {
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         nestedScrollEnabled={true}
-        sections={foodList}
+        sections={data?.pages?.flatMap((page) => page) || []}
         renderItem={({ item, section }) => renderItem({ item, section })}
         keyExtractor={(item) => `${item.date}-${item.mealType}`}
         renderSectionHeader={renderSectionHeader}
         ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmpty}
         onEndReachedThreshold={0.1}
-        onEndReached={fetchMoreData}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
       />
+      {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
+        <View className="flex-1 items-center justify-center">
+          <LottieView
+            style={{
+              width: 200,
+              height: 350,
+              alignSelf: 'center'
+            }}
+            autoPlay
+            loop
+            source={require('../../assets/lottie/empty.json')}
+          />
+          <Text className="text-lg font-pregular text-secondary">
+            You have not booked any meals yet
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

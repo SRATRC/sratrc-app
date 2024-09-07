@@ -4,24 +4,43 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { types } from '../../constants';
 import CustomChipGroup from '../../components/CustomChipGroup';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import RoomBooking from '../../components/booking/RoomBooking';
 import FoodBooking from '../../components/booking/FoodBooking';
 import TravelBooking from '../../components/booking/TravelBooking';
 import AdhyayanBooking from '../../components/booking/AdhyayanBooking';
 
-//TODO: whole screen is being re-rendered on a chip selection
-const BookNow = () => {
+const CHIPS = [
+  types.booking_type_room,
+  types.booking_type_food,
+  types.booking_type_travel,
+  types.booking_type_adhyayan
+];
+
+const BookingCategories = () => {
   const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
-  const chips = [
-    types.booking_type_room,
-    types.booking_type_food,
-    types.booking_type_travel,
-    types.booking_type_adhyayan
-  ];
+  const handleChipClick = (chip) => {
+    setSelectedChip(chip);
+  };
 
-  const { user } = useGlobalContext();
+  return (
+    <View className="w-full px-4 my-6">
+      <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
 
+      <CustomChipGroup
+        chips={CHIPS}
+        selectedChip={selectedChip}
+        handleChipPress={handleChipClick}
+      />
+
+      {selectedChip === types.booking_type_room && <RoomBooking />}
+      {selectedChip === types.booking_type_food && <FoodBooking />}
+      {selectedChip === types.booking_type_travel && <TravelBooking />}
+      {selectedChip === types.booking_type_adhyayan && <AdhyayanBooking />}
+    </View>
+  );
+};
+
+const BookNow = () => {
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
       <KeyboardAvoidingView
@@ -31,28 +50,7 @@ const BookNow = () => {
           alwaysBounceVertical={false}
           showsVerticalScrollIndicator={false}
         >
-          <View className="w-full px-4 my-6">
-            <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
-
-            <CustomChipGroup
-              chips={chips}
-              selectedChip={selectedChip}
-              handleChipPress={(chip) => setSelectedChip(chip)}
-            />
-
-            {selectedChip === types.booking_type_room && (
-              <RoomBooking user={user} />
-            )}
-            {selectedChip === types.booking_type_food && (
-              <FoodBooking user={user} />
-            )}
-            {selectedChip === types.booking_type_travel && (
-              <TravelBooking user={user} />
-            )}
-            {selectedChip === types.booking_type_adhyayan && (
-              <AdhyayanBooking user={user} />
-            )}
-          </View>
+          <BookingCategories />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

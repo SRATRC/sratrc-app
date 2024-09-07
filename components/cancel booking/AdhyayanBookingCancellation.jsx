@@ -1,5 +1,9 @@
 import { View, Text, Image, ActivityIndicator, FlatList } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query';
 import { icons, status } from '../../constants';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
@@ -7,42 +11,82 @@ import ExpandableItem from '../ExpandableItem';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import LottieView from 'lottie-react-native';
 
-const AdhyayanBookingCancellation = ({ user }) => {
-  const [adhyayanList, setAdhyayanList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isFetching, setIsFetching] = useState(false);
-  const [listEnded, setListEnded] = useState(false);
+const AdhyayanBookingCancellation = () => {
+  const { user } = useGlobalContext();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!listEnded && !isFetching) requestAPI();
-    console.log('CURRENT PAGE', page);
-  }, [page]);
-
-  const requestAPI = async () => {
-    setIsFetching(true);
-
-    const onSuccess = (res) => {
-      if (res.data.length == 0) setListEnded(true);
-      setAdhyayanList((prevAdhyayanList) => [...prevAdhyayanList, ...res.data]);
-    };
-
-    const onFinally = () => {
-      setIsFetching(false);
-    };
-
-    await handleAPICall(
-      'GET',
-      '/adhyayan/getbooked',
-      {
-        cardno: user.cardno,
-        page
-      },
-      null,
-      onSuccess,
-      onFinally
-    );
+  const fetchAdhyayans = async ({ pageParam = 1 }) => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/adhyayan/getbooked',
+        {
+          cardno: user.cardno,
+          page: pageParam
+        },
+        null,
+        (res) => {
+          // Ensure res is an array, if not, wrap it in an array
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
+        () => reject(new Error('Failed to fetch adhyayans'))
+      );
+    });
   };
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: queryStatus,
+    isLoading,
+    isError
+  } = useInfiniteQuery({
+    queryKey: ['adhyayans', user.cardno],
+    queryFn: fetchAdhyayans,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      return pages.length + 1;
+    }
+  });
+
+  const cancelBookingMutation = useMutation({
+    mutationFn: (shibirid) => {
+      return new Promise((resolve, reject) => {
+        handleAPICall(
+          'DELETE',
+          '/adhyayan/cancel',
+          null,
+          {
+            cardno: user.cardno,
+            shibir_id: shibirid
+          },
+          (res) => resolve(res),
+          () => reject(new Error('Failed to cancel booking'))
+        );
+      });
+    },
+    onSuccess: (_, shibirid) => {
+      queryClient.setQueryData(['adhyayans', user.cardno], (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) =>
+            page.map((booking) =>
+              booking.shibir_id === shibirid
+                ? { ...booking, status: status.STATUS_CANCELLED }
+                : booking
+            )
+          )
+        };
+      });
+    }
+  });
 
   const renderItem = ({ item }) => (
     <ExpandableItem
@@ -149,29 +193,7 @@ const AdhyayanBookingCancellation = ({ user }) => {
                     text="Pay Now"
                     containerStyles={'mt-5 py-3 mx-1 flex-1'}
                     textStyles={'text-sm'}
-                    handlePress={async () => {
-                      // const onSuccess = (_res) => {
-                      //   setRoomList((prevRoomList) => {
-                      //     return prevRoomList.map((it) =>
-                      //       it.bookingid === item.bookingid
-                      //         ? { ...it, status: status.STATUS_CANCELLED }
-                      //         : it
-                      //     );
-                      //   });
-                      // };
-                      // const onFinally = () => {};
-                      // await handleAPICall(
-                      //   'POST',
-                      //   '/stay/cancel',
-                      //   null,
-                      //   {
-                      //     cardno: user.cardno,
-                      //     bookingid: item.bookingid
-                      //   },
-                      //   onSuccess,
-                      //   onFinally
-                      // );
-                    }}
+                    handlePress={async () => {}}
                   />
                 ))}
 
@@ -179,28 +201,8 @@ const AdhyayanBookingCancellation = ({ user }) => {
                 text="Cancel Booking"
                 containerStyles={'mt-5 py-3 mx-1 flex-1'}
                 textStyles={'text-sm'}
-                handlePress={async () => {
-                  const onSuccess = (_res) => {
-                    setAdhyayanList((prevAdhyayanList) => {
-                      return prevAdhyayanList.map((it) =>
-                        it.bookingid === item.bookingid
-                          ? { ...it, status: status.STATUS_CANCELLED }
-                          : it
-                      );
-                    });
-                  };
-                  const onFinally = () => {};
-                  await handleAPICall(
-                    'DELETE',
-                    '/adhyayan/cancel',
-                    null,
-                    {
-                      cardno: user.cardno,
-                      shibir_id: item.shibir_id
-                    },
-                    onSuccess,
-                    onFinally
-                  );
+                handlePress={() => {
+                  cancelBookingMutation.mutate(item.shibir_id);
                 }}
               />
             </View>
@@ -209,40 +211,53 @@ const AdhyayanBookingCancellation = ({ user }) => {
     </ExpandableItem>
   );
 
-  const renderEmpty = () => (
-    <View className="items-center">
-      {!isFetching && <Text>No bookings to cancel</Text>}
-    </View>
-  );
-
   const renderFooter = () => (
     <View className="items-center">
-      {isFetching && <ActivityIndicator />}
-      {listEnded && adhyayanList.length !== 0 && (
+      {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
+      {!hasNextPage && data?.pages?.[0]?.length > 0 && (
         <Text>No more bookings at the moment</Text>
       )}
     </View>
   );
 
-  const fetchMoreData = () => {
-    if (!listEnded && !isFetching) {
-      setPage(page + 1);
-    }
-  };
+  if (isError)
+    return (
+      <Text className="text-red-500 text-lg font-pregular">
+        An error occurred
+      </Text>
+    );
 
   return (
     <View className="w-full">
       <FlatList
         className="py-2 mt-5 flex-grow-1"
         showsVerticalScrollIndicator={false}
-        data={adhyayanList}
+        data={data?.pages?.flatMap((page) => page) || []}
         renderItem={renderItem}
         keyExtractor={(item) => item.bookingid}
         ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmpty}
         onEndReachedThreshold={0.1}
-        onEndReached={fetchMoreData}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
       />
+      {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
+        <View className="flex-1 items-center justify-center">
+          <LottieView
+            style={{
+              width: 200,
+              height: 350,
+              alignSelf: 'center'
+            }}
+            autoPlay
+            loop
+            source={require('../../assets/lottie/empty.json')}
+          />
+          <Text className="text-lg font-pregular text-secondary">
+            You have not booked any adhyayans yet
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

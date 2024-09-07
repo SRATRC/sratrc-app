@@ -1,25 +1,29 @@
-import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
-import React, { useState } from "react";
-import { icons } from "../constants";
+import { View, TextInput, TouchableOpacity, Image } from 'react-native';
+import React from 'react';
+import { icons } from '../constants';
 
 const SearchInput = ({
-  text,
   value,
   placeholder,
   handleChangeText,
-  otherStyles,
-  ...props
+  inputStyles,
+  autoComplete,
+  autoCorrect
 }) => {
   return (
-    <View className="border-2 border-black-200 w-full h-16 px-4 bg-black-100 rounded-2xl focus:border-secondary items-center flex-row space-x-4">
+    <View
+      className={`w-full h-12 px-4 space-x-2 rounded-2xl border border-gray-300 focus:border-2 focus:border-secondary items-center flex-row`}
+    >
       <TextInput
-        className="flex-1 text-white font-pregular text-base mt-0.5"
+        className={`flex-1 ${
+          inputStyles ? inputStyles : 'font-pregular text-base'
+        } `}
         value={value}
-        placeholder="Search for a video topic"
+        placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
         onChangeText={handleChangeText}
-        keyboardType="default"
-        secureTextEntry={text === "Password" && !showPassword}
+        autoComplete={autoComplete}
+        autoCorrect={autoCorrect}
       />
 
       <TouchableOpacity>

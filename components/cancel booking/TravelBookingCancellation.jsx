@@ -1,5 +1,9 @@
 import { View, Text, Image, ActivityIndicator, FlatList } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query';
 import { icons, status } from '../../constants';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
@@ -7,42 +11,82 @@ import ExpandableItem from '../ExpandableItem';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import LottieView from 'lottie-react-native';
 
 const TravelBookingCancellation = () => {
-  const [travelList, setTravelList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isFetching, setIsFetching] = useState(false);
-  const [listEnded, setListEnded] = useState(false);
+  const { user } = useGlobalContext();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!listEnded && !isFetching) requestAPI();
-    console.log('CURRENT PAGE', page);
-  }, [page]);
-
-  const requestAPI = async () => {
-    setIsFetching(true);
-
-    const onSuccess = (res) => {
-      if (res.data.length == 0) setListEnded(true);
-      setTravelList((prevTravelList) => [...prevTravelList, ...res.data]);
-    };
-
-    const onFinally = () => {
-      setIsFetching(false);
-    };
-
-    await handleAPICall(
-      'GET',
-      '/travel/history',
-      {
-        cardno: user.cardno,
-        page
-      },
-      null,
-      onSuccess,
-      onFinally
-    );
+  const fetchTravels = async ({ pageParam = 1 }) => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/travel/history',
+        {
+          cardno: user.cardno,
+          page: pageParam
+        },
+        null,
+        (res) => {
+          // Ensure res is an array, if not, wrap it in an array
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
+        () => reject(new Error('Failed to fetch travels'))
+      );
+    });
   };
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: queryStatus,
+    isLoading,
+    isError
+  } = useInfiniteQuery({
+    queryKey: ['travels', user.cardno],
+    queryFn: fetchTravels,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      return pages.length + 1;
+    }
+  });
+
+  const cancelBookingMutation = useMutation({
+    mutationFn: (bookingid) => {
+      return new Promise((resolve, reject) => {
+        handleAPICall(
+          'DELETE',
+          '/travel/booking',
+          null,
+          {
+            cardno: user.cardno,
+            bookingid
+          },
+          (res) => resolve(res),
+          () => reject(new Error('Failed to cancel booking'))
+        );
+      });
+    },
+    onSuccess: (_, bookingid) => {
+      queryClient.setQueryData(['travels', user.cardno], (oldData) => {
+        if (!oldData || !oldData.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) =>
+            page.map((booking) =>
+              booking.bookingid === bookingid
+                ? { ...booking, status: status.STATUS_CANCELLED }
+                : booking
+            )
+          )
+        };
+      });
+    }
+  });
 
   const renderItem = ({ item }) => (
     <ExpandableItem
@@ -185,29 +229,7 @@ const TravelBookingCancellation = () => {
                       text="Pay Now"
                       containerStyles={'mt-5 py-3 mx-1 flex-1'}
                       textStyles={'text-sm'}
-                      handlePress={async () => {
-                        // const onSuccess = (_res) => {
-                        //   setRoomList((prevRoomList) => {
-                        //     return prevRoomList.map((it) =>
-                        //       it.bookingid === item.bookingid
-                        //         ? { ...it, status: status.STATUS_CANCELLED }
-                        //         : it
-                        //     );
-                        //   });
-                        // };
-                        // const onFinally = () => {};
-                        // await handleAPICall(
-                        //   'POST',
-                        //   '/stay/cancel',
-                        //   null,
-                        //   {
-                        //     cardno: user.cardno,
-                        //     bookingid: item.bookingid
-                        //   },
-                        //   onSuccess,
-                        //   onFinally
-                        // );
-                      }}
+                      handlePress={async () => {}}
                     />
                   ))}
 
@@ -215,28 +237,8 @@ const TravelBookingCancellation = () => {
                   text="Cancel Booking"
                   containerStyles={'mt-5 py-3 mx-1 flex-1'}
                   textStyles={'text-sm'}
-                  handlePress={async () => {
-                    const onSuccess = (_res) => {
-                      setTravelList((prevTravelList) => {
-                        return prevTravelList.map((it) =>
-                          it.bookingid === item.bookingid
-                            ? { ...it, status: status.STATUS_CANCELLED }
-                            : it
-                        );
-                      });
-                    };
-                    const onFinally = () => {};
-                    await handleAPICall(
-                      'DELETE',
-                      '/travel/booking',
-                      null,
-                      {
-                        cardno: user.cardno,
-                        bookingid: item.bookingid
-                      },
-                      onSuccess,
-                      onFinally
-                    );
+                  handlePress={() => {
+                    cancelBookingMutation.mutate(item.bookingid);
                   }}
                 />
               </View>
@@ -246,40 +248,53 @@ const TravelBookingCancellation = () => {
     </ExpandableItem>
   );
 
-  const renderEmpty = () => (
-    <View className="items-center">
-      {!isFetching && <Text>No bookings to cancel</Text>}
-    </View>
-  );
-
   const renderFooter = () => (
     <View className="items-center">
-      {isFetching && <ActivityIndicator />}
-      {listEnded && travelList.length !== 0 && (
+      {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
+      {!hasNextPage && data?.pages?.[0]?.length > 0 && (
         <Text>No more bookings at the moment</Text>
       )}
     </View>
   );
 
-  const fetchMoreData = () => {
-    if (!listEnded && !isFetching) {
-      setPage(page + 1);
-    }
-  };
+  if (isError)
+    return (
+      <Text className="text-red-500 text-lg font-pregular">
+        An error occurred
+      </Text>
+    );
 
   return (
     <View className="w-full">
       <FlatList
         className="py-2 mt-5 flex-grow-1"
         showsVerticalScrollIndicator={false}
-        data={travelList}
+        data={data?.pages?.flatMap((page) => page) || []}
         renderItem={renderItem}
         keyExtractor={(item) => item.bookingid}
         ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmpty}
         onEndReachedThreshold={0.1}
-        onEndReached={fetchMoreData}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
       />
+      {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
+        <View className="flex-1 items-center justify-center">
+          <LottieView
+            style={{
+              width: 200,
+              height: 350,
+              alignSelf: 'center'
+            }}
+            autoPlay
+            loop
+            source={require('../../assets/lottie/empty.json')}
+          />
+          <Text className="text-lg font-pregular text-secondary">
+            You have not booked any travels yet
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

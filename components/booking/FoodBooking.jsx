@@ -5,33 +5,36 @@ import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomMultiSelectDropdown from '../../components/CustomMultiSelectDropdown';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
-const FoodBooking = ({ user }) => {
+const FOOD_TYPE_LIST = [
+  { key: 'breakfast', value: 'breakfast' },
+  { key: 'lunch', value: 'lunch' },
+  { key: 'dinner', value: 'dinner' }
+];
+
+const SPICE_LIST = [
+  { key: 'Regular', value: 'Regular' },
+  { key: 'Non Spicy', value: 'Non Spicy' }
+];
+
+const HIGHTEA_LIST = [
+  { key: 'TEA', value: 'Tea' },
+  { key: 'COFFEE', value: 'Coffee' },
+  { key: 'NONE', value: 'None' }
+];
+
+const FoodBooking = () => {
+  const { user } = useGlobalContext();
+
   const [foodForm, setFoodForm] = useState({
     startDay: '',
     endDay: '',
     spicy: '',
-    hightea: ''
+    hightea: 'NONE'
   });
   const [type, setType] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const foodTypeList = [
-    { key: 'breakfast', value: 'breakfast' },
-    { key: 'lunch', value: 'lunch' },
-    { key: 'dinner', value: 'dinner' }
-  ];
-
-  const spiceyList = [
-    { key: 'Regular', value: 'Regular' },
-    { key: 'Non Spicy', value: 'Non Spicy' }
-  ];
-
-  const highteaList = [
-    { key: 'TEA', value: 'Tea' },
-    { key: 'COFFEE', value: 'Coffee' },
-    { key: 'NONE', value: 'None' }
-  ];
 
   return (
     <View className="flex-1 justify-center items-center">
@@ -49,7 +52,7 @@ const FoodBooking = ({ user }) => {
         otherStyles="mt-5 w-full px-1"
         text={'Food Type'}
         placeholder={'Select Food Type'}
-        data={foodTypeList}
+        data={FOOD_TYPE_LIST}
         setSelected={(val) => setType(val)}
       />
 
@@ -57,7 +60,7 @@ const FoodBooking = ({ user }) => {
         otherStyles="mt-5 w-full px-1"
         text={'Spice Level'}
         placeholder={'How much spice do you want?'}
-        data={spiceyList}
+        data={SPICE_LIST}
         setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
       />
 
@@ -65,7 +68,8 @@ const FoodBooking = ({ user }) => {
         otherStyles="mt-5 w-full px-1"
         text={'Hightea'}
         placeholder={'Hightea'}
-        data={highteaList}
+        data={HIGHTEA_LIST}
+        defaultOption={{ key: 'NONE', value: 'None' }}
         setSelected={(val) => setFoodForm({ ...foodForm, hightea: val })}
       />
 

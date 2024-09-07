@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -18,14 +18,14 @@ const bookingConfirmation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
-    <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
+    <SafeAreaView className="h-full bg-white">
       <ScrollView
         alwaysBounceVertical={false}
         showsVerticalScrollIndicator={false}
       >
         <PageHeader title="Payment Summary" icon={icons.backArrow} />
 
-        {data.room && <RoomBookingDetails />}
+        {data.room && <RoomBookingDetails containerStyles={'mt-6'} />}
         {data.travel && <TravelBookingDetails containerStyles={'mt-6'} />}
         {data.adhyayan && <AdhyayanBookingDetails containerStyles={'mt-6'} />}
         {data.food && <FoodBookingDetails containerStyles={'mt-6'} />}
@@ -59,7 +59,10 @@ const bookingConfirmation = () => {
                   Adhyayan Charge
                 </Text>
                 <Text className="text-black font-pregular text-base">
-                  ₹ {data.adhyayan.charge}
+                  ₹{' '}
+                  {data.adhyayan?.reduce((total, item) => {
+                    return total + (item.amount ?? 0);
+                  }, 0) ?? 0}
                 </Text>
               </View>
             )}
@@ -72,7 +75,9 @@ const bookingConfirmation = () => {
                 ₹{' '}
                 {(data.room?.charge ?? 0) +
                   (data.travel?.charge ?? 0) +
-                  (data.adhyayan?.charge ?? 0)}
+                  (data.adhyayan?.reduce((total, item) => {
+                    return total + (item.amount ?? 0);
+                  }, 0) ?? 0)}
               </Text>
             </View>
           </View>

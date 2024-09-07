@@ -11,7 +11,7 @@ import {
   Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, icons, types } from '../../constants';
@@ -28,6 +28,63 @@ import RoomBookingDetails from '../../components/booking details cards/RoomBooki
 import PageHeader from '../../components/PageHeader';
 import TravelBookingDetails from '../../components/booking details cards/TravelBookingDetails';
 import AdhyayanBookingDetails from '../../components/booking details cards/AdhyayanBookingDetails';
+import HorizontalSeparator from '../../components/HorizontalSeparator';
+import * as Haptics from 'expo-haptics';
+import LottieView from 'lottie-react-native';
+import { useQuery } from '@tanstack/react-query';
+
+// FOOD CONSTANTS
+const FOOD_TYPE_LIST = [
+  { key: 'breakfast', value: 'breakfast' },
+  { key: 'lunch', value: 'lunch' },
+  { key: 'dinner', value: 'dinner' }
+];
+
+const SPICE_LIST = [
+  { key: 'Regular', value: 'Regular' },
+  { key: 'Non Spicy', value: 'Non Spicy' }
+];
+
+const HIGHTEA_LIST = [
+  { key: 'TEA', value: 'Tea' },
+  { key: 'COFFEE', value: 'Coffee' },
+  { key: 'NONE', value: 'None' }
+];
+
+// ROOM CONSTANTS
+const ROOM_TYPE_LIST = [
+  { key: 'ac', value: 'AC' },
+  { key: 'nac', value: 'Non AC' }
+];
+
+const FLOOR_TYPE_LIST = [
+  { key: 'SC', value: 'Yes' },
+  { key: 'n', value: 'No' }
+];
+
+// TRAVEL CONSTANTS
+const LOCATION_LIST = [
+  { key: 'rc', value: 'RC' },
+  { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
+  { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
+  { key: 'mullund', value: 'Mullund Airoli Junction' },
+  { key: 'airport t1', value: 'Airport Terminal 1' },
+  { key: 'airport t2', value: 'Airport Terminal 2' },
+  { key: 'ltt', value: 'Lokmanya Tilak Terminus Station (LTT)' },
+  { key: 'cstm', value: 'Chatrapati Shivaji Terminus Station (CSTM)' },
+  { key: 'vile parle', value: 'Vile Parle East' },
+  { key: 'borivali', value: 'Borivali East' },
+  { key: 'full', value: 'Full Car Booking' },
+  { key: 'other', value: 'Other' }
+];
+
+const LUGGAGE_LIST = [
+  { key: 'cabin1', value: '1 Cabin Bag' },
+  { key: 'cabin2', value: '2 Cabin Bags' },
+  { key: 'suitcase1', value: '1 Suitcase' },
+  { key: 'suitcase2', value: '2 Suitcases' },
+  { key: 'none', value: 'NONE' }
+];
 
 const details = () => {
   const { booking } = useLocalSearchParams();
@@ -42,27 +99,10 @@ const details = () => {
     startDay: '',
     endDay: '',
     spicy: '',
-    hightea: ''
+    hightea: 'NONE'
   });
 
   const [meals, setMeals] = useState([]);
-
-  const foodTypeList = [
-    { key: 'breakfast', value: 'breakfast' },
-    { key: 'lunch', value: 'lunch' },
-    { key: 'dinner', value: 'dinner' }
-  ];
-
-  const spiceyList = [
-    { key: 'Regular', value: 'Regular' },
-    { key: 'Non Spicy', value: 'Non Spicy' }
-  ];
-
-  const highteaList = [
-    { key: 'TEA', value: 'Tea' },
-    { key: 'COFFEE', value: 'Coffee' },
-    { key: 'NONE', value: 'None' }
-  ];
 
   // ROOM BOOKING VARIABLES
   const [roomForm, setRoomForm] = useState({
@@ -71,16 +111,6 @@ const details = () => {
     roomType: '',
     floorType: ''
   });
-
-  const roomTypeList = [
-    { key: 'ac', value: 'AC' },
-    { key: 'nac', value: 'Non AC' }
-  ];
-
-  const floorTypeList = [
-    { key: 'SC', value: 'Yes' },
-    { key: 'n', value: 'No' }
-  ];
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState({
     checkin: false,
@@ -99,56 +129,12 @@ const details = () => {
     special_request: ''
   });
 
-  const locationData = [
-    { key: 'rc', value: 'RC' },
-    { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
-    { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
-    { key: 'mullund', value: 'Mullund Airoli Junction' },
-    { key: 'airport t1', value: 'Airport Terminal 1' },
-    { key: 'airport t2', value: 'Airport Terminal 2' },
-    { key: 'ltt', value: 'Lokmanya Tilak Terminus Station (LTT)' },
-    { key: 'cstm', value: 'Chatrapati Shivaji Terminus Station (CSTM)' },
-    { key: 'vile parle', value: 'Vile Parle East' },
-    { key: 'borivali', value: 'Borivali East' },
-    { key: 'full', value: 'Full Car Booking' },
-    { key: 'other', value: 'Other' }
-  ];
-
-  const luggageList = [
-    { key: 'cabin1', value: '1 Cabin Bag' },
-    { key: 'cabin2', value: '2 Cabin Bags' },
-    { key: 'suitcase1', value: '1 Suitcase' },
-    { key: 'suitcase2', value: '2 Suitcases' },
-    { key: 'none', value: 'NONE' }
-  ];
-
   // ADHYAYAN BOOKING VARIABLES
   const [adhyayanBookingList, setAdhyayanBookingList] = useState([]);
-  const [adhyayanList, setAdhyayanList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isFetching, setIsFetching] = useState(false);
-  const [listEnded, setListEnded] = useState(false);
 
-  useEffect(() => {
-    if (!listEnded && !isFetching) requestAPI();
-  }, [page]);
-
-  const requestAPI = async () => {
-    console.log('PAGE', page);
-
-    setIsFetching(true);
-
-    const onSuccess = (res) => {
-      if (res.data.length == 0) setListEnded(true);
-      setAdhyayanList((prevAdhyayanList) => [...prevAdhyayanList, ...res.data]);
-    };
-
-    const onFinally = () => {
-      setIsFetching(false);
-    };
-
-    if (booking != types.ADHYAYAN_DETAILS_TYPE) {
-      await handleAPICall(
+  const fetchAdhyayans = async () => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
         'GET',
         '/adhyayan/getrange',
         {
@@ -157,30 +143,121 @@ const details = () => {
             booking == types.ROOM_DETAILS_TYPE
               ? data.room.startDay
               : data.travel.date,
-          end_date: booking == types.ROOM_DETAILS_TYPE ? data.room.endDay : '',
-          page
+          end_date: booking == types.ROOM_DETAILS_TYPE ? data.room.endDay : ''
         },
         null,
-        onSuccess,
-        onFinally
+        (res) => {
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
+        () => reject(new Error('Failed to fetch rooms'))
       );
-    }
+    });
   };
 
-  const renderItem = ({ item }) => <Text>Hello</Text>;
+  const {
+    isLoading,
+    isError,
+    data: adhyayanList
+  } = useQuery({
+    queryKey: ['adhyayans', booking, data.room?.startDay, data.travel?.date],
+    queryFn: fetchAdhyayans,
+    staleTime: 1000 * 60 * 30
+  });
+
+  const renderItem = ({ item }) => {
+    const isSelected = adhyayanBookingList.some(
+      (selected) => selected.id === item.id
+    );
+
+    return (
+      <View className="w-full bg-gray-50 rounded-2xl p-2 mb-2">
+        <View className="flex flex-row justify-between items-center py-2">
+          <Text className="font-pmedium text-base text-secondary">{`${moment(
+            item.start_date
+          ).format('Do MMMM')} - ${moment(item.end_date).format(
+            'Do MMMM, YYYY'
+          )}`}</Text>
+        </View>
+        <HorizontalSeparator />
+        <View className="flex pt-2 pb-4 flex-row space-x-2">
+          <Image
+            source={icons.description}
+            className="w-4 h-4"
+            resizeMode="contain"
+          />
+          <Text className="text-gray-400 font-pregular">Name: </Text>
+          <Text className="text-black font-pmedium" numberOfLines={1}>
+            {item.name}
+          </Text>
+        </View>
+        <View className="flex pb-4 flex-row space-x-2">
+          <Image
+            source={icons.person}
+            className="w-4 h-4"
+            resizeMode="contain"
+          />
+          <Text className="text-gray-400 font-pregular">Swadhyay Karta: </Text>
+          <Text className="text-black font-pmedium" numberOfLines={1}>
+            {item.speaker}
+          </Text>
+        </View>
+        <View className="flex flex-row space-x-2">
+          <Image
+            source={icons.charge}
+            className="w-4 h-4"
+            resizeMode="contain"
+          />
+          <Text className="text-gray-400 font-pregular">Charges:</Text>
+          <Text className="text-black font-pmedium">₹ {item.amount}</Text>
+        </View>
+        <TouchableOpacity
+          className={`border border-secondary rounded-lg w-full p-2 mt-4 justify-center items-center ${
+            isSelected ? 'bg-secondary' : ''
+          }`}
+          onPress={() => {
+            const prevSelectedItems = [...adhyayanBookingList];
+            const isSelected = prevSelectedItems.some(
+              (selected) => selected.id === item.id
+            );
+            if (isSelected) {
+              const filteredList = prevSelectedItems.filter(
+                (selected) => selected.id !== item.id
+              );
+              setAdhyayanBookingList(filteredList);
+              if (filteredList.length === 0) {
+                setData((prev) => {
+                  const { adhyayan, ...rest } = prev;
+                  return rest;
+                });
+              }
+            } else {
+              setAdhyayanBookingList([...prevSelectedItems, item]);
+            }
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+        >
+          <Text
+            className={`font-pmedium text-md ${
+              isSelected ? 'text-white' : 'text-secondary-100'
+            }`}
+          >
+            {isSelected ? 'Unregister' : 'Register'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderFooter = () => (
-    <View className="items-center">
-      {isFetching && <ActivityIndicator />}
-      {listEnded && <Text>No more adhyayans at the moment</Text>}
+    <View className="items-center justify-center w-full">
+      {isLoading && <ActivityIndicator />}
+      {isError && (
+        <Text>
+          Error fetching data: {error.message} {console.log(error.message)}
+        </Text>
+      )}
     </View>
   );
-
-  const fetchMoreData = () => {
-    if (!listEnded && !isFetching) {
-      setPage(page + 1);
-    }
-  };
 
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
@@ -190,17 +267,18 @@ const details = () => {
         <ScrollView
           alwaysBounceVertical={false}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         >
           <PageHeader title="Booking Details" icon={icons.backArrow} />
 
           {booking === types.ROOM_DETAILS_TYPE && (
-            <RoomBookingDetails data={data} setData={setData} />
+            <RoomBookingDetails containerStyles={'mt-6'} />
           )}
           {booking === types.ADHYAYAN_DETAILS_TYPE && (
-            <AdhyayanBookingDetails data={data} />
+            <AdhyayanBookingDetails containerStyles={'mt-6'} />
           )}
           {booking === types.TRAVEL_DETAILS_TYPE && (
-            <TravelBookingDetails data={data} setData={setData} />
+            <TravelBookingDetails containerStyles={'mt-6'} />
           )}
 
           <View className="w-full px-4">
@@ -329,7 +407,7 @@ const details = () => {
                   otherStyles="mt-7"
                   text={'Room Type'}
                   placeholder={'Select Room Type'}
-                  data={roomTypeList}
+                  data={ROOM_TYPE_LIST}
                   setSelected={(val) =>
                     setRoomForm({ ...roomForm, roomType: val })
                   }
@@ -339,7 +417,7 @@ const details = () => {
                   otherStyles="mt-7"
                   text={'Book Only if Ground Floor is Available'}
                   placeholder={'Select Floor Type'}
-                  data={floorTypeList}
+                  data={FLOOR_TYPE_LIST}
                   setSelected={(val) =>
                     setRoomForm({ ...roomForm, floorType: val })
                   }
@@ -354,7 +432,7 @@ const details = () => {
                   startDay: '',
                   endDay: '',
                   spicy: '',
-                  hightea: ''
+                  hightea: 'NONE'
                 });
                 setMeals([]);
 
@@ -460,7 +538,7 @@ const details = () => {
                 otherStyles="mt-5 w-full px-1"
                 text={'Food Type'}
                 placeholder={'Select Food Type'}
-                data={foodTypeList}
+                data={FOOD_TYPE_LIST}
                 setSelected={(val) => setMeals(val)}
               />
 
@@ -468,7 +546,7 @@ const details = () => {
                 otherStyles="mt-5 w-full px-1"
                 text={'Spice Level'}
                 placeholder={'How much spice do you want?'}
-                data={spiceyList}
+                data={SPICE_LIST}
                 setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
               />
 
@@ -476,7 +554,8 @@ const details = () => {
                 otherStyles="mt-5 w-full px-1"
                 text={'Hightea'}
                 placeholder={'Hightea'}
-                data={highteaList}
+                data={HIGHTEA_LIST}
+                defaultOption={{ key: 'NONE', value: 'None' }}
                 setSelected={(val) =>
                   setFoodForm({ ...foodForm, hightea: val })
                 }
@@ -487,7 +566,7 @@ const details = () => {
             {booking !== types.ADHYAYAN_DETAILS_TYPE && (
               <AddonItem
                 onCollapse={() => {
-                  setAdhyayanList([]);
+                  setAdhyayanBookingList([]);
                   setData((prev) => {
                     const { adhyayan, ...rest } = prev;
                     return rest;
@@ -505,18 +584,38 @@ const details = () => {
                 }
                 containerStyles={'mt-3'}
               >
-                <FlatList
-                  className="py-2 mt-5 flex-grow-1"
+                {!isLoading && !isError && adhyayanList.length == 0 && (
+                  <View className="flex flex-col items-center justify-center">
+                    <LottieView
+                      style={{
+                        width: 200,
+                        height: 200
+                      }}
+                      autoPlay
+                      loop
+                      source={require('../../assets/lottie/notFound.json')}
+                    />
+                    <Text className="text-md font-psemibold text-secondary">
+                      No adhyayans available in selected dates!
+                    </Text>
+                  </View>
+                )}
+                <ScrollView
                   horizontal={true}
-                  showsHorizontalScrollIndicator={false}
-                  nestedScrollEnabled={true}
-                  data={adhyayanList}
-                  renderItem={renderItem}
-                  keyExtractor={(item) => item.id}
-                  ListFooterComponent={renderFooter}
-                  // onEndReachedThreshold={0.1}
-                  // onEndReached={fetchMoreData}
-                />
+                  className="w-full"
+                  scrollEnabled={false}
+                >
+                  <FlatList
+                    className="py-2 mt-2 flex-grow-1 w-full"
+                    showsHorizontalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                    data={adhyayanList}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                    ListFooterComponent={renderFooter}
+                    scrollEnabled={false}
+                  />
+                </ScrollView>
               </AddonItem>
             )}
 
@@ -593,7 +692,7 @@ const details = () => {
                   text={'Pickup Location'}
                   placeholder={'Select Location'}
                   save={'value'}
-                  data={locationData}
+                  data={LOCATION_LIST}
                   setSelected={(val) =>
                     setTravelForm({
                       ...travelForm,
@@ -608,7 +707,7 @@ const details = () => {
                   text={'Drop Location'}
                   placeholder={'Select Location'}
                   save={'value'}
-                  data={locationData}
+                  data={LOCATION_LIST}
                   setSelected={(val) =>
                     setTravelForm({
                       ...travelForm,
@@ -622,7 +721,7 @@ const details = () => {
                   otherStyles="mt-7"
                   text={'Luggage'}
                   placeholder={'Select any luggage'}
-                  data={luggageList}
+                  data={LUGGAGE_LIST}
                   save={'value'}
                   setSelected={(val) =>
                     setTravelForm({ ...travelForm, luggage: val })
@@ -656,14 +755,20 @@ const details = () => {
                 };
 
                 const isFoodFormEmpty = () => {
+                  const excludedKey = 'hightea';
                   return (
-                    Object.values(foodForm).some((value) => value != '') ||
-                    meals.length != 0
+                    Object.entries(foodForm)
+                      .filter(([key]) => key !== excludedKey)
+                      .some(([_, value]) => value !== '') || meals.length !== 0
                   );
                 };
 
                 const isTravelFormEmpty = () => {
                   return Object.values(travelForm).some((value) => value != '');
+                };
+
+                const isAdhyayanFormEmpty = () => {
+                  return adhyayanBookingList.length != 0;
                 };
 
                 if (booking !== types.ROOM_DETAILS_TYPE && isRoomFormEmpty()) {
@@ -711,8 +816,18 @@ const details = () => {
                   setData((prev) => ({ ...prev, travel: travelForm }));
                 }
 
+                if (
+                  booking !== types.ADHYAYAN_DETAILS_TYPE &&
+                  isAdhyayanFormEmpty()
+                ) {
+                  setData((prev) => ({
+                    ...prev,
+                    adhyayan: adhyayanBookingList
+                  }));
+                }
+
                 setIsSubmitting(false);
-                router.push('/bookingConfirmation');
+                router.push('/booking/bookingConfirmation');
               }}
               containerStyles="mb-8 min-h-[62px]"
               isLoading={isSubmitting}
