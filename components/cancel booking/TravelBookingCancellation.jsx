@@ -29,7 +29,6 @@ const TravelBookingCancellation = () => {
         },
         null,
         (res) => {
-          // Ensure res is an array, if not, wrap it in an array
           resolve(Array.isArray(res.data) ? res.data : []);
         },
         () => reject(new Error('Failed to fetch travels'))
@@ -259,7 +258,7 @@ const TravelBookingCancellation = () => {
 
   if (isError)
     return (
-      <Text className="text-red-500 text-lg font-pregular">
+      <Text className="text-red-500 text-lg font-pregular items-center justify-center">
         An error occurred
       </Text>
     );

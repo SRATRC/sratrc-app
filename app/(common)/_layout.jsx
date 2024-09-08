@@ -8,6 +8,7 @@ const CommonLayout = () => {
       <StatusBar style="dark" />
       <Stack>
         <Stack.Screen name="wifi" options={{ headerShown: false }} />
+        <Stack.Screen name="camera" options={{ headerShown: false }} />
       </Stack>
     </>
   );

@@ -228,7 +228,7 @@ const RoomBookingCancellation = () => {
 
   if (isError)
     return (
-      <Text className="text-red-500 text-lg font-pregular">
+      <Text className="text-red-500 text-lg font-pregular items-center justify-center">
         An error occurred
       </Text>
     );

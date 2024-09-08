@@ -1,5 +1,4 @@
 import { View, Text, Image, Platform } from 'react-native';
-import { useEffect } from 'react';
 import { icons, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
@@ -7,23 +6,10 @@ import moment from 'moment';
 import CustomTag from '../CustomTag';
 
 const RoomBookingDetails = ({ containerStyles }) => {
-  const { data, setData } = useGlobalContext();
+  const { data } = useGlobalContext();
 
   const formattedStartDate = moment(data.room.startDay).format('Do MMMM');
   const formattedEndDate = moment(data.room.endDay).format('Do MMMM, YYYY');
-
-  // const charge =
-  //   moment(data.room.endDay).diff(moment(data.room.startDay), 'days') *
-  //   (data.room.roomType === 'ac'
-  //     ? prices.AC_ROOM_PRICE
-  //     : prices.NAC_ROOM_PRICE);
-
-  // useEffect(() => {
-  //   setData((prevData) => ({
-  //     ...prevData,
-  //     room: { ...prevData.room, charge }
-  //   }));
-  // }, [data.room.startDay, data.room.endDay, data.room.roomType]);
 
   return (
     <View className={`w-full px-4 ${containerStyles}`}>

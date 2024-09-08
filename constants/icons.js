@@ -44,6 +44,8 @@ import transactions from '../assets/icons/transactions.png';
 import help from '../assets/icons/help.png';
 import profileCircle from '../assets/icons/profileCircle.png';
 import language from '../assets/icons/language.png';
+import shutter from '../assets/icons/shutter.png';
+import car from '../assets/icons/car.png';
 
 export default {
   play,
@@ -91,5 +93,7 @@ export default {
   transactions,
   help,
   profileCircle,
-  language
+  language,
+  shutter,
+  car
 };

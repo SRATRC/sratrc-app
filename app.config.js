@@ -40,6 +40,15 @@ export default {
           project: 'react-native',
           organization: 'vendz'
         }
+      ],
+      [
+        'expo-camera',
+        {
+          cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
+          microphonePermission:
+            'Allow $(PRODUCT_NAME) to access your microphone',
+          recordAudioAndroid: true
+        }
       ]
     ],
     extra: {

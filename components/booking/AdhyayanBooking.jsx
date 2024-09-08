@@ -7,50 +7,53 @@ import {
   ActivityIndicator,
   Platform
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { icons, types } from '../../constants';
-import CustomButton from '../CustomButton';
-import handleAPICall from '../../utils/HandleApiCall';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
-import mergeLists from '../../utils/mergeLists';
+import CustomButton from '../CustomButton';
+import handleAPICall from '../../utils/HandleApiCall';
+import * as Haptics from 'expo-haptics';
 
 const AdhyayanBooking = () => {
   const { user } = useGlobalContext();
-  const [adhyayanList, setAdhyayanList] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isFetching, setIsFetching] = useState(false);
-  const [listEnded, setListEnded] = useState(false);
 
-  useEffect(() => {
-    if (!listEnded) requestAPI();
-  }, [page]);
-
-  const requestAPI = async () => {
-    setIsFetching(true);
-
-    const onSuccess = (res) => {
-      if (res.data.length == 0) setListEnded(true);
-      const finalList = mergeLists(adhyayanList, res.data);
-      setAdhyayanList(finalList);
-    };
-
-    const onFinally = () => {
-      setIsFetching(false);
-    };
-
-    await handleAPICall(
-      'GET',
-      '/adhyayan/getall',
-      {
-        cardno: user.cardno,
-        page
-      },
-      null,
-      onSuccess,
-      onFinally
-    );
+  const fetchAdhyayans = async ({ pageParam = 1 }) => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/adhyayan/getall',
+        {
+          cardno: user.cardno,
+          page: pageParam
+        },
+        null,
+        (res) => {
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
+        () => reject(new Error('Failed to fetch adhyayans'))
+      );
+    });
   };
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: queryStatus,
+    isLoading,
+    isError
+  } = useInfiniteQuery({
+    queryKey: ['adhyayans', user.cardno],
+    queryFn: fetchAdhyayans,
+    staleTime: 1000 * 60 * 5,
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
+      return pages.length + 1;
+    }
+  });
 
   const renderItem = ({ item }) => <ExpandableListItem item={item} />;
 
@@ -60,22 +63,25 @@ const AdhyayanBooking = () => {
 
   const renderFooter = () => (
     <View className="items-center">
-      {isFetching && <ActivityIndicator />}
-      {listEnded && <Text>No more adhyayans at the moment</Text>}
+      {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
+      {!hasNextPage && data?.pages?.[0]?.length > 0 && (
+        <Text>No more bookings at the moment</Text>
+      )}
     </View>
   );
 
-  const fetchMoreData = () => {
-    if (!listEnded && !isFetching) {
-      setPage(page + 1);
-    }
-  };
+  if (isError)
+    return (
+      <Text className="text-red-500 text-lg font-pregular items-center justify-center">
+        An error occurred
+      </Text>
+    );
 
   return (
     <View className="w-full">
       <SectionList
         className="px-2 py-2 flex-grow-1"
-        sections={adhyayanList}
+        sections={data?.pages?.flatMap((page) => page) || []}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         nestedScrollEnabled={true}
@@ -84,8 +90,27 @@ const AdhyayanBooking = () => {
         renderSectionHeader={renderSectionHeader}
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.1}
-        onEndReached={fetchMoreData}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
       />
+      {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
+        <View className="flex-1 items-center justify-center">
+          <LottieView
+            style={{
+              width: 200,
+              height: 350,
+              alignSelf: 'center'
+            }}
+            autoPlay
+            loop
+            source={require('../../assets/lottie/empty.json')}
+          />
+          <Text className="text-lg font-pregular text-secondary">
+            You have not booked any adhyayans yet
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -100,6 +125,7 @@ const ExpandableListItem = ({ item }) => {
 
   const toggleExpand = () => {
     setExpanded(!expanded);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const registerAdhyayan = async () => {

@@ -29,7 +29,6 @@ const AdhyayanBookingCancellation = () => {
         },
         null,
         (res) => {
-          // Ensure res is an array, if not, wrap it in an array
           resolve(Array.isArray(res.data) ? res.data : []);
         },
         () => reject(new Error('Failed to fetch adhyayans'))
@@ -46,7 +45,7 @@ const AdhyayanBookingCancellation = () => {
     isLoading,
     isError
   } = useInfiniteQuery({
-    queryKey: ['adhyayans', user.cardno],
+    queryKey: ['cancelAdhyayans', user.cardno],
     queryFn: fetchAdhyayans,
     staleTime: 1000 * 60 * 5,
     getNextPageParam: (lastPage, pages) => {
@@ -72,7 +71,7 @@ const AdhyayanBookingCancellation = () => {
       });
     },
     onSuccess: (_, shibirid) => {
-      queryClient.setQueryData(['adhyayans', user.cardno], (oldData) => {
+      queryClient.setQueryData(['cancelAdhyayans', user.cardno], (oldData) => {
         if (!oldData || !oldData.pages) return oldData;
         return {
           ...oldData,
@@ -222,7 +221,7 @@ const AdhyayanBookingCancellation = () => {
 
   if (isError)
     return (
-      <Text className="text-red-500 text-lg font-pregular">
+      <Text className="text-red-500 text-lg font-pregular items-center justify-center">
         An error occurred
       </Text>
     );

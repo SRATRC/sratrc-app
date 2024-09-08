@@ -1,5 +1,4 @@
 import { View, Text, Image, Platform } from 'react-native';
-import { useEffect } from 'react';
 import { icons, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
@@ -7,14 +6,7 @@ import moment from 'moment';
 import CustomTag from '../CustomTag';
 
 const TravelBookingDetails = ({ containerStyles }) => {
-  const { data, setData } = useGlobalContext();
-
-  // useEffect(() => {
-  //   setData((prevData) => ({
-  //     ...prevData,
-  //     travel: { ...prevData.travel, charge }
-  //   }));
-  // }, [data.travel.date]);
+  const { data } = useGlobalContext();
 
   return (
     <View className={`w-full px-4 ${containerStyles}`}>
@@ -81,6 +73,11 @@ const TravelBookingDetails = ({ containerStyles }) => {
           />
           <Text className="text-gray-400 font-pregular">Luggage</Text>
           <Text className="text-black font-pmedium">{data.travel.luggage}</Text>
+        </View>
+        <View className="flex px-6 pb-4 flex-row space-x-2">
+          <Image source={icons.car} className="w-4 h-4" resizeMode="contain" />
+          <Text className="text-gray-400 font-pregular">Booking Type</Text>
+          <Text className="text-black font-pmedium">{data.travel.type}</Text>
         </View>
         <View className="flex px-6 pb-4 flex-row space-x-2">
           <Image

@@ -8,7 +8,7 @@ const Home = () => {
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
       <View className="w-full">
         <Text>Home</Text>
-        <Link href="/common/wifi">
+        <Link href="/wifi">
           <Text>WIFI</Text>
         </Link>
       </View>

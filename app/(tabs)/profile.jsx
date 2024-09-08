@@ -56,7 +56,7 @@ const Profile = () => {
       onPress={item.onPress}
     >
       <View className="flex-row items-center space-x-4">
-        <Image source={item.icon} className="w-6 h-6" resizeMode="contain" />
+        <Image source={item.icon} className="w-6 h-6 " resizeMode="contain" />
 
         <Text className="text-base font-pregular">{item.name}</Text>
       </View>
@@ -71,12 +71,18 @@ const Profile = () => {
   );
 
   const renderHeader = () => (
-    <View className="justify-center items-center flex-col mb-10 mt-2">
-      <Image
-        source={images.pfp}
-        className="w-[100] h-[100] rounded-full"
-        resizeMode="contain"
-      />
+    <View className="justify-center items-center flex-col mb-10 mt-8">
+      <TouchableOpacity
+        onPress={() => {
+          router.push('/camera');
+        }}
+      >
+        <Image
+          source={images.pfp}
+          className="w-[150] h-[150] rounded-full border-2 border-secondary"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <Text className="text-base font-psemibold mt-2">{user.issuedto}</Text>
     </View>
   );
