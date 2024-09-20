@@ -1,14 +1,14 @@
 import { View, Alert } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, types } from '../../constants';
-import MultiSwitch from 'react-native-multiple-switch';
+import { types } from '../../constants';
+import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import SegmentedControl from '../../components/SegmentedControl';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
-import { useRouter } from 'expo-router';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomModal from '../CustomModal';
 
 const SWITCH_OPTIONS = ['Select Dates', 'One Day Visit'];
@@ -50,26 +50,10 @@ const RoomBooking = () => {
 
   return (
     <View className="flex-1 justify-center mt-10">
-      <MultiSwitch
-        items={SWITCH_OPTIONS}
-        value={value}
-        onChange={(val) => setValue(val)}
-        containerStyle={{
-          backgroundColor: colors.gray_200,
-          height: 40,
-          borderRadius: 15,
-          borderWidth: 2,
-          padding: 0,
-          borderColor: colors.gray_200
-        }}
-        sliderStyle={{
-          backgroundColor: 'white',
-          borderRadius: 20
-        }}
-        textStyle={{
-          color: 'black',
-          fontSize: 12,
-          fontFamily: 'Poppins-Medium'
+      <SegmentedControl
+        segments={SWITCH_OPTIONS}
+        onSegmentChange={(segment) => {
+          setValue(segment);
         }}
       />
       {value === SWITCH_OPTIONS[0] && (
