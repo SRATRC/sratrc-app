@@ -10,7 +10,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { icons, images } from '../../constants';
-import { router, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import { useGlobalContext } from '../../context/GlobalProvider';

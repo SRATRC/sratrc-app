@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../context/GlobalProvider';
+
 import 'react-native-reanimated';
 
 export default function Index() {

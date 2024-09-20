@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { icons } from '../constants';
 
 const PageHeader = ({ title, icon, onPress }) => {
   const router = useRouter();
@@ -8,7 +9,7 @@ const PageHeader = ({ title, icon, onPress }) => {
     <View className="w-full px-4 mt-6 flex-row items-center">
       <TouchableOpacity onPress={onPress ? onPress : () => router.back()}>
         <Image
-          source={icon}
+          source={icon ? icon : icons.backArrow}
           className="w-5 h-5 p-2 ml-2 mr-4"
           resizeMode="contain"
           tintColor={'#000000'}

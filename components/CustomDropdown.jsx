@@ -11,13 +11,14 @@ const CustomDropdown = ({
   setSelected,
   save,
   boxbg,
-  defaultOption
+  defaultOption,
+  enableSearch
 }) => {
   return (
     <View className={`w-full space-y-2 ${otherStyles}`}>
       <Text className="text-base text-gray-600 font-pmedium">{text}</Text>
       <SelectList
-        search={false}
+        search={enableSearch ? enableSearch : false}
         setSelected={(val) => setSelected(val)}
         data={data}
         save={save ? save : 'key'}
@@ -47,7 +48,7 @@ const CustomDropdown = ({
           fontFamily: 'Poppins-Medium',
           fontSize: 16
         }}
-        maxHeight={data.length * 50 < 150 ? data.length * 50 : 150}
+        maxHeight={data?.length * 50 < 150 ? data?.length * 50 : 150}
       />
     </View>
   );

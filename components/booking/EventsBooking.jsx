@@ -15,15 +15,16 @@ import { useRouter } from 'expo-router';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
 import * as Haptics from 'expo-haptics';
+import moment from 'moment/moment';
 
-const AdhyayanBooking = () => {
+const EventsBooking = () => {
   const { user } = useGlobalContext();
 
   const fetchAdhyayans = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
         'GET',
-        '/adhyayan/getall',
+        '/utsav/upcoming',
         {
           cardno: user.cardno,
           page: pageParam
@@ -107,7 +108,7 @@ const AdhyayanBooking = () => {
             source={require('../../assets/lottie/empty.json')}
           />
           <Text className="text-lg font-pregular text-secondary">
-            There are no upcoming adhyayans at the moment
+            There are no upcoming events at the moment
           </Text>
         </View>
       )}
@@ -118,7 +119,6 @@ const AdhyayanBooking = () => {
 //TODO: Migrate to use of ExpandableItem
 const ExpandableListItem = ({ item }) => {
   const router = useRouter();
-  const { setData } = useGlobalContext();
 
   const [expanded, setExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,14 +128,7 @@ const ExpandableListItem = ({ item }) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const registerAdhyayan = async () => {
-    setData((prev) => {
-      const updated = { ...prev, adhyayan: [item] };
-      delete updated.room;
-      delete updated.travel;
-      delete updated.food;
-      return updated;
-    });
+  const registerEvent = async () => {
     router.push(`/booking/${types.ADHYAYAN_DETAILS_TYPE}`);
   };
 
@@ -153,7 +146,8 @@ const ExpandableListItem = ({ item }) => {
       >
         <View className="flex basis-11/12">
           <Text className="text-secondary font-psemibold">
-            {item.start_date}
+            {moment(item.start_date).format('Do MMMM')} -{' '}
+            {moment(item.end_date).format('Do MMMM, YYYY')}
           </Text>
           <Text className="font-pmedium text-gray-700">{item.name}</Text>
         </View>
@@ -191,7 +185,7 @@ const ExpandableListItem = ({ item }) => {
                 ? 'Add to waitlist'
                 : 'Register'
             }
-            handlePress={registerAdhyayan}
+            handlePress={registerEvent}
             containerStyles="mt-3 min-h-[40px]"
             isLoading={isSubmitting}
           />
@@ -201,4 +195,4 @@ const ExpandableListItem = ({ item }) => {
   );
 };
 
-export default AdhyayanBooking;
+export default EventsBooking;

@@ -46,6 +46,10 @@ import profileCircle from '../assets/icons/profileCircle.png';
 import language from '../assets/icons/language.png';
 import shutter from '../assets/icons/shutter.png';
 import car from '../assets/icons/car.png';
+import department from '../assets/icons/department.png';
+import grayTickCircle from '../assets/icons/gray-tick-circle.png';
+import orangeTickCircle from '../assets/icons/orange-tick-cirlce.png';
+import copy from '../assets/icons/copy.png';
 
 export default {
   play,
@@ -95,5 +99,9 @@ export default {
   profileCircle,
   language,
   shutter,
-  car
+  car,
+  department,
+  grayTickCircle,
+  orangeTickCircle,
+  copy
 };

@@ -1,18 +1,18 @@
-import { View, Text, Image, ActivityIndicator, FlatList } from 'react-native';
-import React from 'react';
+import { View, Text, Image, ActivityIndicator } from 'react-native';
 import {
   useInfiniteQuery,
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
+import { FlashList } from '@shopify/flash-list';
 import { icons, status } from '../../constants';
+import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
 import ExpandableItem from '../ExpandableItem';
 import HorizontalSeparator from '../HorizontalSeparator';
 import moment from 'moment';
 import CustomTag from '../CustomTag';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import LottieView from 'lottie-react-native';
 
 const RoomBookingCancellation = () => {
@@ -235,12 +235,13 @@ const RoomBookingCancellation = () => {
 
   return (
     <View className="w-full">
-      <FlatList
-        className="py-2 mt-5 flex-grow-1"
+      <FlashList
+        className="flex-grow-1"
+        contentContainerStyle={{ paddingTop: 20, paddingHorizontal: 16 }}
         showsVerticalScrollIndicator={false}
         data={data?.pages?.flatMap((page) => page) || []}
+        estimatedItemSize={99}
         renderItem={renderItem}
-        keyExtractor={(item) => item.bookingid}
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.1}
         onEndReached={() => {

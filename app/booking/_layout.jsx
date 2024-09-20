@@ -12,6 +12,10 @@ const DetailsLayout = () => {
           name="bookingConfirmation"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="paymentConfirmation"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </>
   );

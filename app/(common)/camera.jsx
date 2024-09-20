@@ -1,15 +1,19 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button, Image, Text, TouchableOpacity, View } from 'react-native';
 import { icons } from '../../constants';
-import CustomButton from '../../components/CustomButton';
-// import * as MediaLibrary from 'expo-media-library';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import * as ImageManipulator from 'expo-image-manipulator';
+import CustomButton from '../../components/CustomButton';
+// import * as MediaLibrary from 'expo-media-library';
 
 const camera = () => {
+  const { setUser, setCurrentUser } = useGlobalContext();
+
   const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
+  const cameraRef = useRef(null);
   const router = useRouter();
 
   if (!permission) {
@@ -34,8 +38,16 @@ const camera = () => {
           quality: 1,
           skipProcessing: false
         });
-        setCapturedImage(photo.uri);
-        // await MediaLibrary.saveToLibraryAsync(photo.uri);
+
+        const mirroredImage = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ flip: ImageManipulator.FlipType.Horizontal }]
+        );
+
+        setCapturedImage(mirroredImage.uri);
+        setUser({ ...user, pfp: mirroredImage.uri });
+        setCurrentUser({ ...user, pfp: mirroredImage.uri });
+        // await MediaLibrary.saveToLibraryAsync(mirroredImage.uri);
       } catch (error) {
         console.error('Failed to take picture:', error);
       }
@@ -58,7 +70,12 @@ const camera = () => {
           />
         </View>
       ) : (
-        <CameraView ref={cameraRef} className="flex-1" facing="front">
+        <CameraView
+          ref={cameraRef}
+          className="flex-1"
+          facing="front"
+          // style={{ transform: [{ scaleX: -1 }] }}
+        >
           <TouchableOpacity
             className="absolute bottom-16 self-center"
             onPress={captureImage}

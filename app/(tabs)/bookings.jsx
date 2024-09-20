@@ -35,7 +35,6 @@ const BookingCategories = ({ onRefresh }) => {
   const invalidateSelectedData = useCallback(
     async (chip) => {
       try {
-        // Invalidate queries based on the selected chip
         if (chip === types.booking_type_room) {
           await queryClient.invalidateQueries(['roomBooking']);
         } else if (chip === types.booking_type_food) {
@@ -60,14 +59,16 @@ const BookingCategories = ({ onRefresh }) => {
   onRefresh.current = handleRefresh;
 
   return (
-    <View className="w-full px-4 my-6">
-      <Text className="text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
+    <View className="w-full">
+      <View className="w-full px-4 space-y-6">
+        <Text className="mt-6 text-2xl font-psemibold">{`${selectedChip} Booking`}</Text>
 
-      <CustomChipGroup
-        chips={CHIPS}
-        selectedChip={selectedChip}
-        handleChipPress={handleChipClick}
-      />
+        <CustomChipGroup
+          chips={CHIPS}
+          selectedChip={selectedChip}
+          handleChipPress={handleChipClick}
+        />
+      </View>
 
       {selectedChip === types.booking_type_room && <RoomBookingCancellation />}
       {selectedChip === types.booking_type_food && <FoodBookingCancellation />}

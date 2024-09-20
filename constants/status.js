@@ -4,7 +4,7 @@ const TYPE_REFUND = 'refund';
 // STATUS
 const STATUS_WAITING = 'waiting';
 const STATUS_CONFIRMED = 'confirmed';
-const STATUS_CANCELLED = 'cancelled';
+const STATUS_CANCELLED = 'canceled';
 const STATUS_PENDING = 'pending';
 const STATUS_REJECTED = 'rejected';
 const STATUS_ACTIVE = 'active';

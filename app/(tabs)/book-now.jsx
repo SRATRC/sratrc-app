@@ -8,12 +8,14 @@ import RoomBooking from '../../components/booking/RoomBooking';
 import FoodBooking from '../../components/booking/FoodBooking';
 import TravelBooking from '../../components/booking/TravelBooking';
 import AdhyayanBooking from '../../components/booking/AdhyayanBooking';
+import EventsBooking from '../../components/booking/EventsBooking';
 
 const CHIPS = [
   types.booking_type_room,
   types.booking_type_food,
   types.booking_type_travel,
-  types.booking_type_adhyayan
+  types.booking_type_adhyayan,
+  types.booking_type_event
 ];
 
 const BookingCategories = () => {
@@ -36,6 +38,7 @@ const BookingCategories = () => {
       {selectedChip === types.booking_type_food && <FoodBooking />}
       {selectedChip === types.booking_type_travel && <TravelBooking />}
       {selectedChip === types.booking_type_adhyayan && <AdhyayanBooking />}
+      {selectedChip === types.booking_type_event && <EventsBooking />}
     </View>
   );
 };

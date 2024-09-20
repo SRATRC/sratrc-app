@@ -5,21 +5,76 @@ import {
   Platform,
   TouchableOpacity
 } from 'react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import PageHeader from '../../components/PageHeader';
 import { icons } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { useRouter } from 'expo-router';
+import PageHeader from '../../components/PageHeader';
 import FormField from '../../components/FormField';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import CustomDropdown from '../../components/CustomDropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
-import { colors } from '../../constants';
+import handleAPICall from '../../utils/HandleApiCall';
 
+const GENDER_LIST = [
+  { key: 'M', value: 'Male' },
+  { key: 'F', value: 'Female' }
+];
+
+const fetchCountries = () => {
+  return new Promise((resolve, reject) => {
+    handleAPICall(
+      'GET',
+      '/location/countries',
+      null,
+      null,
+      (res) => {
+        resolve(Array.isArray(res.data) ? res.data : []);
+      },
+      () => reject(new Error('Failed to fetch countries'))
+    );
+  });
+};
+
+const fetchStates = (country) => {
+  return new Promise((resolve, reject) => {
+    handleAPICall(
+      'GET',
+      `/location/states/${country}`,
+      null,
+      null,
+      (res) => {
+        resolve(Array.isArray(res.data) ? res.data : []);
+      },
+      () => reject(new Error('Failed to fetch states'))
+    );
+  });
+};
+
+const fetchCities = (country, state) => {
+  return new Promise((resolve, reject) => {
+    handleAPICall(
+      'GET',
+      `/location/cities/${country}/${state}`,
+      null,
+      null,
+      (res) => {
+        resolve(Array.isArray(res.data) ? res.data : []);
+      },
+      () => reject(new Error('Failed to fetch cities'))
+    );
+  });
+};
+
+// TODO: cities and states should clear out when country changes
 const profileDetails = () => {
-  const { user } = useGlobalContext();
+  const { user, setUser, setCurrentUser } = useGlobalContext();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const initialFormState = {
     issuedto: user.issuedto,
@@ -35,38 +90,81 @@ const profileDetails = () => {
     centre: user.centre
   };
 
-  //TODO: add dob similar to date fields, add country in db, give dropdowns for country-state-cities, give multilive view for address, dropdown for centre and gender
   const [form, setForm] = useState(initialFormState);
-
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(
+    initialFormState.country
+  );
+  const [selectedState, setSelectedState] = useState(initialFormState.state);
 
-  const genderlist = [
-    { key: 'M', value: 'Male' },
-    { key: 'F', value: 'Female' }
-  ];
+  const {
+    data: countries,
+    isLoading: isCountriesLoading,
+    isError: isCountriesError
+  } = useQuery({
+    queryKey: ['countries'],
+    queryFn: fetchCountries,
+    staleTime: 1000 * 60 * 30
+  });
+
+  const {
+    data: states,
+    isLoading: isStatesLoading,
+    isError: isStatesError
+  } = useQuery({
+    queryKey: ['states', selectedCountry],
+    queryFn: () => fetchStates(selectedCountry),
+    enabled: !!selectedCountry,
+    staleTime: 1000 * 60 * 30
+  });
+
+  const {
+    data: cities,
+    isLoading: isCitiesLoading,
+    isError: isCitiesError
+  } = useQuery({
+    queryKey: ['cities', selectedCountry, selectedState],
+    queryFn: () => fetchCities(selectedCountry, selectedState),
+    enabled: !!selectedState,
+    staleTime: 1000 * 60 * 30
+  });
 
   const isFormModified = () => {
     return JSON.stringify(form) !== JSON.stringify(initialFormState);
   };
 
   const submit = async () => {
-    // if (!form.phone || form.phone.length < 10) {
-    //   Alert.alert('Error', 'Please fill the fields corectly');
-    //   return;
-    // }
-    // setIsSubmitting(true);
-    // const onSuccess = (data) => {};
-    // const onFinally = () => {
-    //   setIsSubmitting(false);
-    // };
-    // await handleAPICall(
-    //   'PUT',
-    //   '/client/profile',
-    //   { mobno: form.phone },
-    //   null,
-    //   onSuccess,
-    //   onFinally
-    // );
+    setIsSubmitting(true);
+    const onSuccess = (data) => {
+      setUser(data.data);
+      setCurrentUser(data.data);
+      setIsSubmitting(false);
+      router.back();
+    };
+    const onFinally = () => {
+      setIsSubmitting(false);
+    };
+    await handleAPICall(
+      'PUT',
+      '/profile',
+      null,
+      {
+        cardno: user.cardno,
+        issuedto: form.issuedto,
+        gender: form.gender,
+        dob: form.dob,
+        address: form.address,
+        mobno: form.mobno,
+        email: form.email,
+        country: form.country,
+        state: form.state,
+        city: form.city,
+        pin: form.pin,
+        centre: form.centre
+      },
+      onSuccess,
+      onFinally
+    );
   };
 
   return (
@@ -76,7 +174,7 @@ const profileDetails = () => {
       >
         <ScrollView alwaysBounceVertical={false}>
           <PageHeader title={'Profile Details'} icon={icons.backArrow} />
-          <View className="w-full min-h-[83vh] px-4">
+          <View className="w-full min-h-[83vh] px-4 mt-4">
             <FormField
               text="Name"
               value={form.issuedto}
@@ -140,7 +238,7 @@ const profileDetails = () => {
               otherStyles="mt-7"
               text={'Gender'}
               placeholder={'Select Gender'}
-              data={genderlist}
+              data={GENDER_LIST}
               setSelected={(val) => setForm({ ...form, gender: val })}
               defaultOption={
                 form.gender == 'M'
@@ -165,6 +263,7 @@ const profileDetails = () => {
               text="Address"
               value={form.address}
               handleChangeText={(e) => setForm({ ...form, address: e })}
+              multiline
               otherStyles="mt-7"
               inputStyles="font-pmedium text-base text-gray-400"
               keyboardType="default"
@@ -173,30 +272,43 @@ const profileDetails = () => {
               containerStyles={'bg-gray-100'}
             />
 
-            <FormField
-              text="City"
-              value={form.city}
-              handleChangeText={(e) => setForm({ ...form, city: e })}
+            <CustomDropdown
               otherStyles="mt-7"
-              inputStyles="font-pmedium text-base text-gray-400"
-              keyboardType="default"
-              placeholder="Enter Your City"
-              autoCapitalize={'characters'}
-              maxLength={100}
-              containerStyles={'bg-gray-100'}
+              text={'Country'}
+              placeholder={'Select Country'}
+              data={countries}
+              save={'value'}
+              setSelected={(val) => {
+                setForm({ ...form, country: val });
+                setSelectedCountry(val);
+              }}
+              defaultOption={{ key: form.country, value: form.country }}
+              enableSearch={true}
             />
 
-            <FormField
-              text="State"
-              value={form.state}
-              handleChangeText={(e) => setForm({ ...form, state: e })}
+            <CustomDropdown
               otherStyles="mt-7"
-              inputStyles="font-pmedium text-base text-gray-400"
-              keyboardType="default"
-              placeholder="Enter Your State"
-              autoCapitalize={'characters'}
-              maxLength={100}
-              containerStyles={'bg-gray-100'}
+              text={'State'}
+              placeholder={'Select Stte'}
+              data={states}
+              save={'value'}
+              setSelected={(val) => {
+                setForm({ ...form, state: val });
+                setSelectedState(val);
+              }}
+              defaultOption={{ key: form.state, value: form.state }}
+              enableSearch={true}
+            />
+
+            <CustomDropdown
+              otherStyles="mt-7"
+              text={'City'}
+              placeholder={'Select City'}
+              data={cities}
+              save={'value'}
+              setSelected={(val) => setForm({ ...form, city: val })}
+              defaultOption={{ key: form.city, value: form.city }}
+              enableSearch={true}
             />
 
             <FormField
@@ -215,7 +327,7 @@ const profileDetails = () => {
               text="Update Profile"
               handlePress={submit}
               containerStyles="mt-7 min-h-[62px]"
-              isLoading={!isFormModified()}
+              isLoading={isSubmitting || !isFormModified()}
             />
           </View>
         </ScrollView>

@@ -7,25 +7,25 @@ import {
   TouchableOpacity,
   SectionList
 } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
-import { icons } from '../../constants';
-import handleAPICall from '../../utils/HandleApiCall';
-import CustomTag from '../CustomTag';
-import moment from 'moment';
-import * as Haptics from 'expo-haptics';
-import { useGlobalContext } from '../../context/GlobalProvider';
-import LottieView from 'lottie-react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSequence,
   withTiming
 } from 'react-native-reanimated';
+import { icons } from '../../constants';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import handleAPICall from '../../utils/HandleApiCall';
+import CustomTag from '../CustomTag';
+import moment from 'moment';
+import * as Haptics from 'expo-haptics';
+import LottieView from 'lottie-react-native';
 
 const FoodBookingCancellation = () => {
   const { user } = useGlobalContext();
@@ -114,10 +114,8 @@ const FoodBookingCancellation = () => {
       (selected) => `${selected.date}-${selected.mealType}` === itemKey
     );
 
-    // Create a unique shared value for each tile
     const shakeTranslateX = useSharedValue(0);
 
-    // Function to trigger the shake animation
     const shake = useCallback(() => {
       shakeTranslateX.value = withSequence(
         withTiming(-10, { duration: 50 }),
@@ -137,16 +135,13 @@ const FoodBookingCancellation = () => {
     return (
       <Animated.View
         style={[rShakeStyle]}
-        className={`mb-5 p-3 rounded-2xl ${
-          section.title === 'upcoming'
-            ? Platform.OS === 'ios'
-              ? 'shadow-lg shadow-gray-200 bg-white'
-              : 'shadow-2xl shadow-gray-400 bg-white'
-            : 'bg-gray-300'
-        } ${isSelected ? 'bg-secondary-50' : ''}`}
+        className={`mb-5 p-3 rounded-2xl bg-white ${
+          Platform.OS === 'ios'
+            ? 'shadow-lg shadow-gray-200'
+            : 'shadow-2xl shadow-gray-400'
+        } ${isSelected && 'border border-secondary'}`}
       >
         <TouchableOpacity
-          activeOpacity={section.title !== 'upcoming' && 1}
           onPress={() => {
             if (section.title === 'upcoming') {
               const prevSelectedItems = [...selectedItems];
@@ -179,11 +174,35 @@ const FoodBookingCancellation = () => {
           className="overflow-hidden flex-row justify-between"
         >
           <View className="flex-1 flex-row items-center space-x-4">
-            <View className="px-3 py-1.5 items-center justify-center flex-col bg-secondary-50 rounded-full">
-              <Text className="text-secondary text-base font-psemibold">
+            <View
+              className={`px-3 py-1.5 items-center justify-center flex-col rounded-full ${
+                section.title === 'upcoming'
+                  ? isSelected
+                    ? 'bg-secondary'
+                    : 'bg-secondary-50'
+                  : 'bg-gray-100'
+              }`}
+            >
+              <Text
+                className={`${
+                  section.title === 'upcoming'
+                    ? isSelected
+                      ? 'text-white'
+                      : 'text-secondary'
+                    : 'text-gray-400'
+                } text-base font-psemibold`}
+              >
                 {moment(item.date).date()}
               </Text>
-              <Text className="text-secondary text-xs font-psemibold">
+              <Text
+                className={`${
+                  section.title === 'upcoming'
+                    ? isSelected
+                      ? 'text-white'
+                      : 'text-secondary'
+                    : 'text-gray-400'
+                } text-xs font-psemibold`}
+              >
                 {moment(item.date).format('MMM')}
               </Text>
             </View>
@@ -193,8 +212,20 @@ const FoodBookingCancellation = () => {
                 icon={icons.spice}
                 iconStyles={'w-4 h-4 items-center justify-center'}
                 text={item.spicy ? 'Regular' : 'Non-Spicy'}
-                textStyles={item.spicy ? 'text-red-200' : 'text-green-200'}
-                containerStyles={item.spicy ? 'bg-red-100' : 'bg-green-100'}
+                textStyles={
+                  section.title === 'upcoming'
+                    ? item.spicy
+                      ? 'text-red-200'
+                      : 'text-green-200'
+                    : 'text-gray-400'
+                }
+                containerStyles={
+                  section.title === 'upcoming'
+                    ? item.spicy
+                      ? 'bg-red-100'
+                      : 'bg-green-100'
+                    : 'bg-gray-100'
+                }
               />
               <View className="flex-row items-center">
                 <Image
@@ -214,27 +245,63 @@ const FoodBookingCancellation = () => {
     );
   };
 
-  const renderSectionHeader = ({ section: { title } }) => (
-    <View className="flex-row justify-between">
-      <Text className="font-psemibold text-lg mb-2 mx-1">{title}</Text>
-      {title === 'upcoming' && (
-        <TouchableOpacity
-          activeOpacity={selectedItems.length <= 0 && 1}
-          onPress={() =>
-            selectedItems.length > 0 && cancelBookingMutation.mutate()
-          }
-        >
-          <Text
-            className={`font-plight text-xs mb-2 mx-1 ${
-              selectedItems.length > 0 ? 'text-secondary' : 'text-gray-500'
-            }`}
-          >
-            Tap to cancel
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  const renderSectionHeader = ({ section: { title, data } }) => {
+    const allSelected = data.every((item) =>
+      selectedItems.some(
+        (selected) =>
+          selected.date === item.date && selected.mealType === item.mealType
+      )
+    );
+
+    const handleSelectAll = () => {
+      if (allSelected) {
+        // Deselect all items in the upcoming section
+        setSelectedItems(
+          selectedItems.filter(
+            (selected) =>
+              !data.some(
+                (item) =>
+                  item.date === selected.date &&
+                  item.mealType === selected.mealType
+              )
+          )
+        );
+      } else {
+        // Select all items in the upcoming section
+        const newSelections = data.map((item) => ({
+          date: item.date,
+          mealType: item.mealType
+        }));
+        setSelectedItems([...selectedItems, ...newSelections]);
+      }
+    };
+
+    const handleDelete = () => {
+      cancelBookingMutation.mutate();
+    };
+
+    return (
+      <View className="flex-row justify-between items-center">
+        <Text className="font-psemibold text-lg mb-2 mx-1">{title}</Text>
+        {title === 'upcoming' && (
+          <View className="flex-row space-x-2">
+            <TouchableOpacity activeOpacity={1} onPress={handleSelectAll}>
+              <Text className="font-plight text-xs mb-2 mx-1 text-gray-500">
+                {allSelected ? 'Deselect All' : 'Select All'}
+              </Text>
+            </TouchableOpacity>
+            {selectedItems.length > 0 && (
+              <TouchableOpacity activeOpacity={1} onPress={handleDelete}>
+                <Text className="font-pregular text-xs text-red-500 mb-2 mx-1">
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderFooter = () => (
     <View className="items-center">
@@ -255,7 +322,7 @@ const FoodBookingCancellation = () => {
   return (
     <View className="w-full">
       <SectionList
-        className="py-2 mt-5 flex-grow-1"
+        className="py-2 px-4 mt-5 flex-grow-1"
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         nestedScrollEnabled={true}

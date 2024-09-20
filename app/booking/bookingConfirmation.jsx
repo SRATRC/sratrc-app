@@ -87,7 +87,8 @@ const bookingConfirmation = () => {
           <CustomButton
             text="Proceed to Payment"
             handlePress={() => {
-              // setIsSubmitting(true);
+              setIsSubmitting(true);
+              router.push('/booking/paymentConfirmation');
             }}
             containerStyles="mb-8 min-h-[62px]"
             isLoading={isSubmitting}

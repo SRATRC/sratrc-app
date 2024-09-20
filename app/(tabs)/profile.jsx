@@ -78,9 +78,9 @@ const Profile = () => {
         }}
       >
         <Image
-          source={images.pfp}
+          source={user.pfp ? { uri: user.pfp } : images.pfp}
           className="w-[150] h-[150] rounded-full border-2 border-secondary"
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </TouchableOpacity>
       <Text className="text-base font-psemibold mt-2">{user.issuedto}</Text>

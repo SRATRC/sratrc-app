@@ -1,17 +1,18 @@
-import { View, Text, Image, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, Image, ActivityIndicator } from 'react-native';
 import {
   useInfiniteQuery,
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
 import { icons, status } from '../../constants';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { FlashList } from '@shopify/flash-list';
 import CustomButton from '../CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
 import ExpandableItem from '../ExpandableItem';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import LottieView from 'lottie-react-native';
 
 const TravelBookingCancellation = () => {
@@ -265,12 +266,13 @@ const TravelBookingCancellation = () => {
 
   return (
     <View className="w-full">
-      <FlatList
-        className="py-2 mt-5 flex-grow-1"
+      <FlashList
+        className="flex-grow-1"
+        contentContainerStyle={{ paddingTop: 20, paddingHorizontal: 16 }}
         showsVerticalScrollIndicator={false}
         data={data?.pages?.flatMap((page) => page) || []}
+        estimatedItemSize={113}
         renderItem={renderItem}
-        keyExtractor={(item) => item.bookingid}
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.1}
         onEndReached={() => {

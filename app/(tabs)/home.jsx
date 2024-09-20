@@ -6,10 +6,18 @@ import { Link } from 'expo-router';
 const Home = () => {
   return (
     <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
-      <View className="w-full">
-        <Text>Home</Text>
+      <View className="h-full w-full space-y-4 items-center justify-center">
+        <Link href="/booking/paymentConfirmation">
+          <Text>Payment confirmation</Text>
+        </Link>
         <Link href="/wifi">
-          <Text>WIFI</Text>
+          <Text>Wifi</Text>
+        </Link>
+        <Link href="/maintenanceRequest">
+          <Text>Maintenance Request</Text>
+        </Link>
+        <Link href="/maintenanceRequestList">
+          <Text>Maintenance Request List</Text>
         </Link>
       </View>
     </SafeAreaView>
