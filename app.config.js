@@ -16,8 +16,8 @@ export default {
     ios: {
       supportsTablet: true,
       package: 'com.vandit.sratrc',
-      bundleIdentifier: 'com.vandit.sratrc',
-      googleServicesFile: './GoogleService-Info.plist'
+      bundleIdentifier: 'com.vandit.sratrc'
+      // googleServicesFile: './GoogleService-Info.plist'
     },
     android: {
       adaptiveIcon: {

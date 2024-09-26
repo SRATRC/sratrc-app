@@ -3,8 +3,18 @@ import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NotificationProvider } from '../context/NotificationContext';
 import GlobalProvider from '../context/GlobalProvider';
 import * as Sentry from '@sentry/react-native';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false
+  })
+});
 
 Sentry.init({
   dsn: 'https://788f18c3ef141608ef9be5d1f5e38db9@o4505325938278400.ingest.us.sentry.io/4507877656952832'
@@ -41,19 +51,21 @@ const RootLayout = () => {
   }
 
   return (
-    <QueryClientProvider client={new QueryClient()}>
-      <GlobalProvider>
-        <StatusBar style="dark" />
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(common)" options={{ headerShown: false }} />
-          <Stack.Screen name="profile" options={{ headerShown: false }} />
-          <Stack.Screen name="booking" options={{ headerShown: false }} />
-        </Stack>
-      </GlobalProvider>
-    </QueryClientProvider>
+    <NotificationProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <GlobalProvider>
+          <StatusBar style="dark" />
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(common)" options={{ headerShown: false }} />
+            <Stack.Screen name="profile" options={{ headerShown: false }} />
+            <Stack.Screen name="booking" options={{ headerShown: false }} />
+          </Stack>
+        </GlobalProvider>
+      </QueryClientProvider>
+    </NotificationProvider>
   );
 };
 
