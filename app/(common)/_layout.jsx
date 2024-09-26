@@ -17,6 +17,7 @@ const CommonLayout = () => {
           name="maintenanceRequestList"
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="menu" options={{ headerShown: false }} />
       </Stack>
     </>
   );

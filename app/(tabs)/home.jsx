@@ -1,4 +1,4 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
@@ -13,11 +13,11 @@ const Home = () => {
         <Link href="/wifi">
           <Text>Wifi</Text>
         </Link>
-        <Link href="/maintenanceRequest">
-          <Text>Maintenance Request</Text>
-        </Link>
         <Link href="/maintenanceRequestList">
           <Text>Maintenance Request List</Text>
+        </Link>
+        <Link href="/menu">
+          <Text>Menu</Text>
         </Link>
       </View>
     </SafeAreaView>

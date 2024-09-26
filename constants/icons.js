@@ -50,6 +50,7 @@ import department from '../assets/icons/department.png';
 import grayTickCircle from '../assets/icons/gray-tick-circle.png';
 import orangeTickCircle from '../assets/icons/orange-tick-cirlce.png';
 import copy from '../assets/icons/copy.png';
+import add from '../assets/icons/add.png';
 
 export default {
   play,
@@ -103,5 +104,6 @@ export default {
   department,
   grayTickCircle,
   orangeTickCircle,
-  copy
+  copy,
+  add
 };

@@ -3,14 +3,16 @@ import {
   Text,
   Image,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  TouchableOpacity
 } from 'react-native';
 import { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { icons, status, types } from '../../constants';
+import { colors, icons, status, types } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
 import PageHeader from '../../components/PageHeader';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomChipGroup from '../../components/CustomChipGroup';
@@ -28,6 +30,7 @@ const CHIPS = [
 
 const maintenanceRequestList = () => {
   const { user } = useGlobalContext();
+  const router = useRouter();
 
   const [selectedChip, setSelectedChip] = useState(types.MAINTENANCE_TYPE_ALL);
   const [refreshing, setRefreshing] = useState(false);
@@ -194,7 +197,7 @@ const maintenanceRequestList = () => {
     );
 
   return (
-    <SafeAreaView className="h-full bg-white">
+    <SafeAreaView className="h-full w-full bg-white">
       <FlashList
         className="flex-grow-1"
         contentContainerStyle={{ padding: 10 }}
@@ -212,6 +215,17 @@ const maintenanceRequestList = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
+      <TouchableOpacity
+        className="bg-secondary p-4 absolute right-6 bottom-8 rounded-2xl"
+        onPress={() => router.push('/maintenanceRequest')}
+      >
+        <Image
+          source={icons.add}
+          tintColor={colors.white}
+          className="w-6 h-6"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
-import FormField from '../../components/FormField';
+import FormField from '../FormField';
 import { types } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -33,6 +33,11 @@ const LUGGAGE_LIST = [
   { key: 'none', value: 'NONE' }
 ];
 
+const BOOKING_TYPE_LIST = [
+  { key: 'regular', value: 'Regular' },
+  { key: 'full', value: 'Full Car' }
+];
+
 const TravelBooking = () => {
   const router = useRouter();
   const { setData } = useGlobalContext();
@@ -52,6 +57,7 @@ const TravelBooking = () => {
     pickup: '',
     drop: '',
     luggage: '',
+    type: 'regular',
     special_request: ''
   });
 
@@ -86,6 +92,15 @@ const TravelBooking = () => {
         data={LUGGAGE_LIST}
         save={'value'}
         setSelected={(val) => setTravelForm({ ...travelForm, luggage: val })}
+      />
+      <CustomDropdown
+        otherStyles="mt-7"
+        text={'Booking Type'}
+        placeholder={'Select booking type'}
+        data={BOOKING_TYPE_LIST}
+        save={'value'}
+        defaultOption={{ key: 'regular', value: 'Regular' }}
+        setSelected={(val) => setTravelForm({ ...travelForm, type: val })}
       />
 
       <FormField

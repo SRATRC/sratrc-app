@@ -2,8 +2,8 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import GlobalProvider from '../context/GlobalProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import GlobalProvider from '../context/GlobalProvider';
 import * as Sentry from '@sentry/react-native';
 
 Sentry.init({
