@@ -20,7 +20,7 @@ const Home = () => {
         <Link href="/menu">
           <Text>Menu</Text>
         </Link>
-        <View className="flex flex-col space-y-1 mt-5">
+        {/* <View className="flex flex-col space-y-1 mt-5">
           <Text className="text-lg font-semibold">Notifications</Text>
           <Text className="text-sm font-semibold">
             Your Token: {expoPushToken ? expoPushToken : 'No token found'}
@@ -31,7 +31,7 @@ const Home = () => {
           <Text className="text-sm font-semibold">
             {JSON.stringify(notification?.request.content.data, null, 2)}
           </Text>
-        </View>
+        </View> */}
       </View>
     </SafeAreaView>
   );

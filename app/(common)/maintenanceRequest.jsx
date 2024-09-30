@@ -11,6 +11,7 @@ import { icons } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import PageHeader from '../../components/PageHeader';
 import FormField from '../../components/FormField';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -25,7 +26,9 @@ const DEPARTMENT_LIST = [
 
 const maintenanceRequest = () => {
   const { user } = useGlobalContext();
+
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [form, setForm] = useState({
     department: '',
@@ -93,11 +96,10 @@ const maintenanceRequest = () => {
                   return;
                 }
 
-                const onSuccess = (_data) => {
-                  Alert.alert('Request Sent Successful');
+                const onSuccess = async (_data) => {
+                  await queryClient.invalidateQueries(['maintenance']);
                   router.back();
                 };
-
                 const onFinally = () => {
                   setIsSubmitting(false);
                 };
@@ -105,9 +107,12 @@ const maintenanceRequest = () => {
                 await handleAPICall(
                   'POST',
                   '/maintenance/request',
-                  { cardno: user.cardno },
+                  null,
                   {
-                    form
+                    cardno: user.cardno,
+                    department: form.department,
+                    work_detail: form.work_detail,
+                    area_of_work: form.area_of_work
                   },
                   onSuccess,
                   onFinally
