@@ -6,8 +6,7 @@ export const useGlobalContext = () => useContext(GlobalContext);
 
 const getCurrentUser = async () => {
   const data = await AsyncStorage.getItem('user');
-  user = data ? JSON.parse(data) : null;
-  return user;
+  return data ? JSON.parse(data) : null;
 };
 
 const setCurrentUser = async (user) => {
@@ -22,26 +21,56 @@ const GlobalProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [data, setData] = useState({});
+  const [guestData, setGuestData] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // track if component is mounted
     getCurrentUser()
       .then((res) => {
-        if (res) {
-          setIsLoggedIn(true);
-          setUser(res);
-        } else {
-          setIsLoggedIn(false);
-          setUser(null);
+        if (isMounted) {
+          if (res) {
+            setIsLoggedIn(true);
+            setUser(res);
+          } else {
+            setIsLoggedIn(false);
+            setUser(null);
+          }
         }
       })
       .catch((error) => {
         console.log(error);
       })
       .finally(() => {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       });
+
+    return () => {
+      isMounted = false; // cleanup on unmount
+    };
   }, []);
+
+  const updateBooking = async (bookingType, item) => {
+    setData((prev) => {
+      const updated = { ...prev, [bookingType]: item };
+      const keysToDelete = ['room', 'travel', 'food', 'adhyayan'].filter(
+        (key) => key !== bookingType
+      );
+      keysToDelete.forEach((key) => delete updated[key]);
+      return updated;
+    });
+  };
+
+  const updateGuestBooking = async (bookingType, item) => {
+    setGuestData((prev) => {
+      const updated = { ...prev, [bookingType]: item };
+      const keysToDelete = ['room', 'travel', 'food', 'adhyayan'].filter(
+        (key) => key !== bookingType
+      );
+      keysToDelete.forEach((key) => delete updated[key]);
+      return updated;
+    });
+  };
 
   return (
     <GlobalContext.Provider
@@ -52,9 +81,13 @@ const GlobalProvider = ({ children }) => {
         setUser,
         data,
         setData,
+        guestData,
+        setGuestData,
         loading,
         setCurrentUser,
-        removeItem
+        removeItem,
+        updateBooking,
+        updateGuestBooking
       }}
     >
       {children}

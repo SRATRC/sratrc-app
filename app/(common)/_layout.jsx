@@ -11,7 +11,7 @@ const CommonLayout = () => {
         <Stack.Screen name="camera" options={{ headerShown: false }} />
         <Stack.Screen
           name="maintenanceRequest"
-          options={{ headerShown: false }}
+          options={{ headerShown: false, presentation: 'modal' }}
         />
         <Stack.Screen
           name="maintenanceRequestList"

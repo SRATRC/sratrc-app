@@ -60,9 +60,12 @@ const bookingConfirmation = () => {
                 </Text>
                 <Text className="text-black font-pregular text-base">
                   ₹{' '}
-                  {data.adhyayan?.reduce((total, item) => {
-                    return total + (item.amount ?? 0);
-                  }, 0) ?? 0}
+                  {Array.isArray(data.adhyayan)
+                    ? data.adhyayan.reduce(
+                        (total, item) => total + (item.amount ?? 0),
+                        0
+                      )
+                    : data.adhyayan.amount ?? 0}
                 </Text>
               </View>
             )}
@@ -75,9 +78,12 @@ const bookingConfirmation = () => {
                 ₹{' '}
                 {(data.room?.charge ?? 0) +
                   (data.travel?.charge ?? 0) +
-                  (data.adhyayan?.reduce((total, item) => {
-                    return total + (item.amount ?? 0);
-                  }, 0) ?? 0)}
+                  (Array.isArray(data.adhyayan)
+                    ? data.adhyayan.reduce(
+                        (total, item) => total + (item.amount ?? 0),
+                        0
+                      )
+                    : data.adhyayan?.amount ?? 0)}
               </Text>
             </View>
           </View>

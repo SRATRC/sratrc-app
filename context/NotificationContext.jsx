@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../utils/registerForPushNotificationsAsync';
+import { useRouter } from 'expo-router';
 
 const NotificationContext = createContext(undefined);
 
@@ -28,6 +29,8 @@ export const NotificationProvider = ({ children }) => {
   const notificationListener = useRef();
   const responseListener = useRef();
 
+  const router = useRouter();
+
   useEffect(() => {
     registerForPushNotificationsAsync().then(
       (token) => setExpoPushToken(token),
@@ -36,18 +39,25 @@ export const NotificationProvider = ({ children }) => {
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log('🔔 Notification Received: ', notification);
+        // console.log('🔔 Notification Received: ', notification);
         setNotification(notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(
-          '🔔 Notification Response: ',
-          JSON.stringify(response, null, 2),
-          JSON.stringify(response.notification.request.content.data, null, 2)
-        );
-        // Handle the notification response here
+        // console.log(
+        //   '🔔 Notification Response: ',
+        //   JSON.stringify(response, null, 2)
+        // );
+
+        // Extract data from notification
+        const data = response.notification.request.content.data;
+
+        // Navigate using the router if the screen is specified
+        if (data?.screen) {
+          // For dynamic screens, you can pass additional params if necessary
+          router.push(data.screen); // Or router.push(`${data.screen}/${data.someId}`) for dynamic routing
+        }
       });
 
     return () => {

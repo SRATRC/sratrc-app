@@ -17,15 +17,15 @@ import TravelBookingCancellation from '../../components/cancel booking/TravelBoo
 import AdhyayanBookingCancellation from '../../components/cancel booking/AdhyayanBookingCancellation';
 
 const CHIPS = [
+  types.booking_type_adhyayan,
   types.booking_type_room,
   types.booking_type_food,
-  types.booking_type_travel,
-  types.booking_type_adhyayan
+  types.booking_type_travel
 ];
 
 const BookingCategories = ({ onRefresh }) => {
   const queryClient = useQueryClient();
-  const [selectedChip, setSelectedChip] = useState(types.booking_type_room);
+  const [selectedChip, setSelectedChip] = useState(types.booking_type_adhyayan);
 
   const handleChipClick = (chip) => {
     setSelectedChip(chip);

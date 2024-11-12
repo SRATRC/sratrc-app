@@ -5,10 +5,12 @@ import {
   ActivityIndicator,
   Platform,
   TouchableOpacity,
-  SectionList
+  SectionList,
+  ScrollView
 } from 'react-native';
 import { useState, useCallback } from 'react';
 import {
+  useQuery,
   useInfiniteQuery,
   useMutation,
   useQueryClient
@@ -19,20 +21,43 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated';
-import { icons } from '../../constants';
+import { colors, icons } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { Dropdown } from 'react-native-element-dropdown';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 
+const FOOD_TYPE_LIST = [
+  { label: 'All', value: 'all' },
+  { label: 'breakfast', value: 'breakfast' },
+  { label: 'lunch', value: 'lunch' },
+  { label: 'dinner', value: 'dinner' }
+];
+
+const SPICE_LIST = [
+  { label: 'All', value: 'all' },
+  { label: 'Regular', value: true },
+  { label: 'Non Spicy', value: false }
+];
+
 const FoodBookingCancellation = () => {
   const { user } = useGlobalContext();
   const queryClient = useQueryClient();
 
   const [selectedItems, setSelectedItems] = useState([]);
+  const [datePickerVisibility, setDatePickerVisibility] = useState(false);
+  const [filter, setFilter] = useState({
+    date: null,
+    meal: null,
+    spice: null,
+    for: null
+  });
 
+  // Fetching food data using infinite query
   const fetchFoods = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
@@ -40,13 +65,15 @@ const FoodBookingCancellation = () => {
         '/food/get',
         {
           cardno: user.cardno,
-          page: pageParam
+          page: pageParam,
+          date: filter.date,
+          meal: filter.meal,
+          spice: filter.spice,
+          bookedFor: filter.for
         },
         null,
-        (res) => {
-          resolve(Array.isArray(res.data) ? res.data : []);
-        },
-        () => reject(new Error('Failed to fetch travels'))
+        (res) => resolve(Array.isArray(res.data) ? res.data : []),
+        () => reject(new Error('Failed to fetch foods'))
       );
     });
   };
@@ -56,19 +83,44 @@ const FoodBookingCancellation = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    status: queryStatus,
     isLoading,
     isError
   } = useInfiniteQuery({
-    queryKey: ['foods', user.cardno],
+    queryKey: [
+      'foods',
+      user.cardno,
+      filter.date,
+      filter.meal,
+      filter.spice,
+      filter.for
+    ],
     queryFn: fetchFoods,
     staleTime: 1000 * 60 * 5,
-    getNextPageParam: (lastPage, pages) => {
-      if (!lastPage || lastPage.length === 0) return undefined;
-      return pages.length + 1;
-    }
+    getNextPageParam: (lastPage, pages) =>
+      lastPage?.length ? pages.length + 1 : undefined
   });
 
+  // Fetching guest list for filters
+  const fetchGuests = async () => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/food/getGuestsForFilter',
+        { cardno: user.cardno },
+        null,
+        (res) => resolve(Array.isArray(res.data) ? res.data : []),
+        () => reject(new Error('Failed to fetch guests'))
+      );
+    });
+  };
+
+  const { data: guestList, isLoading: isLoadingGuest } = useQuery({
+    queryKey: ['foodGuestList', user.cardno],
+    queryFn: fetchGuests,
+    staleTime: 1000 * 60 * 60 * 2
+  });
+
+  // Mutation to cancel booking
   const cancelBookingMutation = useMutation({
     mutationFn: () => {
       return new Promise((resolve, reject) => {
@@ -76,35 +128,22 @@ const FoodBookingCancellation = () => {
           'PATCH',
           '/food/cancel',
           null,
-          {
-            cardno: user.cardno,
-            food_data: selectedItems
-          },
-          (res) => resolve(res),
+          { cardno: user.cardno, food_data: selectedItems },
+          resolve,
           () => reject(new Error('Failed to cancel booking'))
         );
       });
     },
     onSuccess: () => {
-      queryClient.setQueryData(['foods', user.cardno], (oldData) => {
-        if (!oldData || !oldData.pages) return oldData;
-
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) =>
-            page.filter(
-              (booking) =>
-                !selectedItems.some(
-                  (selected) =>
-                    selected.date === booking.date &&
-                    selected.mealType === booking.mealType
-                )
-            )
-          )
-        };
-      });
       setSelectedItems([]);
-      queryClient.invalidateQueries(['foods', user.cardno]);
+      queryClient.invalidateQueries([
+        'foods',
+        user.cardno,
+        filter.date,
+        filter.meal,
+        filter.spice,
+        filter.for
+      ]);
     }
   });
 
@@ -303,6 +342,143 @@ const FoodBookingCancellation = () => {
     );
   };
 
+  const renderHeader = () => (
+    <View className="space-y-1">
+      <Text className="text-black font-pregular">Filter By:</Text>
+      <ScrollView className="flex w-full" horizontal>
+        <View className="flex flex-row w-full items-center space-x-2">
+          <View className="flex-row items-center justify-center space-x-2 border border-gray-200 rounded-xl p-2">
+            <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+              <Text
+                className={`${
+                  filter.date ? 'text-black' : 'text-gray-400'
+                } font-pregular`}
+              >
+                {filter.date
+                  ? moment(filter.date).format('Do MMMM YYYY')
+                  : 'Date'}
+              </Text>
+            </TouchableOpacity>
+
+            {filter.date && (
+              <TouchableOpacity
+                onPress={() => setFilter((prev) => ({ ...prev, date: null }))}
+              >
+                <Image
+                  source={icons.cross}
+                  className="w-2.5 h-2.5"
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <DateTimePickerModal
+            isVisible={datePickerVisibility}
+            mode="date"
+            onConfirm={(date) => {
+              setFilter((prev) => ({
+                ...prev,
+                date: moment(date).format('YYYY-MM-DD')
+              }));
+              setDatePickerVisibility(false);
+            }}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
+
+          <Dropdown
+            data={FOOD_TYPE_LIST}
+            labelField="label"
+            valueField="value"
+            placeholder="Meal Type"
+            value={filter.meal}
+            onChange={(item) =>
+              setFilter((prev) => ({ ...prev, meal: item.value }))
+            }
+            style={{
+              borderColor: colors.gray_200,
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 6
+            }}
+            containerStyle={{
+              borderWidth: 1,
+              shadowRadius: 0,
+              shadowOpacity: 0,
+              width: 120
+            }}
+            placeholderStyle={{
+              color: colors.gray_400,
+              fontFamily: 'Poppins-Regular',
+              fontSize: 16
+            }}
+          />
+
+          <Dropdown
+            data={SPICE_LIST}
+            labelField="label"
+            valueField="value"
+            placeholder="Spice Level"
+            value={filter.spice}
+            onChange={(item) =>
+              setFilter((prev) => ({ ...prev, spice: item.value }))
+            }
+            style={{
+              borderColor: colors.gray_200,
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 6
+            }}
+            containerStyle={{
+              borderWidth: 1,
+              shadowRadius: 0,
+              shadowOpacity: 0,
+              width: 120
+            }}
+            placeholderStyle={{
+              color: colors.gray_400,
+              fontFamily: 'Poppins-Regular',
+              fontSize: 16
+            }}
+          />
+
+          {guestList && (
+            <Dropdown
+              data={guestList}
+              labelField="label"
+              valueField="value"
+              placeholder="Booked For"
+              value={filter.for}
+              onChange={(item) =>
+                setFilter((prev) => ({ ...prev, for: item.value }))
+              }
+              style={{
+                borderColor: colors.gray_200,
+                borderWidth: 1,
+                borderRadius: 12,
+                paddingHorizontal: 12,
+                paddingVertical: 6
+              }}
+              containerStyle={{
+                borderWidth: 1,
+                shadowRadius: 0,
+                shadowOpacity: 0,
+                width: 120
+              }}
+              placeholderStyle={{
+                color: colors.gray_400,
+                fontFamily: 'Poppins-Regular',
+                fontSize: 16
+              }}
+            />
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+
   const renderFooter = () => (
     <View className="items-center">
       {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
@@ -322,7 +498,7 @@ const FoodBookingCancellation = () => {
   return (
     <View className="w-full">
       <SectionList
-        className="py-2 px-4 mt-5 flex-grow-1"
+        className="py-2 px-4 mt-2 flex-grow-1"
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         nestedScrollEnabled={true}
@@ -330,6 +506,7 @@ const FoodBookingCancellation = () => {
         renderItem={({ item, section }) => renderItem({ item, section })}
         keyExtractor={(item) => `${item.date}-${item.mealType}`}
         renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.1}
         onEndReached={() => {
@@ -349,7 +526,7 @@ const FoodBookingCancellation = () => {
             source={require('../../assets/lottie/empty.json')}
           />
           <Text className="text-lg font-pregular text-secondary">
-            You have not booked any meals yet
+            Nothing to show for selected filter
           </Text>
         </View>
       )}

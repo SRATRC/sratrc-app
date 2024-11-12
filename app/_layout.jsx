@@ -62,6 +62,10 @@ const RootLayout = () => {
             <Stack.Screen name="(common)" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
             <Stack.Screen name="booking" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="guestBooking"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </GlobalProvider>
       </QueryClientProvider>

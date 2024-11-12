@@ -1,13 +1,13 @@
 import { View } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { types } from '../../constants';
+import { useRouter } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
 import FormField from '../FormField';
-import { types } from '../../constants';
-import { useRouter } from 'expo-router';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomModal from '../CustomModal';
 
 const LOCATION_LIST = [
@@ -40,7 +40,7 @@ const BOOKING_TYPE_LIST = [
 
 const TravelBooking = () => {
   const router = useRouter();
-  const { setData } = useGlobalContext();
+  const { updateBooking } = useGlobalContext();
 
   useFocusEffect(
     useCallback(() => {
@@ -140,13 +140,7 @@ const TravelBooking = () => {
             return;
           }
 
-          setData((prev) => {
-            const updated = { ...prev, travel: travelForm };
-            delete updated.room;
-            delete updated.adhyayan;
-            delete updated.food;
-            return updated;
-          });
+          await updateBooking('travel', travelForm);
           router.push(`/booking/${types.TRAVEL_DETAILS_TYPE}`);
         }}
         containerStyles="mt-7 w-full px-1 min-h-[62px]"

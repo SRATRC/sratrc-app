@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Button, Image, Text, TouchableOpacity, View } from 'react-native';
 import { icons } from '../../constants';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -9,12 +9,18 @@ import CustomButton from '../../components/CustomButton';
 // import * as MediaLibrary from 'expo-media-library';
 
 const camera = () => {
-  const { setUser, setCurrentUser } = useGlobalContext();
+  const { setUser, setCurrentUser, user } = useGlobalContext();
 
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState(null);
   const cameraRef = useRef(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (capturedImage) {
+      setCurrentUser(user);
+    }
+  }, [user]);
 
   if (!permission) {
     return <View />;
@@ -45,8 +51,7 @@ const camera = () => {
         );
 
         setCapturedImage(mirroredImage.uri);
-        setUser({ ...user, pfp: mirroredImage.uri });
-        setCurrentUser({ ...user, pfp: mirroredImage.uri });
+        setUser((prev) => ({ ...prev, pfp: mirroredImage.uri }));
         // await MediaLibrary.saveToLibraryAsync(mirroredImage.uri);
       } catch (error) {
         console.error('Failed to take picture:', error);

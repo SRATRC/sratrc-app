@@ -25,6 +25,24 @@ import * as Haptics from 'expo-haptics';
 const wifi = () => {
   const { user } = useGlobalContext();
 
+  if (!user) {
+    return (
+      <SafeAreaView className="h-full bg-white items-center justify-center">
+        <ActivityIndicator size="large" color={colors.orange} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!user.cardno) {
+    return (
+      <SafeAreaView className="h-full bg-white items-center justify-center">
+        <Text className="text-red-500 text-lg font-pregular">
+          Missing card number
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   const [refreshing, setRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +72,8 @@ const wifi = () => {
   } = useQuery({
     queryKey: ['wifi', user.cardno],
     queryFn: fetchWifiPasswords,
-    staleTime: 1000 * 60 * 30
+    staleTime: 1000 * 60 * 30,
+    enabled: !!user.cardno
   });
 
   const generateNewWifiCode = async () => {

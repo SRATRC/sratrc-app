@@ -51,6 +51,7 @@ import grayTickCircle from '../assets/icons/gray-tick-circle.png';
 import orangeTickCircle from '../assets/icons/orange-tick-cirlce.png';
 import copy from '../assets/icons/copy.png';
 import add from '../assets/icons/add.png';
+import guest from '../assets/icons/guest.png';
 
 export default {
   play,
@@ -105,5 +106,6 @@ export default {
   grayTickCircle,
   orangeTickCircle,
   copy,
-  add
+  add,
+  guest
 };

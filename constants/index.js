@@ -5,5 +5,6 @@ import images from './images';
 import types from './types';
 import colors from './colors';
 import status from './status';
+import dropdowns from './dropdowns';
 
-export { icons, images, BASE_URL, types, colors, status };
+export { icons, images, BASE_URL, types, colors, status, dropdowns };

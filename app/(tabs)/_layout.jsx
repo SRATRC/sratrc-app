@@ -7,16 +7,15 @@ import {
   ImageBackground
 } from 'react-native';
 import { Tabs } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { icons, images, colors } from '../../constants';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
 import QRCodeStyled from 'react-native-qrcode-styled';
 import PageHeader from '../../components/PageHeader';
 import * as Brightness from 'expo-brightness';
 import { useGlobalContext } from '../../context/GlobalProvider';
 
-const TabIcon = ({ icon, color, name, focused }) => {
+const TabIcon = React.memo(({ icon, color, name, focused }) => {
   return (
     <View className="items-center justify-center gap-2">
       <Image
@@ -33,29 +32,74 @@ const TabIcon = ({ icon, color, name, focused }) => {
       </Text>
     </View>
   );
-};
+});
+
+const QRModal = React.memo(({ isVisible, onClose, user }) => {
+  return (
+    <Modal
+      animationType="slide"
+      visible={isVisible}
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <PageHeader title={'QR Code'} icon={icons.cross} onPress={onClose} />
+      <View className="h-full mt-10">
+        <ImageBackground
+          source={images.ticketbg}
+          resizeMode="contain"
+          className="justify-center items-center"
+        >
+          <View className="h-[70%] items-center justify-center">
+            <QRCodeStyled
+              data={user.cardno}
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: 20,
+                overflow: 'hidden'
+              }}
+              padding={20}
+              pieceSize={10}
+              color={colors.black_200}
+              errorCorrectionLevel={'H'}
+              innerEyesOptions={{
+                borderRadius: 12,
+                color: colors.black_200
+              }}
+              outerEyesOptions={{
+                borderRadius: 12,
+                color: colors.orange
+              }}
+              logo={{
+                href: require('../../assets/images/logo.png'),
+                padding: 4
+              }}
+            />
+          </View>
+        </ImageBackground>
+      </View>
+    </Modal>
+  );
+});
 
 const TabsLayout = () => {
-  const router = useRouter();
   const { user } = useGlobalContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [originalBrightness, setOriginalBrightness] = useState(null);
 
-  // Function to handle brightness adjustments
-  useEffect(() => {
-    const adjustBrightness = async () => {
-      const { status } = await Brightness.requestPermissionsAsync();
-      if (status === 'granted') {
-        try {
-          const currentBrightness = await Brightness.getBrightnessAsync();
-          setOriginalBrightness(currentBrightness);
-          await Brightness.setBrightnessAsync(0.7);
-        } catch (e) {
-          console.log('Error setting brightness:', e);
-        }
+  const adjustBrightness = useCallback(async () => {
+    const { status } = await Brightness.requestPermissionsAsync();
+    if (status === 'granted') {
+      try {
+        const currentBrightness = await Brightness.getBrightnessAsync();
+        setOriginalBrightness(currentBrightness);
+        await Brightness.setBrightnessAsync(0.7);
+      } catch (e) {
+        console.log('Error setting brightness:', e);
       }
-    };
+    }
+  }, []);
 
+  useEffect(() => {
     if (isModalVisible) {
       adjustBrightness();
     }
@@ -65,15 +109,18 @@ const TabsLayout = () => {
         Brightness.setBrightnessAsync(originalBrightness);
       }
     };
-  }, [isModalVisible, originalBrightness]);
+  }, [isModalVisible, originalBrightness, adjustBrightness]);
 
-  // Function to close the modal and restore brightness
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     if (originalBrightness !== null) {
       Brightness.setBrightnessAsync(originalBrightness);
     }
     setIsModalVisible(false);
-  };
+  }, [originalBrightness]);
+
+  const openModal = useCallback(() => {
+    setIsModalVisible(true);
+  }, []);
 
   return (
     <>
@@ -138,7 +185,7 @@ const TabsLayout = () => {
           listeners={() => ({
             tabPress: (e) => {
               e.preventDefault();
-              setIsModalVisible(true); // Show the modal
+              openModal();
             }
           })}
         />
@@ -174,55 +221,7 @@ const TabsLayout = () => {
         />
       </Tabs>
 
-      {/* QR Modal Component */}
-      <Modal
-        animationType="slide"
-        visible={isModalVisible}
-        presentationStyle="pageSheet"
-        onRequestClose={closeModal}
-      >
-        <PageHeader
-          title={'QR Code'}
-          icon={icons.cross}
-          onPress={() => {
-            setIsModalVisible(false);
-          }}
-        />
-        <View className="h-full mt-10">
-          <ImageBackground
-            source={images.ticketbg}
-            resizeMode="contain"
-            className="justify-center items-center"
-          >
-            <View className="h-[70%] items-center justify-center">
-              <QRCodeStyled
-                data={user.cardno}
-                style={{
-                  backgroundColor: '#fff',
-                  borderRadius: 20,
-                  overflow: 'hidden'
-                }}
-                padding={20}
-                pieceSize={10}
-                color={colors.black_200}
-                errorCorrectionLevel={'H'}
-                innerEyesOptions={{
-                  borderRadius: 12,
-                  color: colors.black_200
-                }}
-                outerEyesOptions={{
-                  borderRadius: 12,
-                  color: colors.orange
-                }}
-                logo={{
-                  href: require('../../assets/images/logo.png'),
-                  padding: 4
-                }}
-              />
-            </View>
-          </ImageBackground>
-        </View>
-      </Modal>
+      <QRModal isVisible={isModalVisible} onClose={closeModal} user={user} />
     </>
   );
 };

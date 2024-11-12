@@ -217,7 +217,12 @@ const maintenanceRequestList = () => {
       />
       <TouchableOpacity
         className="bg-secondary p-4 absolute right-6 bottom-8 rounded-2xl"
-        onPress={() => router.push('/maintenanceRequest')}
+        onPress={() =>
+          router.push({
+            pathname: '/maintenanceRequest',
+            params: { modal: true }
+          })
+        }
       >
         <Image
           source={icons.add}

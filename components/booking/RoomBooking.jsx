@@ -1,7 +1,7 @@
-import { View, Alert, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Alert, Text } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, icons, types } from '../../constants';
+import { types, dropdowns } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import SegmentedControl from '../../components/SegmentedControl';
@@ -11,7 +11,7 @@ import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomModal from '../CustomModal';
 import CustomChipGroup from '../../components/CustomChipGroup';
-import FormField from '../FormField';
+import GuestForm from '../GuestForm';
 
 const SWITCH_OPTIONS = ['Select Dates', 'One Day Visit'];
 
@@ -25,42 +25,11 @@ const FLOOR_TYPE_LIST = [
   { key: 'n', value: 'No' }
 ];
 
-const GENDER_LIST = [
-  { key: 'M', value: 'Male' },
-  { key: 'F', value: 'Female' }
-];
-
-const GUEST_TYPE_LIST = [
-  { key: 'VIP', value: 'VIP' },
-  { key: 'Driver', value: 'Driver' },
-  { key: 'Friend', value: 'Friend' },
-  { key: 'Family', value: 'Family' }
-];
-
 const CHIPS = ['Self', 'Guest'];
-
-const suggestions = [
-  {
-    name: 'Vandit Vasa',
-    gender: 'M',
-    mobno: '222222222',
-    guestType: 'VIP',
-    roomType: 'ac',
-    floorType: 'n'
-  },
-  {
-    name: 'Amee Vasa',
-    gender: 'F',
-    mobno: '4345609823',
-    guestType: 'Friend',
-    roomType: 'nac',
-    floorType: 'SC'
-  }
-];
 
 const RoomBooking = () => {
   const router = useRouter();
-  const { user, setData } = useGlobalContext();
+  const { user, updateBooking, updateGuestBooking } = useGlobalContext();
 
   useFocusEffect(
     useCallback(() => {
@@ -88,57 +57,81 @@ const RoomBooking = () => {
     floorType: ''
   });
 
-  const [guestForm, setGuestForm] = useState([
-    {
-      name: '',
-      gender: '',
-      mobno: '',
-      guestType: '',
-      roomType: '',
-      floorType: ''
-    }
-  ]);
+  const [guestForm, setGuestForm] = useState({
+    startDay: '',
+    endDay: '',
+    guests: [
+      {
+        name: '',
+        gender: '',
+        mobno: '',
+        guestType: '',
+        roomType: '',
+        floorType: ''
+      }
+    ]
+  });
 
   const addGuestForm = () => {
-    setGuestForm([
-      ...guestForm,
-      { name: '', mobno: '', guestType: '', floorType: '', roomType: '' }
-    ]);
+    setGuestForm((prev) => ({
+      ...prev,
+      guests: [
+        ...prev.guests,
+        {
+          name: '',
+          gender: '',
+          mobno: '',
+          guestType: '',
+          roomType: '',
+          floorType: ''
+        }
+      ]
+    }));
   };
 
   const handleGuestFormChange = (index, field, value) => {
-    const updatedForms = guestForm.map((form, i) =>
-      i === index ? { ...form, [field]: value } : form
+    const updatedForms = guestForm.guests.map((guest, i) =>
+      i === index ? { ...guest, [field]: value } : guest
     );
-    setGuestForm(updatedForms);
+    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
 
   const handleSuggestionSelect = (index, suggestion) => {
-    const updatedForms = guestForm.map((form, i) =>
+    const updatedForms = guestForm.guests.map((guest, i) =>
       i === index
-        ? { ...form, ...suggestion, mobno: suggestion.mobno.toString() }
-        : form
+        ? { ...guest, ...suggestion, mobno: suggestion.mobno.toString() }
+        : guest
     );
-    setGuestForm(updatedForms);
+    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
 
   const removeGuestForm = (indexToRemove) => {
-    setGuestForm(guestForm.filter((_, index) => index !== indexToRemove));
+    setGuestForm((prev) => ({
+      ...prev,
+      guests: prev.guests.filter((_, index) => index !== indexToRemove)
+    }));
   };
 
-  const isGuestFormValid = guestForm.every((guest) => {
-    if (guest.guestType === 'VIP') {
-      return guest.name && guest.guestType && guest.floorType && guest.roomType;
-    } else {
-      return (
-        guest.name &&
-        guest.mobno &&
-        guest.guestType &&
-        guest.floorType &&
-        guest.roomType
-      );
+  const isGuestFormValid = () => {
+    if (!multiDayForm.startDay) {
+      return false;
     }
-  });
+
+    return guestForm.guests.every((guest) => {
+      const commonFields =
+        guest.name &&
+        guest.gender &&
+        guest.guestType &&
+        guest.roomType &&
+        guest.floorType;
+
+      if (guest.guestType === 'VIP') {
+        return commonFields;
+      } else {
+        return commonFields && guest.mobno;
+      }
+    });
+  };
 
   return (
     <View className="flex-1 justify-center mt-10">
@@ -153,13 +146,15 @@ const RoomBooking = () => {
           <CustomCalender
             type={'period'}
             startDay={multiDayForm.startDay}
-            setStartDay={(day) =>
-              setMultiDayForm((prev) => ({ ...prev, startDay: day }))
-            }
+            setStartDay={(day) => {
+              setMultiDayForm((prev) => ({ ...prev, startDay: day }));
+              setGuestForm((prev) => ({ ...prev, startDay: day }));
+            }}
             endDay={multiDayForm.endDay}
-            setEndDay={(day) =>
-              setMultiDayForm((prev) => ({ ...prev, endDay: day }))
-            }
+            setEndDay={(day) => {
+              setMultiDayForm((prev) => ({ ...prev, endDay: day }));
+              setGuestForm((prev) => ({ ...prev, endDay: day }));
+            }}
           />
 
           <View className="w-full mt-7 flex flex-col">
@@ -214,13 +209,7 @@ const RoomBooking = () => {
                     return;
                   }
 
-                  setData((prev) => {
-                    const updated = { ...prev, room: multiDayForm };
-                    delete updated.travel;
-                    delete updated.adhyayan;
-                    delete updated.food;
-                    return updated;
-                  });
+                  await updateBooking('room', multiDayForm);
                   router.push(`/booking/${types.ROOM_DETAILS_TYPE}`);
                 }}
                 containerStyles="mt-7 min-h-[62px]"
@@ -231,139 +220,55 @@ const RoomBooking = () => {
 
           {selectedChip === CHIPS[1] && (
             <View>
-              {guestForm.map((guestForm, index) => (
-                <View key={index} className="mt-8">
-                  <View className="flex flex-row justify-between">
-                    <Text className="font-psemibold text-base underline text-black">
-                      Details for Guest - {index + 1}
-                    </Text>
-                    {index != 0 && (
-                      <TouchableOpacity
-                        className="mr-3 bg-white"
-                        onPress={() => removeGuestForm(index)}
-                      >
-                        <Image
-                          source={icons.remove}
-                          className="w-5 h-5"
-                          resizeMode="contain"
-                        />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  <FormField
-                    text="Guest Name"
-                    value={guestForm.name}
-                    autoCorrect={false}
-                    handleChangeText={(e) =>
-                      handleGuestFormChange(index, 'name', e)
-                    }
-                    otherStyles="mt-4"
-                    inputStyles="font-pmedium text-base text-gray-400"
-                    containerStyles="bg-gray-100"
-                    keyboardType="default"
-                    placeholder="Guest Name"
-                    suggestions={suggestions.map((s) => s.name)}
-                    onSelectItem={(name) => {
-                      const selectedSuggestion = suggestions.find(
-                        (s) => s.name === name
-                      );
-                      handleSuggestionSelect(index, selectedSuggestion);
-                    }}
-                    showAutocomplete={true}
-                  />
-
-                  <CustomDropdown
-                    otherStyles="mt-7"
-                    text={'Gender'}
-                    placeholder={'Select Gender'}
-                    data={GENDER_LIST}
-                    value={guestForm.gender}
-                    setSelected={(val) =>
-                      handleGuestFormChange(index, 'gender', val)
-                    }
-                    autofill={true}
-                  />
-
-                  <CustomDropdown
-                    otherStyles="mt-7"
-                    text={'Book Only if Ground Floor is Available'}
-                    placeholder={'Select Floor Type'}
-                    data={FLOOR_TYPE_LIST}
-                    value={guestForm.floorType}
-                    setSelected={(val) =>
-                      handleGuestFormChange(index, 'floorType', val)
-                    }
-                    autofill={true}
-                  />
-
-                  <CustomDropdown
-                    otherStyles="mt-7"
-                    text={'Guest Type'}
-                    placeholder={'Select Guest Type'}
-                    data={GUEST_TYPE_LIST}
-                    value={guestForm.guestType}
-                    setSelected={(val) =>
-                      handleGuestFormChange(index, 'guestType', val)
-                    }
-                    autofill={true}
-                  />
-
-                  {guestForm.guestType &&
-                  guestForm.guestType['value'] !== 'VIP' ? (
-                    <FormField
-                      text="Phone Number"
-                      prefix="+91"
-                      value={guestForm.mobno}
-                      handleChangeText={(e) =>
-                        handleGuestFormChange(index, 'mobno', e)
-                      }
-                      otherStyles="mt-7"
-                      inputStyles="font-pmedium text-base text-gray-400"
-                      keyboardType="number-pad"
-                      placeholder="Enter Your Phone Number"
-                      maxLength={10}
-                      containerStyles="bg-gray-100"
-                    />
-                  ) : null}
-
-                  <CustomDropdown
-                    otherStyles="mt-7"
-                    text={'Room Type'}
-                    placeholder={'Select Room Type'}
-                    data={ROOM_TYPE_LIST}
-                    value={guestForm.roomType}
-                    setSelected={(val) =>
-                      handleGuestFormChange(index, 'roomType', val)
-                    }
-                    autofill={true}
-                  />
-                </View>
-              ))}
-              <TouchableOpacity
-                className="w-full justify-start items-center mt-4 flex-row space-x-1"
-                onPress={addGuestForm}
+              <GuestForm
+                guestForm={guestForm}
+                handleGuestFormChange={handleGuestFormChange}
+                addGuestForm={addGuestForm}
+                removeGuestForm={removeGuestForm}
+                handleSuggestionSelect={handleSuggestionSelect}
               >
-                <Image
-                  source={icons.addon}
-                  tintColor={colors.black}
-                  className="w-4 h-4"
-                  resizeMode="contain"
-                />
-                <Text className="text-base text-black underline">
-                  Add More Guests
-                </Text>
-              </TouchableOpacity>
+                {(index) => (
+                  <>
+                    <CustomDropdown
+                      otherStyles="mt-7"
+                      text={'Room Type'}
+                      placeholder={'Select Room Type'}
+                      data={dropdowns.ROOM_TYPE_LIST}
+                      value={guestForm.guests[index].roomType}
+                      setSelected={(val) =>
+                        handleGuestFormChange(index, 'roomType', val)
+                      }
+                      autofill={true}
+                    />
+
+                    <CustomDropdown
+                      otherStyles="mt-7"
+                      text={'Book Only if Ground Floor is Available'}
+                      placeholder={'Select Floor Type'}
+                      data={dropdowns.FLOOR_TYPE_LIST}
+                      value={guestForm.guests[index].floorType}
+                      setSelected={(val) =>
+                        handleGuestFormChange(index, 'floorType', val)
+                      }
+                      autofill={true}
+                    />
+                  </>
+                )}
+              </GuestForm>
 
               <CustomButton
                 text="Book Now"
                 handlePress={async () => {
                   setIsSubmitting(true);
-                  if (!isGuestFormValid) {
+                  if (!isGuestFormValid()) {
                     setIsSubmitting(false);
                     setModalMessage('Please fill all fields');
                     setModalVisible(true);
                     return;
+                  } else {
+                    setIsSubmitting(false);
+                    updateGuestBooking('room', guestForm);
+                    router.push(`/guestBooking/${types.ROOM_DETAILS_TYPE}`);
                   }
                 }}
                 containerStyles="mt-7 min-h-[62px]"

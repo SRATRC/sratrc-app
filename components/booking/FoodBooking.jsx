@@ -1,5 +1,5 @@
 import { View, Alert, Text } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
@@ -7,24 +7,24 @@ import CustomCalender from '../../components/CustomCalender';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomMultiSelectDropdown from '../../components/CustomMultiSelectDropdown';
 import CustomChipGroup from '../CustomChipGroup';
-import FormField from '../FormField';
 import CustomModal from '../CustomModal';
+import GuestForm from '../GuestForm';
 
 const FOOD_TYPE_LIST = [
-  { key: 'breakfast', value: 'breakfast' },
-  { key: 'lunch', value: 'lunch' },
-  { key: 'dinner', value: 'dinner' }
+  { label: 'breakfast', value: 'breakfast' },
+  { label: 'lunch', value: 'lunch' },
+  { label: 'dinner', value: 'dinner' }
 ];
 
 const SPICE_LIST = [
-  { key: 'Regular', value: 'Regular' },
-  { key: 'Non Spicy', value: 'Non Spicy' }
+  { label: 'Regular', value: 'Regular' },
+  { label: 'Non Spicy', value: 'Non Spicy' }
 ];
 
 const HIGHTEA_LIST = [
-  { key: 'TEA', value: 'Tea' },
-  { key: 'COFFEE', value: 'Coffee' },
-  { key: 'NONE', value: 'None' }
+  { label: 'TEA', value: 'Tea' },
+  { label: 'COFFEE', value: 'Coffee' },
+  { label: 'NONE', value: 'None' }
 ];
 
 const CHIPS = ['Self', 'Guest'];
@@ -42,9 +42,17 @@ const FoodBooking = () => {
   const [guestForm, setGuestForm] = useState({
     startDay: '',
     endDay: '',
-    guests: '',
-    spicy: '',
-    hightea: 'NONE'
+    guests: [
+      {
+        name: '',
+        gender: '',
+        mobno: '',
+        guestType: '',
+        meals: [],
+        spicy: '',
+        hightea: 'NONE'
+      }
+    ]
   });
 
   const [type, setType] = useState([]);
@@ -58,16 +66,83 @@ const FoodBooking = () => {
     setSelectedChip(chip);
   };
 
+  const addGuestForm = () => {
+    setGuestForm((prev) => ({
+      ...prev,
+      guests: [
+        ...prev.guests,
+        {
+          name: '',
+          gender: '',
+          mobno: '',
+          guestType: '',
+          meals: [],
+          spicy: '',
+          hightea: 'NONE'
+        }
+      ]
+    }));
+  };
+
+  const handleGuestFormChange = (index, field, value) => {
+    const updatedForms = guestForm.guests.map((guest, i) =>
+      i === index ? { ...guest, [field]: value } : guest
+    );
+    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
+  };
+
+  const handleSuggestionSelect = (index, suggestion) => {
+    const updatedForms = guestForm.guests.map((guest, i) =>
+      i === index
+        ? { ...guest, ...suggestion, mobno: suggestion.mobno.toString() }
+        : guest
+    );
+    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
+  };
+
+  const removeGuestForm = (indexToRemove) => {
+    setGuestForm((prev) => ({
+      ...prev,
+      guests: prev.guests.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const isGuestFormValid = () => {
+    if (!guestForm.startDay) {
+      return false;
+    }
+
+    return guestForm.guests.every((guest) => {
+      const commonFields =
+        guest.name &&
+        guest.gender &&
+        guest.guestType &&
+        guest.meals &&
+        guest.spicy &&
+        guest.hightea;
+
+      if (guest.guestType === 'VIP') {
+        return commonFields;
+      } else {
+        return commonFields && guest.mobno;
+      }
+    });
+  };
+
   return (
     <View className="flex-1 justify-center items-center">
       <CustomCalender
         type={'period'}
         startDay={foodForm.startDay}
-        setStartDay={(day) =>
-          setFoodForm((prev) => ({ ...prev, startDay: day }))
-        }
+        setStartDay={(day) => {
+          setFoodForm((prev) => ({ ...prev, startDay: day }));
+          setGuestForm((prev) => ({ ...prev, startDay: day }));
+        }}
         endDay={foodForm.endDay}
-        setEndDay={(day) => setFoodForm((prev) => ({ ...prev, endDay: day }))}
+        setEndDay={(day) => {
+          setFoodForm((prev) => ({ ...prev, endDay: day }));
+          setGuestForm((prev) => ({ ...prev, endDay: day }));
+        }}
       />
 
       <View className="w-full mt-7 flex flex-col">
@@ -159,56 +234,62 @@ const FoodBooking = () => {
 
       {selectedChip == CHIPS[1] && (
         <View className="w-full flex flex-col">
-          <FormField
-            text="Number of Guests"
-            value={guestForm.guests.toString()}
-            autoCorrect={false}
-            handleChangeText={(e) =>
-              setGuestForm({ ...guestForm, guests: Number(e) })
-            }
-            otherStyles="mt-4"
-            inputStyles="font-pmedium text-base text-gray-400"
-            containerStyles="bg-gray-100"
-            keyboardType="number-pad"
-            placeholder="Number of Guests"
-          />
+          <GuestForm
+            guestForm={guestForm}
+            handleGuestFormChange={handleGuestFormChange}
+            addGuestForm={addGuestForm}
+            removeGuestForm={removeGuestForm}
+            handleSuggestionSelect={handleSuggestionSelect}
+          >
+            {(index) => (
+              <>
+                <CustomMultiSelectDropdown
+                  otherStyles="mt-5"
+                  text={`Select Meals`}
+                  placeholder="Select Meals"
+                  data={FOOD_TYPE_LIST}
+                  value={guestForm.guests[index].meals}
+                  labelField="key"
+                  valueField="value"
+                  setSelected={(val) =>
+                    handleGuestFormChange(index, 'meals', val)
+                  }
+                  guest={true}
+                />
 
-          <CustomMultiSelectDropdown
-            otherStyles="mt-5 w-full px-1"
-            text={'Food Type'}
-            placeholder={'Select Food Type'}
-            data={FOOD_TYPE_LIST}
-            setSelected={(val) => setType(val)}
-          />
+                <CustomDropdown
+                  otherStyles="mt-5 w-full px-1"
+                  text={'Spice Level'}
+                  placeholder={'How much spice do you want?'}
+                  data={SPICE_LIST}
+                  setSelected={(val) =>
+                    handleGuestFormChange(index, 'spicy', val)
+                  }
+                  value={guestForm.guests[index].spicy}
+                  autofill={true}
+                />
 
-          <CustomDropdown
-            otherStyles="mt-5 w-full px-1"
-            text={'Spice Level'}
-            placeholder={'How much spice do you want?'}
-            data={SPICE_LIST}
-            setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
-          />
-
-          <CustomDropdown
-            otherStyles="mt-5 w-full px-1"
-            text={'Hightea'}
-            placeholder={'Hightea'}
-            data={HIGHTEA_LIST}
-            defaultOption={{ key: 'NONE', value: 'None' }}
-            setSelected={(val) => setFoodForm({ ...foodForm, hightea: val })}
-          />
+                <CustomDropdown
+                  otherStyles="mt-5 w-full px-1"
+                  text={'Hightea'}
+                  placeholder={'Hightea'}
+                  data={HIGHTEA_LIST}
+                  defaultOption={{ key: 'NONE', value: 'None' }}
+                  setSelected={(val) =>
+                    handleGuestFormChange(index, 'hightea', val)
+                  }
+                  value={guestForm.guests[index].hightea}
+                  autofill={true}
+                />
+              </>
+            )}
+          </GuestForm>
 
           <CustomButton
             text="Book Now"
             handlePress={async () => {
               setIsSubmitting(true);
-              if (
-                !guestForm.startDay ||
-                guestForm.guests > 0 ||
-                type.length == 0 ||
-                !guestForm.spicy ||
-                !guestForm.hightea
-              ) {
+              if (!isGuestFormValid()) {
                 setIsSubmitting(false);
                 setModalMessage('Please fill all fields');
                 setModalVisible(true);
