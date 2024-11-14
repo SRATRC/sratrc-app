@@ -104,7 +104,7 @@ const Menu = () => {
         futureScrollRange={2}
         renderItem={renderItem}
         renderEmptyDate={renderEmptyDate}
-        showClosingKnob={true}
+        hideKnob={true}
         theme={{
           selectedDayBackgroundColor: colors.orange,
           agendaTodayColor: colors.orange,

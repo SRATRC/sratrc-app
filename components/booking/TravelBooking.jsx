@@ -1,6 +1,5 @@
 import { View } from 'react-native';
-import React, { useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useCallback, useEffect } from 'react';
 import { types } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -42,7 +41,7 @@ const TravelBooking = () => {
   const router = useRouter();
   const { updateBooking } = useGlobalContext();
 
-  useFocusEffect(
+  useEffect(
     useCallback(() => {
       setIsSubmitting(false);
     }, [])

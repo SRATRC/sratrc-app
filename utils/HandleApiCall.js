@@ -24,7 +24,7 @@ const handleAPICall = async (
     if (res.status === 200 || res.status === 201) {
       successCallback(res.data);
     } else {
-      Alert.alert('Success Error', res.data.message);
+      Alert.alert('Error', res.data.message);
     }
   } catch (error) {
     if (error.response) {

@@ -7,6 +7,10 @@ const GuestDetailsLayout = () => {
       <StatusBar style="dark" />
       <Stack>
         <Stack.Screen name="[booking]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="guextBookingConfirmation"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </>
   );

@@ -127,13 +127,14 @@ const TabsLayout = () => {
       <StatusBar style="dark" />
       <Tabs
         screenOptions={{
-          tabBarShowLabel: false,
+          tabBarShowLabel: true,
           tabBarActiveTintColor: '#FFA001',
           tabBarInactiveTintColor: '#BFBFBF',
           tabBarStyle: {
             backgroundColor: '#FFFCF5',
             borderTopColor: '#EEAA0B',
             borderTopWidth: 1,
+            paddingTop: 10,
             height: Platform.OS === 'ios' ? 90 : 60
           }
         }}
@@ -147,7 +148,7 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.home}
                 color={color}
-                name="Home"
+                // name="Home"
                 focused={focused}
               />
             )
@@ -162,8 +163,9 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.plus}
                 color={color}
-                name="Book Now"
+                // name="Book Now"
                 focused={focused}
+                style={{ margin: 10 }}
               />
             )
           }}
@@ -177,7 +179,7 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.qrcode}
                 color={color}
-                name="QR Code"
+                // name="QR Code"
                 focused={focused}
               />
             )
@@ -198,7 +200,7 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.bookmark}
                 color={color}
-                name="Bookings"
+                // name="Bookings"
                 focused={focused}
               />
             )
@@ -213,7 +215,7 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.profile}
                 color={color}
-                name="Profile"
+                // name="Profile"
                 focused={focused}
               />
             )

@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons, types } from '../../constants';
+import { useRouter } from 'expo-router';
 import CustomButton from '../../components/CustomButton';
 import PageHeader from '../../components/PageHeader';
 import GuestRoomBookingDetails from '../../components/booking details cards/GuestRoomBookingDetails';
@@ -40,12 +41,15 @@ const INITIAL_ADHYAYAN_FORM = {
 
 const guestAddons = () => {
   const { booking } = useLocalSearchParams();
-  const { guestData } = useGlobalContext();
+  const { guestData, setGuestData } = useGlobalContext();
   const guests = guestData.adhyayan?.guests || guestData.room?.guests;
   const guest_dropdown = guests.map((guest, index) => ({
     value: index,
     label: guest.name
   }));
+
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [roomForm, setRoomForm] = useState(INITIAL_ROOM_FORM);
   const addRoomForm = () => {
@@ -219,9 +223,97 @@ const guestAddons = () => {
 
             <CustomButton
               text="Confirm"
-              handlePress={() => {}}
+              handlePress={() => {
+                setIsSubmitting(true);
+
+                const isRoomFormEmpty = () => {
+                  return roomForm.guestGroup.some(
+                    (group) =>
+                      group.roomType !== '' ||
+                      group.floorType !== '' ||
+                      group.guests.length > 0
+                  );
+                };
+
+                const isFoodFormEmpty = () => {
+                  return foodForm.guestGroup.some(
+                    (group) =>
+                      group.meals.length > 0 ||
+                      group.spicy !== '' ||
+                      group.guests.length > 0
+                  );
+                };
+
+                const isAdhyayanFormEmpty = () => {
+                  return (
+                    Object.keys(adhyayanForm.adhyayan).length > 0 ||
+                    adhyayanForm.guests.length > 0
+                  );
+                };
+
+                // Validate and set Room Form data
+                if (booking !== types.ROOM_DETAILS_TYPE && isRoomFormEmpty()) {
+                  const hasEmptyFields = roomForm.guestGroup.some(
+                    (group) =>
+                      !group.roomType ||
+                      !group.floorType ||
+                      group.guests.length === 0
+                  );
+
+                  if (
+                    hasEmptyFields ||
+                    !roomForm.startDay ||
+                    !roomForm.endDay
+                  ) {
+                    Alert.alert('Please fill all the room booking fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setGuestData((prev) => ({ ...prev, room: roomForm }));
+                }
+
+                // Validate and set Food Form data
+                if (isFoodFormEmpty()) {
+                  const hasEmptyFields = foodForm.guestGroup.some(
+                    (group) =>
+                      group.meals.length === 0 ||
+                      !group.spicy ||
+                      group.guests.length === 0
+                  );
+
+                  if (
+                    hasEmptyFields ||
+                    !foodForm.startDay ||
+                    !foodForm.endDay
+                  ) {
+                    Alert.alert('Please fill all the food booking fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setGuestData((prev) => ({ ...prev, food: foodForm }));
+                }
+
+                // Validate and set Adhyayan Form data
+                if (
+                  booking !== types.ADHYAYAN_DETAILS_TYPE &&
+                  isAdhyayanFormEmpty()
+                ) {
+                  if (
+                    Object.keys(adhyayanForm.adhyayan).length === 0 ||
+                    adhyayanForm.guests.length === 0
+                  ) {
+                    Alert.alert('Please fill all the adhyayan booking fields');
+                    setIsSubmitting(false);
+                    return;
+                  }
+                  setGuestData((prev) => ({ ...prev, adhyayan: adhyayanForm }));
+                }
+
+                setIsSubmitting(false);
+                router.push('/booking/bookingConfirmation');
+              }}
               containerStyles="mb-8 min-h-[62px]"
-              // isLoading={isSubmitting}
+              isLoading={isSubmitting}
             />
           </View>
         </ScrollView>

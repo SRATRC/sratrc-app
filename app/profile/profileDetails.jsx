@@ -70,7 +70,7 @@ const fetchCities = (country, state) => {
   });
 };
 
-// TODO: cities and states should clear out when country changes
+// // TODO: cities and states should clear out when country changes
 const profileDetails = () => {
   const { user, setUser, setCurrentUser } = useGlobalContext();
   const router = useRouter();
@@ -205,7 +205,7 @@ const profileDetails = () => {
               handleChangeText={(e) => setForm({ ...form, email: e.trim() })}
               otherStyles="mt-7"
               inputStyles="font-pmedium text-base text-gray-400"
-              keyboardType="email"
+              keyboardType="email-address"
               placeholder="Enter Your Email ID"
               maxLength={100}
               containerStyles={'bg-gray-100'}

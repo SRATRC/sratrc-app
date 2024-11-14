@@ -69,7 +69,11 @@ const camera = () => {
           <CustomButton
             text={'Save'}
             handlePress={() => {
-              router.back();
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/home');
+              }
             }}
             containerStyles={'absolute bottom-20 left-20 right-20 p-2'}
           />

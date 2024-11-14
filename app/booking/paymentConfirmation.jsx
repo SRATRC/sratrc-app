@@ -129,7 +129,7 @@ const paymentConfirmation = () => {
         <CustomButton
           containerStyles="min-h-[62px] mx-7"
           text={'Back to Home'}
-          handlePress={() => router.back()}
+          handlePress={() => router.push('/home')}
           isLoading={isLoading}
         />
       </View>

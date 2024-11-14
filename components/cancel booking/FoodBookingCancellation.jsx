@@ -343,7 +343,7 @@ const FoodBookingCancellation = () => {
   };
 
   const renderHeader = () => (
-    <View className="space-y-1">
+    <View className="space-y-1 mb-2">
       <Text className="text-black font-pregular">Filter By:</Text>
       <ScrollView className="flex w-full" horizontal>
         <View className="flex flex-row w-full items-center space-x-2">
