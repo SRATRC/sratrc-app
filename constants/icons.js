@@ -52,6 +52,13 @@ import orangeTickCircle from '../assets/icons/orange-tick-cirlce.png';
 import copy from '../assets/icons/copy.png';
 import add from '../assets/icons/add.png';
 import guest from '../assets/icons/guest.png';
+import wifiHome from '../assets/icons/wifi-home.png';
+import menuHome from '../assets/icons/menu-home.png';
+import maintenanceHome from '../assets/icons/maintenance-home.png';
+import rcGlobalInsta from '../assets/icons/rc-global-insta.png';
+import vvInsta from '../assets/icons/vv-insta.png';
+import sparshInsta from '../assets/icons/sparsh-insta.png';
+import vvYt from '../assets/icons/vv-yt.png';
 
 export default {
   play,
@@ -107,5 +114,12 @@ export default {
   orangeTickCircle,
   copy,
   add,
-  guest
+  guest,
+  wifiHome,
+  menuHome,
+  maintenanceHome,
+  rcGlobalInsta,
+  vvInsta,
+  sparshInsta,
+  vvYt
 };

@@ -3,14 +3,13 @@ import {
   Text,
   ImageBackground,
   Image,
-  Linking,
-  TouchableOpacity,
-  Alert
+  TouchableOpacity
 } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons, images } from '../../constants';
+import { openApp } from '../../utils/linkingUtils';
 import CustomButton from '../../components/CustomButton';
 
 const paymentConfirmation = () => {
@@ -20,18 +19,6 @@ const paymentConfirmation = () => {
   const DottedLine = () => (
     <View className={`w-full my-4 border border-dotted border-gray-300`}></View>
   );
-
-  const openApp = (url) => {
-    Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          Alert.alert('Error', "Can't handle url: " + url);
-        }
-      })
-      .catch((err) => Alert.alert('Error', 'an error occurred: ' + err));
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
