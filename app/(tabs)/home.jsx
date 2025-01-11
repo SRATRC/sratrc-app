@@ -1,21 +1,16 @@
-import { View, Text, Image, ImageBackground } from 'react-native';
+import { View, Text, Image, ImageBackground, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons, images } from '../../constants';
 import { openApp } from '../../utils/linkingUtils';
-import { useNotification } from '../../context/NotificationContext';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import CustomHomeIcon from '../../components/CustomHomeIcon';
 
 const Home = () => {
   const { user } = useGlobalContext();
-  const { expoPushToken, notification, error } = useNotification();
   return (
-    <SafeAreaView
-      className="h-full bg-white px-4"
-      edges={['right', 'top', 'left']}
-    >
-      <View className="justify-start">
+    <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
+      <View className="justify-start px-4">
         <Image
           source={images.logo}
           className="w-[70px] h-[30px]"
@@ -24,12 +19,7 @@ const Home = () => {
       </View>
 
       {/* Banner */}
-      <View className="mt-7 w-full">
-        {/* <Image
-          source={images.banner}
-          resizeMode="contain"
-          className="w-[100%] h-[220px]"
-        /> */}
+      <View className="mt-7 w-full px-4">
         <ImageBackground
           className="w-[100%] h-[220px]"
           source={images.banner}
@@ -38,7 +28,7 @@ const Home = () => {
           <Text className="text-secondary font-pbold text-lg px-4 pt-6">
             JSDV {user.issuedto.split(' ')[0]}!
           </Text>
-          <Text className="max-w-[63%] font-plight text-sm px-4 pt-4">
+          <Text className="max-w-[63%] font-plight text-xs px-4 pt-4">
             "Every living being is capable of becoming Self-realised; one who
             realises this is himself bound to become a Realised Soul"
           </Text>
@@ -47,27 +37,26 @@ const Home = () => {
       </View>
 
       {/* Services */}
-      <View className="mt-7 w-full">
+      <View className="mt-7 w-full px-4">
         <Text className="text-lg text-black font-pmedium">Our Services</Text>
-        <View className="mt-2 w-full flex-row items-center justify-around">
+        <View className="mt-3 w-full flex flex-row items-center">
           <CustomHomeIcon
             image={icons.wifiHome}
-            title="Wifi"
+            title={'Wifi'}
             onPress={() => {
               router.push('/wifi');
             }}
           />
           <CustomHomeIcon
             image={icons.menuHome}
-            title="Menu"
+            title={'Menu'}
             onPress={() => {
               router.push('/menu');
             }}
-            // containerStyles={'mx-4'}
           />
           <CustomHomeIcon
             image={icons.maintenanceHome}
-            title="Maintenance"
+            title={'Maintenance'}
             onPress={() => {
               router.push('/maintenanceRequestList');
             }}
@@ -77,47 +66,54 @@ const Home = () => {
 
       {/* Socials */}
       <View className="mt-7 w-full">
-        <Text className="text-lg text-black font-pmedium">
+        <Text className="text-lg text-black font-pmedium px-4">
           Checkout Our Social Media!
         </Text>
-        <View className="mt-2 w-full flex-row justify-around">
-          <CustomHomeIcon
-            image={icons.rcGlobalInsta}
-            title="RC Global"
-            onPress={() => {
-              openApp('https://www.instagram.com/researchcentre_global/');
-            }}
-          />
-          <CustomHomeIcon
-            image={icons.vvInsta}
-            title="VV Insta"
-            onPress={() => {
-              openApp('https://www.instagram.com/vitraag.vigyaan/');
-            }}
-          />
-          <CustomHomeIcon
-            image={icons.sparshInsta}
-            title="Sparsh"
-            onPress={() => {
-              openApp('https://www.instagram.com/sparsh.international/');
-            }}
-          />
-          <CustomHomeIcon
-            image={icons.vvYt}
-            title="Youtube"
-            onPress={() => {
-              openApp('https://www.youtube.com/@VitraagVigyaan');
-            }}
-          />
-          //FIXME: icon missing
-          <CustomHomeIcon
-            image={icons.vvYt}
-            title="Satshrut"
-            onPress={() => {
-              openApp('https://satshrut.vitraagvigyaan.org/');
-            }}
-          />
-        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row mt-3 px-4 mb-6">
+            {/* FIXME: icon missing */}
+            <CustomHomeIcon
+              image={icons.satshrut}
+              title={'Satshrut'}
+              onPress={() => {
+                openApp('https://satshrut.vitraagvigyaan.org/');
+              }}
+            />
+
+            <CustomHomeIcon
+              image={icons.vvYt}
+              title={'Youtube'}
+              onPress={() => {
+                openApp('https://www.youtube.com/@VitraagVigyaan');
+              }}
+            />
+
+            <CustomHomeIcon
+              image={icons.vvInsta}
+              title={'VV Insta'}
+              onPress={() => {
+                openApp('https://www.instagram.com/vitraag.vigyaan/');
+              }}
+            />
+
+            <CustomHomeIcon
+              image={icons.rcGlobalInsta}
+              title={'RC Global'}
+              onPress={() => {
+                openApp('https://www.instagram.com/researchcentre_global/');
+              }}
+            />
+
+            <CustomHomeIcon
+              image={icons.sparshInsta}
+              title={'Sparsh'}
+              onPress={() => {
+                openApp('https://www.instagram.com/sparsh.international/');
+              }}
+            />
+          </View>
+        </ScrollView>
       </View>
       {/* <View className="h-full w-full space-y-4 items-center justify-center">
         <View className="flex flex-col space-y-1 mt-5">

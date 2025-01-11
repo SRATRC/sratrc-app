@@ -1,15 +1,25 @@
-import { Redirect } from 'expo-router';
+import React, { useEffect } from 'react';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../context/GlobalProvider';
+import { handleUserNavigation } from '../utils/navigationValidations';
 
 import 'react-native-reanimated';
 
-export default function Index() {
-  const { loading, isLoggedIn } = useGlobalContext();
-  if (!loading && isLoggedIn) return <Redirect href="/home" />;
-  if (!loading && !isLoggedIn) return <Redirect href="/sign-in" />;
+const Index = () => {
+  const { loading, user } = useGlobalContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      handleUserNavigation(user, router);
+    }
+  }, [loading]);
+
+  // if (!loading && user) return <Redirect href="/home" />;
+  // if (!loading && !user) return <Redirect href="/sign-in" />;
 
   return (
     <SafeAreaView>
@@ -19,4 +29,6 @@ export default function Index() {
       </View>
     </SafeAreaView>
   );
-}
+};
+
+export default Index;

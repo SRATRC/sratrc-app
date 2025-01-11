@@ -5,16 +5,14 @@ import {
   Image,
   TouchableOpacity
 } from 'react-native';
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { icons, images } from '../../constants';
-import { openApp } from '../../utils/linkingUtils';
+import { images } from '../../constants';
 import CustomButton from '../../components/CustomButton';
 
 const paymentConfirmation = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   const DottedLine = () => (
     <View className={`w-full my-4 border border-dotted border-gray-300`}></View>
@@ -86,7 +84,7 @@ const paymentConfirmation = () => {
 
             <DottedLine />
 
-            <View className="flex flex-col w-full space-y-2">
+            {/* <View className="flex flex-col w-full space-y-2">
               <Text className="text-gray-400 font-pregular text-sm">
                 Join the following WhatsApp groups by clicking on the links
                 bellow to proceed
@@ -109,15 +107,14 @@ const paymentConfirmation = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </View> */}
           </View>
         </ImageBackground>
 
         <CustomButton
           containerStyles="min-h-[62px] mx-7"
           text={'Back to Home'}
-          handlePress={() => router.push('/home')}
-          isLoading={isLoading}
+          handlePress={() => router.replace('/home')}
         />
       </View>
     </SafeAreaView>

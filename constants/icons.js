@@ -59,6 +59,7 @@ import rcGlobalInsta from '../assets/icons/rc-global-insta.png';
 import vvInsta from '../assets/icons/vv-insta.png';
 import sparshInsta from '../assets/icons/sparsh-insta.png';
 import vvYt from '../assets/icons/vv-yt.png';
+import satshrut from '../assets/icons/satshrut.png';
 
 export default {
   play,
@@ -121,5 +122,6 @@ export default {
   rcGlobalInsta,
   vvInsta,
   sparshInsta,
-  vvYt
+  vvYt,
+  satshrut
 };

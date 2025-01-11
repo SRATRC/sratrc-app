@@ -15,8 +15,8 @@ const FOOD_TYPE_LIST = [
 ];
 
 const SPICE_LIST = [
-  { label: 'Regular', value: 'Regular' },
-  { label: 'Non Spicy', value: 'Non Spicy' }
+  { label: 'Regular', value: 1 },
+  { label: 'Non Spicy', value: 0 }
 ];
 
 const HIGHTEA_LIST = [

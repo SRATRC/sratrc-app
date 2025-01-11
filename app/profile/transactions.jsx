@@ -146,6 +146,7 @@ const transactions = () => {
   );
 };
 
+//FIXME: add event icon here and manage bookedfor and naming constants as we have few more constants to account for
 const TransactionItem = ({ item }) => {
   return (
     <View className="px-5">

@@ -16,8 +16,8 @@ export default {
     ios: {
       supportsTablet: true,
       package: 'com.vandit.sratrc',
-      bundleIdentifier: 'com.vandit.sratrc'
-      // googleServicesFile: './GoogleService-Info.plist'
+      bundleIdentifier: 'com.vandit.sratrc',
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST
     },
     android: {
       adaptiveIcon: {
@@ -25,7 +25,26 @@ export default {
         backgroundColor: '#ffffff'
       },
       package: 'com.vandit.sratrc',
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            {
+              scheme: 'https',
+              host: '*.instagram.com',
+              pathPrefix: '/'
+            },
+            {
+              scheme: 'https',
+              host: '*.youtube.com',
+              pathPrefix: '/'
+            }
+          ],
+          category: ['BROWSABLE', 'DEFAULT']
+        }
+      ]
     },
     web: {
       favicon: './assets/favicon.png'
@@ -33,6 +52,18 @@ export default {
     plugins: [
       'expo-router',
       '@react-native-firebase/app',
+      [
+        'expo-build-properties',
+        {
+          android: {
+            minSdkVersion: 26,
+            enableProguardInReleaseBuilds: true
+          },
+          ios: {
+            useFrameworks: 'static'
+          }
+        }
+      ],
       [
         '@sentry/react-native/expo',
         {
@@ -44,10 +75,7 @@ export default {
       [
         'expo-camera',
         {
-          cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
-          microphonePermission:
-            'Allow $(PRODUCT_NAME) to access your microphone',
-          recordAudioAndroid: true
+          cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera'
         }
       ]
     ],

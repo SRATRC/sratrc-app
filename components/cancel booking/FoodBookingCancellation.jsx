@@ -8,7 +8,7 @@ import {
   SectionList,
   ScrollView
 } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   useQuery,
   useInfiniteQuery,
@@ -21,43 +21,62 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated';
-import { colors, icons } from '../../constants';
+import { icons } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { Dropdown } from 'react-native-element-dropdown';
+import { useBottomSheetModal } from '@gorhom/bottom-sheet';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
+import BottomSheetFilter from '../BottomSheetFilter';
 
-const FOOD_TYPE_LIST = [
-  { label: 'All', value: 'all' },
-  { label: 'breakfast', value: 'breakfast' },
-  { label: 'lunch', value: 'lunch' },
-  { label: 'dinner', value: 'dinner' }
-];
-
-const SPICE_LIST = [
-  { label: 'All', value: 'all' },
-  { label: 'Regular', value: true },
-  { label: 'Non Spicy', value: false }
-];
+const FOOD_TYPE_LIST = ['Breakfast', 'Lunch', 'Dinner'];
+const SPICE_LIST = ['Regular', 'Non Spicy'];
 
 const FoodBookingCancellation = () => {
   const { user } = useGlobalContext();
   const queryClient = useQueryClient();
 
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [datePickerVisibility, setDatePickerVisibility] = useState(false);
   const [filter, setFilter] = useState({
     date: null,
     meal: null,
     spice: null,
-    for: null
+    bookedFor: null
   });
 
-  // Fetching food data using infinite query
+  const { dismiss } = useBottomSheetModal();
+  const sheetRef = useRef(null);
+  const handlePresentModalPress = useCallback((filterType) => {
+    setActiveFilter(filterType);
+    sheetRef.current?.present();
+  }, []);
+  const [activeFilter, setActiveFilter] = useState(null);
+
+  const getFilterData = (filterType) => {
+    switch (filterType) {
+      case 'meal':
+        return FOOD_TYPE_LIST;
+      case 'spice':
+        return SPICE_LIST;
+      case 'bookedFor':
+        return guestList;
+      default:
+        return [];
+    }
+  };
+  const handleFilterSelect = (selectedItem) => {
+    setFilter((prev) => ({
+      ...prev,
+      [activeFilter]: selectedItem
+    }));
+    dismiss();
+  };
+
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [datePickerVisibility, setDatePickerVisibility] = useState(false);
+
   const fetchFoods = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
@@ -69,10 +88,12 @@ const FoodBookingCancellation = () => {
           date: filter.date,
           meal: filter.meal,
           spice: filter.spice,
-          bookedFor: filter.for
+          bookedFor: filter.bookedFor?.key
         },
         null,
-        (res) => resolve(Array.isArray(res.data) ? res.data : []),
+        (res) => {
+          resolve(Array.isArray(res.data) ? res.data : []);
+        },
         () => reject(new Error('Failed to fetch foods'))
       );
     });
@@ -92,7 +113,7 @@ const FoodBookingCancellation = () => {
       filter.date,
       filter.meal,
       filter.spice,
-      filter.for
+      filter.bookedFor?.key
     ],
     queryFn: fetchFoods,
     staleTime: 1000 * 60 * 5,
@@ -142,15 +163,18 @@ const FoodBookingCancellation = () => {
         filter.date,
         filter.meal,
         filter.spice,
-        filter.for
+        filter.bookedFor?.key
       ]);
     }
   });
 
   const renderItem = ({ item, section }) => {
-    const itemKey = `${item.date}-${item.mealType}`;
+    const itemKey = `${item.date}-${item.mealType}-${item.bookedFor?.key}`;
+
     const isSelected = selectedItems.some(
-      (selected) => `${selected.date}-${selected.mealType}` === itemKey
+      (selected) =>
+        `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` ===
+        itemKey
     );
 
     const shakeTranslateX = useSharedValue(0);
@@ -184,24 +208,30 @@ const FoodBookingCancellation = () => {
           onPress={() => {
             if (section.title === 'upcoming') {
               const prevSelectedItems = [...selectedItems];
-              const itemKey = `${item.date}-${item.mealType}`;
+              const itemKey = `${item.date}-${item.mealType}-${item.bookedFor?.key}`;
 
               const itemExists = prevSelectedItems.some(
                 (selected) =>
-                  `${selected.date}-${selected.mealType}` === itemKey
+                  `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` ===
+                  itemKey
               );
 
               if (itemExists) {
                 setSelectedItems(
                   prevSelectedItems.filter(
                     (selected) =>
-                      `${selected.date}-${selected.mealType}` !== itemKey
+                      `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` !==
+                      itemKey
                   )
                 );
               } else {
                 setSelectedItems([
                   ...prevSelectedItems,
-                  { date: item.date, mealType: item.mealType }
+                  {
+                    date: item.date,
+                    mealType: item.mealType,
+                    bookedFor: item.bookedFor?.key
+                  }
                 ]);
               }
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -270,13 +300,26 @@ const FoodBookingCancellation = () => {
                 <Image
                   source={icons.meal}
                   resizeMode="contain"
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                 />
                 <Text className="ml-1 text-gray-400">{'Meal Type'}</Text>
                 <Text className="ml-1 text-black font-pmedium">
                   {item.mealType}
                 </Text>
               </View>
+              {item.bookedFor && (
+                <View className="flex-row items-center">
+                  <Image
+                    source={icons.person}
+                    resizeMode="contain"
+                    className="w-4 h-4"
+                  />
+                  <Text className="ml-1 text-gray-400">{'Booked For'}</Text>
+                  <Text className="ml-1 text-black font-pmedium">
+                    {item.name}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -294,22 +337,22 @@ const FoodBookingCancellation = () => {
 
     const handleSelectAll = () => {
       if (allSelected) {
-        // Deselect all items in the upcoming section
         setSelectedItems(
           selectedItems.filter(
             (selected) =>
               !data.some(
                 (item) =>
                   item.date === selected.date &&
-                  item.mealType === selected.mealType
+                  item.mealType === selected.mealType &&
+                  item.bookedFor?.key === selected.bookedFor?.key
               )
           )
         );
       } else {
-        // Select all items in the upcoming section
         const newSelections = data.map((item) => ({
           date: item.date,
-          mealType: item.mealType
+          mealType: item.mealType,
+          bookedFor: item.bookedFor?.key
         }));
         setSelectedItems([...selectedItems, ...newSelections]);
       }
@@ -345,8 +388,13 @@ const FoodBookingCancellation = () => {
   const renderHeader = () => (
     <View className="space-y-1 mb-2">
       <Text className="text-black font-pregular">Filter By:</Text>
-      <ScrollView className="flex w-full" horizontal>
+      <ScrollView
+        className="flex w-full"
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
         <View className="flex flex-row w-full items-center space-x-2">
+          {/* Date Filter */}
           <View className="flex-row items-center justify-center space-x-2 border border-gray-200 rounded-xl p-2">
             <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
               <Text
@@ -386,93 +434,85 @@ const FoodBookingCancellation = () => {
             onCancel={() => setDatePickerVisibility(false)}
           />
 
-          <Dropdown
-            data={FOOD_TYPE_LIST}
-            labelField="label"
-            valueField="value"
-            placeholder="Meal Type"
-            value={filter.meal}
-            onChange={(item) =>
-              setFilter((prev) => ({ ...prev, meal: item.value }))
-            }
-            style={{
-              borderColor: colors.gray_200,
-              borderWidth: 1,
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 6
-            }}
-            containerStyle={{
-              borderWidth: 1,
-              shadowRadius: 0,
-              shadowOpacity: 0,
-              width: 120
-            }}
-            placeholderStyle={{
-              color: colors.gray_400,
-              fontFamily: 'Poppins-Regular',
-              fontSize: 16
-            }}
-          />
+          {/* Meal Type Filter */}
+          <View className="flex-row items-center justify-center space-x-2 border border-gray-200 rounded-xl p-2">
+            <TouchableOpacity onPress={() => handlePresentModalPress('meal')}>
+              <Text
+                className={`${
+                  filter.meal ? 'text-black' : 'text-gray-400'
+                } font-pregular`}
+              >
+                {filter.meal ? filter.meal : 'Meal Type'}
+              </Text>
+            </TouchableOpacity>
 
-          <Dropdown
-            data={SPICE_LIST}
-            labelField="label"
-            valueField="value"
-            placeholder="Spice Level"
-            value={filter.spice}
-            onChange={(item) =>
-              setFilter((prev) => ({ ...prev, spice: item.value }))
-            }
-            style={{
-              borderColor: colors.gray_200,
-              borderWidth: 1,
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 6
-            }}
-            containerStyle={{
-              borderWidth: 1,
-              shadowRadius: 0,
-              shadowOpacity: 0,
-              width: 120
-            }}
-            placeholderStyle={{
-              color: colors.gray_400,
-              fontFamily: 'Poppins-Regular',
-              fontSize: 16
-            }}
-          />
+            {filter.meal && (
+              <TouchableOpacity
+                onPress={() => setFilter((prev) => ({ ...prev, meal: null }))}
+              >
+                <Image
+                  source={icons.cross}
+                  className="w-2.5 h-2.5"
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
 
+          {/* Spice Level Filter */}
+          <View className="flex-row items-center justify-center space-x-2 border border-gray-200 rounded-xl p-2">
+            <TouchableOpacity onPress={() => handlePresentModalPress('spice')}>
+              <Text
+                className={`${
+                  filter.spice ? 'text-black' : 'text-gray-400'
+                } font-pregular`}
+              >
+                {filter.spice ? filter.spice : 'Spice Level'}
+              </Text>
+            </TouchableOpacity>
+
+            {filter.spice && (
+              <TouchableOpacity
+                onPress={() => setFilter((prev) => ({ ...prev, spice: null }))}
+              >
+                <Image
+                  source={icons.cross}
+                  className="w-2.5 h-2.5"
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Booked For Filter */}
           {guestList && (
-            <Dropdown
-              data={guestList}
-              labelField="label"
-              valueField="value"
-              placeholder="Booked For"
-              value={filter.for}
-              onChange={(item) =>
-                setFilter((prev) => ({ ...prev, for: item.value }))
-              }
-              style={{
-                borderColor: colors.gray_200,
-                borderWidth: 1,
-                borderRadius: 12,
-                paddingHorizontal: 12,
-                paddingVertical: 6
-              }}
-              containerStyle={{
-                borderWidth: 1,
-                shadowRadius: 0,
-                shadowOpacity: 0,
-                width: 120
-              }}
-              placeholderStyle={{
-                color: colors.gray_400,
-                fontFamily: 'Poppins-Regular',
-                fontSize: 16
-              }}
-            />
+            <View className="flex-row items-center justify-center space-x-2 border border-gray-200 rounded-xl p-2">
+              <TouchableOpacity
+                onPress={() => handlePresentModalPress('bookedFor')}
+              >
+                <Text
+                  className={`${
+                    filter.bookedFor ? 'text-black' : 'text-gray-400'
+                  } font-pregular`}
+                >
+                  {filter.bookedFor ? filter.bookedFor.value : 'Booked For'}
+                </Text>
+              </TouchableOpacity>
+
+              {filter.bookedFor && (
+                <TouchableOpacity
+                  onPress={() =>
+                    setFilter((prev) => ({ ...prev, bookedFor: null }))
+                  }
+                >
+                  <Image
+                    source={icons.cross}
+                    className="w-2.5 h-2.5"
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -504,7 +544,9 @@ const FoodBookingCancellation = () => {
         nestedScrollEnabled={true}
         sections={data?.pages?.flatMap((page) => page) || []}
         renderItem={({ item, section }) => renderItem({ item, section })}
-        keyExtractor={(item) => `${item.date}-${item.mealType}`}
+        keyExtractor={(item) =>
+          `${item.date}-${item.mealType}-${item.bookedFor}`
+        }
         renderSectionHeader={renderSectionHeader}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
@@ -530,6 +572,12 @@ const FoodBookingCancellation = () => {
           </Text>
         </View>
       )}
+      <BottomSheetFilter
+        ref={sheetRef}
+        title={activeFilter ? `Filter ${activeFilter}` : 'Filter'}
+        data={getFilterData(activeFilter)}
+        onSelect={handleFilterSelect}
+      />
     </View>
   );
 };

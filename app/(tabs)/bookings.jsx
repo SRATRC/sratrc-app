@@ -15,12 +15,14 @@ import RoomBookingCancellation from '../../components/cancel booking/RoomBooking
 import FoodBookingCancellation from '../../components/cancel booking/FoodBookingCancellation';
 import TravelBookingCancellation from '../../components/cancel booking/TravelBookingCancellation';
 import AdhyayanBookingCancellation from '../../components/cancel booking/AdhyayanBookingCancellation';
+import EventBookingCancellation from '../../components/cancel booking/EventBookingCancellation';
 
 const CHIPS = [
   types.booking_type_adhyayan,
   types.booking_type_room,
   types.booking_type_food,
-  types.booking_type_travel
+  types.booking_type_travel,
+  types.booking_type_event
 ];
 
 const BookingCategories = ({ onRefresh }) => {
@@ -43,6 +45,8 @@ const BookingCategories = ({ onRefresh }) => {
           await queryClient.invalidateQueries(['travelBooking']);
         } else if (chip === types.booking_type_adhyayan) {
           await queryClient.invalidateQueries(['adhyayanBooking']);
+        } else if (chip === types.booking_type_event) {
+          await queryClient.invalidateQueries(['eventBooking']);
         }
       } catch (error) {
         console.error('Error invalidating queries:', error);
@@ -77,6 +81,9 @@ const BookingCategories = ({ onRefresh }) => {
       )}
       {selectedChip === types.booking_type_adhyayan && (
         <AdhyayanBookingCancellation />
+      )}
+      {selectedChip === types.booking_type_event && (
+        <EventBookingCancellation />
       )}
     </View>
   );

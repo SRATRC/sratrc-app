@@ -1,9 +1,9 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
 import { icons } from '../../constants';
-import CustomDropdown from '../CustomDropdown';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import React from 'react';
 import moment from 'moment';
+import CustomDropdown from '../CustomDropdown';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import FormDisplayField from '../FormDisplayField';
 import AddonItem from '../AddonItem';
@@ -16,8 +16,8 @@ const FOOD_TYPE_LIST = [
 ];
 
 const SPICE_LIST = [
-  { key: 'Regular', value: 'Regular' },
-  { key: 'Non Spicy', value: 'Non Spicy' }
+  { key: 1, value: 'Regular' },
+  { key: 0, value: 'Non Spicy' }
 ];
 
 const HIGHTEA_LIST = [
@@ -72,7 +72,11 @@ const FoodAddon = ({
       >
         <FormDisplayField
           text="Start Date"
-          value={foodForm.startDay ? foodForm.startDay : 'Start Date'}
+          value={
+            foodForm.startDay
+              ? moment(foodForm.startDay).format('Do MMMM YYYY')
+              : 'Start Date'
+          }
           otherStyles="mt-5"
           backgroundColor="bg-gray-100"
         />
@@ -113,7 +117,11 @@ const FoodAddon = ({
       >
         <FormDisplayField
           text="End Date"
-          value={foodForm.endDay ? foodForm.endDay : 'End Date'}
+          value={
+            foodForm.endDay
+              ? moment(foodForm.endDay).format('Do MMMM YYYY')
+              : 'End Date'
+          }
           otherStyles="mt-5"
           backgroundColor="bg-gray-100"
         />

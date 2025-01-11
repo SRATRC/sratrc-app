@@ -1,8 +1,11 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { colors, icons } from '../constants';
+import { useQuery } from '@tanstack/react-query';
+import { useGlobalContext } from '../context/GlobalProvider';
 import React from 'react';
 import CustomDropdown from './CustomDropdown';
 import FormField from './FormField';
+import handleAPICall from '../utils/HandleApiCall';
 
 const GENDER_LIST = [
   { label: 'Male', value: 'M' },
@@ -10,25 +13,10 @@ const GENDER_LIST = [
 ];
 
 const GUEST_TYPE_LIST = [
-  { label: 'Driver', value: 'Driver' },
-  { label: 'VIP', value: 'VIP' },
-  { label: 'Friend', value: 'Friend' },
-  { label: 'Family', value: 'Family' }
-];
-
-const suggestions = [
-  {
-    name: 'Vandit Vasa',
-    gender: 'M',
-    mobno: '',
-    guestType: 'VIP'
-  },
-  {
-    name: 'Amee Vasa',
-    gender: 'F',
-    mobno: '4345609823',
-    guestType: 'Friend'
-  }
+  { label: 'Driver', value: 'driver' },
+  { label: 'VIP', value: 'vip' },
+  { label: 'Friend', value: 'friend' },
+  { label: 'Family', value: 'family' }
 ];
 
 const GuestForm = ({
@@ -39,6 +27,54 @@ const GuestForm = ({
   handleSuggestionSelect,
   children = () => null
 }) => {
+  const { user } = useGlobalContext();
+
+  const fetchGuests = async () => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'GET',
+        '/guest',
+        {
+          cardno: user.cardno
+        },
+        null,
+        (res) => {
+          resolve(res.data);
+        },
+        () => reject(new Error('Failed to fetch guests'))
+      );
+    });
+  };
+
+  const {
+    data: suggestions,
+    isLoading: isGuestsLoading,
+    isError: isGuestsError
+  } = useQuery({
+    queryKey: ['guests', user.cardno],
+    queryFn: fetchGuests
+  });
+
+  if (isGuestsLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="font-pmedium text-gray-400">
+          Loading guest data...
+        </Text>
+      </View>
+    );
+  }
+
+  if (isGuestsError) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="font-pmedium text-red-500">
+          Failed to load guest data. Please try again later.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View>
       {guestForm.guests.map((guest, index) => (
@@ -71,9 +107,9 @@ const GuestForm = ({
             containerStyles="bg-gray-100"
             keyboardType="default"
             placeholder="Guest Name"
-            suggestions={suggestions.map((s) => s.name)}
+            suggestions={suggestions?.map((s) => s.name)}
             onSelectItem={(name) => {
-              const selectedSuggestion = suggestions.find(
+              const selectedSuggestion = suggestions?.find(
                 (s) => s.name === name
               );
               handleSuggestionSelect(index, selectedSuggestion);
@@ -96,31 +132,25 @@ const GuestForm = ({
             text={'Guest Type'}
             placeholder={'Select Guest Type'}
             data={GUEST_TYPE_LIST}
-            value={guest.guestType}
-            setSelected={(val) =>
-              handleGuestFormChange(index, 'guestType', val)
-            }
+            value={guest.type}
+            setSelected={(val) => handleGuestFormChange(index, 'type', val)}
             autofill={true}
           />
 
-          {guest.guestType &&
-            guest.guestType !== 'VIP' &&
-            guest.guestType.key !== 'VIP' && (
-              <FormField
-                text="Phone Number"
-                prefix="+91"
-                value={guest.mobno}
-                handleChangeText={(e) =>
-                  handleGuestFormChange(index, 'mobno', e)
-                }
-                otherStyles="mt-7"
-                inputStyles="font-pmedium text-base text-gray-400"
-                keyboardType="number-pad"
-                placeholder="Enter Your Phone Number"
-                maxLength={10}
-                containerStyles="bg-gray-100"
-              />
-            )}
+          {guest.type && guest.type !== 'vip' && guest.type !== 'driver' && (
+            <FormField
+              text="Phone Number"
+              // prefix="+91"
+              value={guest.mobno}
+              handleChangeText={(e) => handleGuestFormChange(index, 'mobno', e)}
+              otherStyles="mt-7"
+              inputStyles="font-pmedium text-base text-gray-400"
+              keyboardType="number-pad"
+              placeholder="Enter Guest Phone Number"
+              maxLength={10}
+              containerStyles="bg-gray-100"
+            />
+          )}
           {children(index)}
         </View>
       ))}

@@ -7,14 +7,13 @@ import {
   Image,
   Alert
 } from 'react-native';
-import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { images } from '../../constants';
 import { router } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import handleAPICall from '../../utils/HandleApiCall';
 
 const SignIn = () => {
@@ -23,7 +22,7 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { setUser, setIsLoggedIn } = useGlobalContext();
+  const { setUser } = useGlobalContext();
 
   const submit = async () => {
     if (!form.phone || form.phone.length < 10) {
@@ -35,7 +34,6 @@ const SignIn = () => {
 
     const onSuccess = (data) => {
       setUser(data.data);
-      setIsLoggedIn(true);
       router.push('/confirmation');
     };
 

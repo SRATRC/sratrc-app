@@ -4,11 +4,15 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity
+  TouchableOpacity,
+  Modal,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView
 } from 'react-native';
 import { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { colors, icons, status, types } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { FlashList } from '@shopify/flash-list';
@@ -20,6 +24,9 @@ import LottieView from 'lottie-react-native';
 import CustomTag from '../../components/CustomTag';
 import ExpandableItem from '../../components/ExpandableItem';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
+import CustomDropdown from '../../components/CustomDropdown';
+import FormField from '../../components/FormField';
+import CustomButton from '../../components/CustomButton';
 import moment from 'moment';
 
 const CHIPS = [
@@ -28,12 +35,27 @@ const CHIPS = [
   types.MAINTENANCE_TYPE_CLOSED
 ];
 
+const DEPARTMENT_LIST = [
+  { key: 'Electrical', value: 'Electrical' },
+  { key: 'housekeeping', value: 'House Keeping' },
+  { key: 'Maintenance', value: 'Maintenance' }
+];
+
 const maintenanceRequestList = () => {
   const { user } = useGlobalContext();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [selectedChip, setSelectedChip] = useState(types.MAINTENANCE_TYPE_ALL);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [form, setForm] = useState({
+    department: '',
+    work_detail: '',
+    area_of_work: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const fetchMaintenance = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
@@ -217,12 +239,9 @@ const maintenanceRequestList = () => {
       />
       <TouchableOpacity
         className="bg-secondary p-4 absolute right-6 bottom-8 rounded-2xl"
-        onPress={() =>
-          router.push({
-            pathname: '/maintenanceRequest',
-            params: { modal: true }
-          })
-        }
+        onPress={() => {
+          isModalVisible ? setIsModalVisible(false) : setIsModalVisible(true);
+        }}
       >
         <Image
           source={icons.add}
@@ -231,6 +250,104 @@ const maintenanceRequestList = () => {
           resizeMode="contain"
         />
       </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        visible={isModalVisible}
+        presentationStyle="pageSheet"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          className="bg-white h-full flex-1"
+        >
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <PageHeader
+              title="Maintenance Request"
+              icon={icons.cross}
+              onPress={() => setIsModalVisible(false)}
+            />
+
+            <View className="mt-6 px-4 flex-1">
+              <Text className="text-base font-pregular text-gray-500">
+                JSDV {user.issuedto}, please register your maintenance request
+              </Text>
+
+              <CustomDropdown
+                otherStyles="mt-7"
+                text={'Department'}
+                save={'key'}
+                placeholder={'Select Department'}
+                data={DEPARTMENT_LIST}
+                setSelected={(val) => setForm({ ...form, department: val })}
+              />
+
+              <FormField
+                text="Detail of Work"
+                value={form.work_detail}
+                handleChangeText={(e) => setForm({ ...form, work_detail: e })}
+                multiline={true}
+                minHeight={120}
+                maxHeight={250}
+                otherStyles="mt-7"
+                inputStyles="font-pmedium text-base text-gray-400"
+                containerStyles={'bg-gray-100'}
+                placeholder="Work Description"
+              />
+
+              <FormField
+                text="Place where work is needed"
+                value={form.area_of_work}
+                handleChangeText={(e) => setForm({ ...form, area_of_work: e })}
+                otherStyles="mt-7"
+                inputStyles="font-pmedium text-base text-gray-400"
+                containerStyles={'bg-gray-100'}
+                placeholder="Place where work is needed"
+              />
+
+              <CustomButton
+                text="Submit"
+                handlePress={async () => {
+                  setIsSubmitting(true);
+                  if (
+                    form.department.trim() == '' ||
+                    form.work_detail.trim() == '' ||
+                    form.area_of_work.trim() == ''
+                  ) {
+                    Alert.alert('Please fill all fields');
+                    return;
+                  }
+
+                  const onSuccess = async (_data) => {
+                    await queryClient.invalidateQueries(['maintenance']);
+                    router.back();
+                  };
+                  const onFinally = () => {
+                    setIsSubmitting(false);
+                  };
+
+                  await handleAPICall(
+                    'POST',
+                    '/maintenance/request',
+                    null,
+                    {
+                      cardno: user.cardno,
+                      department: form.department,
+                      work_detail: form.work_detail,
+                      area_of_work: form.area_of_work
+                    },
+                    onSuccess,
+                    onFinally
+                  );
+                }}
+                containerStyles="min-h-[62px] mt-7"
+                isLoading={isSubmitting}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };

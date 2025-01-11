@@ -61,7 +61,11 @@ const RoomAddon = ({
       >
         <FormDisplayField
           text="Checkin Date"
-          value={roomForm.startDay ? roomForm.startDay : 'Checkin Date'}
+          value={
+            roomForm.startDay
+              ? moment(roomForm.startDay).format('Do MMMM YYYY')
+              : 'Checkin Date'
+          }
           otherStyles="mt-5"
           backgroundColor="bg-gray-100"
         />
@@ -102,7 +106,11 @@ const RoomAddon = ({
       >
         <FormDisplayField
           text="Checkout Date"
-          value={roomForm.endDay ? roomForm.endDay : 'Checkout Date'}
+          value={
+            roomForm.endDay
+              ? moment(roomForm.endDay).format('Do MMMM YYYY')
+              : 'Checkout Date'
+          }
           otherStyles="mt-5"
           backgroundColor="bg-gray-100"
         />

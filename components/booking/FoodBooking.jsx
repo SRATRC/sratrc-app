@@ -1,6 +1,7 @@
 import { View, Alert, Text } from 'react-native';
 import React, { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { dropdowns } from '../../constants';
 import CustomDropdown from '../../components/CustomDropdown';
 import CustomButton from '../../components/CustomButton';
 import CustomCalender from '../../components/CustomCalender';
@@ -17,14 +18,14 @@ const FOOD_TYPE_LIST = [
 ];
 
 const SPICE_LIST = [
-  { label: 'Regular', value: 'Regular' },
-  { label: 'Non Spicy', value: 'Non Spicy' }
+  { key: 1, value: 'Regular' },
+  { key: 0, value: 'Non Spicy' }
 ];
 
 const HIGHTEA_LIST = [
-  { label: 'TEA', value: 'Tea' },
-  { label: 'COFFEE', value: 'Coffee' },
-  { label: 'NONE', value: 'None' }
+  { key: 'TEA', value: 'Tea' },
+  { key: 'COFFEE', value: 'Coffee' },
+  { key: 'NONE', value: 'None' }
 ];
 
 const CHIPS = ['Self', 'Guest'];
@@ -35,7 +36,7 @@ const FoodBooking = () => {
   const [foodForm, setFoodForm] = useState({
     startDay: '',
     endDay: '',
-    spicy: '',
+    spicy: null,
     hightea: 'NONE'
   });
 
@@ -47,9 +48,9 @@ const FoodBooking = () => {
         name: '',
         gender: '',
         mobno: '',
-        guestType: '',
+        type: '',
         meals: [],
-        spicy: '',
+        spicy: null,
         hightea: 'NONE'
       }
     ]
@@ -75,9 +76,9 @@ const FoodBooking = () => {
           name: '',
           gender: '',
           mobno: '',
-          guestType: '',
+          type: '',
           meals: [],
-          spicy: '',
+          spicy: null,
           hightea: 'NONE'
         }
       ]
@@ -116,12 +117,12 @@ const FoodBooking = () => {
       const commonFields =
         guest.name &&
         guest.gender &&
-        guest.guestType &&
+        guest.type &&
         guest.meals &&
-        guest.spicy &&
+        guest.spicy !== null &&
         guest.hightea;
 
-      if (guest.guestType === 'VIP') {
+      if (guest.type === 'vip' || guest.type === 'driver') {
         return commonFields;
       } else {
         return commonFields && guest.mobno;
@@ -190,7 +191,7 @@ const FoodBooking = () => {
               if (
                 !foodForm.startDay ||
                 type.length == 0 ||
-                !foodForm.spicy ||
+                foodForm.spicy == null ||
                 !foodForm.hightea
               ) {
                 Alert.alert('Please fill all fields');
@@ -261,7 +262,7 @@ const FoodBooking = () => {
                   otherStyles="mt-5 w-full px-1"
                   text={'Spice Level'}
                   placeholder={'How much spice do you want?'}
-                  data={SPICE_LIST}
+                  data={dropdowns.SPICE_LIST}
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'spicy', val)
                   }
@@ -273,8 +274,8 @@ const FoodBooking = () => {
                   otherStyles="mt-5 w-full px-1"
                   text={'Hightea'}
                   placeholder={'Hightea'}
-                  data={HIGHTEA_LIST}
-                  defaultOption={{ key: 'NONE', value: 'None' }}
+                  data={dropdowns.HIGHTEA_LIST}
+                  defaultOption={{ label: 'None', value: 'NONE' }}
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'hightea', val)
                   }
@@ -290,11 +291,29 @@ const FoodBooking = () => {
             handlePress={async () => {
               setIsSubmitting(true);
               if (!isGuestFormValid()) {
+                console.log(JSON.stringify(guestForm));
+
                 setIsSubmitting(false);
                 setModalMessage('Please fill all fields');
                 setModalVisible(true);
                 return;
               }
+              const onSuccess = (_data) => {
+                Alert.alert('Booking Successful');
+              };
+
+              const onFinally = () => {
+                setIsSubmitting(false);
+              };
+
+              await handleAPICall(
+                'POST',
+                '/food/bookGuest',
+                { cardno: user.cardno },
+                JSON.stringify(guestForm),
+                onSuccess,
+                onFinally
+              );
             }}
             containerStyles="mt-7 w-full px-1 min-h-[62px]"
             isLoading={isSubmitting}

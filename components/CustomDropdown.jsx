@@ -71,7 +71,6 @@ const CustomDropdown = ({
           placeholder={placeholder}
           search={enableSearch ? enableSearch : false}
           searchPlaceholder="Search..."
-          defaultOption={defaultOption ? defaultOption : null}
           autoScroll={false}
           renderItem={renderDropdownItem}
           style={{

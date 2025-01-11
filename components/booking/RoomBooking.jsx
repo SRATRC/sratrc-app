@@ -26,6 +26,21 @@ const FLOOR_TYPE_LIST = [
 
 const CHIPS = ['Self', 'Guest'];
 
+const INITIAL_GUEST_FORM = {
+  startDay: '',
+  endDay: '',
+  guests: [
+    {
+      name: '',
+      gender: '',
+      mobno: '',
+      type: '',
+      roomType: '',
+      floorType: ''
+    }
+  ]
+};
+
 const RoomBooking = () => {
   const router = useRouter();
   const { user, updateBooking, updateGuestBooking } = useGlobalContext();
@@ -56,20 +71,7 @@ const RoomBooking = () => {
     floorType: ''
   });
 
-  const [guestForm, setGuestForm] = useState({
-    startDay: '',
-    endDay: '',
-    guests: [
-      {
-        name: '',
-        gender: '',
-        mobno: '',
-        guestType: '',
-        roomType: '',
-        floorType: ''
-      }
-    ]
-  });
+  const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
 
   const addGuestForm = () => {
     setGuestForm((prev) => ({
@@ -80,7 +82,7 @@ const RoomBooking = () => {
           name: '',
           gender: '',
           mobno: '',
-          guestType: '',
+          type: '',
           roomType: '',
           floorType: ''
         }
@@ -120,11 +122,11 @@ const RoomBooking = () => {
       const commonFields =
         guest.name &&
         guest.gender &&
-        guest.guestType &&
+        guest.type &&
         guest.roomType &&
         guest.floorType;
 
-      if (guest.guestType === 'VIP') {
+      if (guest.type === 'vip' || guest.type === 'driver') {
         return commonFields;
       } else {
         return commonFields && guest.mobno;
@@ -155,7 +157,6 @@ const RoomBooking = () => {
               setGuestForm((prev) => ({ ...prev, endDay: day }));
             }}
           />
-
           <View className="w-full mt-7 flex flex-col">
             <Text className="text-base text-gray-600 font-pmedium">
               Book for
@@ -169,7 +170,6 @@ const RoomBooking = () => {
               textStyles={'text-sm'}
             />
           </View>
-
           {selectedChip === CHIPS[0] && (
             <View>
               <CustomDropdown
@@ -216,7 +216,8 @@ const RoomBooking = () => {
               />
             </View>
           )}
-
+          {/* FIXME: why does guestType and gender values disappear when
+          navigating back to room booking? */}
           {selectedChip === CHIPS[1] && (
             <View>
               <GuestForm
@@ -265,9 +266,29 @@ const RoomBooking = () => {
                     setModalVisible(true);
                     return;
                   } else {
-                    setIsSubmitting(false);
-                    updateGuestBooking('room', guestForm);
-                    router.push(`/guestBooking/${types.ROOM_DETAILS_TYPE}`);
+                    await handleAPICall(
+                      'POST',
+                      '/guest',
+                      null,
+                      {
+                        cardno: user.cardno,
+                        guests: guestForm.guests
+                      },
+                      async (res) => {
+                        guestForm.guests = res.guests.map((guest) => ({
+                          ...guest,
+                          roomType: guestForm.guests[0]?.roomType || '',
+                          floorType: guestForm.guests[0]?.floorType || ''
+                        }));
+                        updateGuestBooking('room', guestForm);
+                        setIsSubmitting(false);
+                        // setGuestForm(INITIAL_GUEST_FORM);
+                        router.push(`/guestBooking/${types.ROOM_DETAILS_TYPE}`);
+                      },
+                      () => {
+                        setIsSubmitting(false);
+                      }
+                    );
                   }
                 }}
                 containerStyles="mt-7 min-h-[62px]"

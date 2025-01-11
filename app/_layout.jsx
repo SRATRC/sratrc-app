@@ -4,7 +4,10 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NotificationProvider } from '../context/NotificationContext';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import GlobalProvider from '../context/GlobalProvider';
+import Toast from 'react-native-toast-message';
 import * as Sentry from '@sentry/react-native';
 import * as Notifications from 'expo-notifications';
 
@@ -54,23 +57,31 @@ const RootLayout = () => {
     <NotificationProvider>
       <QueryClientProvider client={new QueryClient()}>
         <GlobalProvider>
-          <StatusBar style="dark" />
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="(onboarding)"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(common)" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="booking" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="guestBooking"
-              options={{ headerShown: false }}
-            />
-          </Stack>
+          <GestureHandlerRootView>
+            <BottomSheetModalProvider>
+              <StatusBar style="dark" />
+              <Stack>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="(onboarding)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="(common)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="profile" options={{ headerShown: false }} />
+                <Stack.Screen name="booking" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="guestBooking"
+                  options={{ headerShown: false }}
+                />
+              </Stack>
+              <Toast />
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
         </GlobalProvider>
       </QueryClientProvider>
     </NotificationProvider>

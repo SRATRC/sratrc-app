@@ -56,7 +56,7 @@ const RoomBookingCancellation = () => {
   });
 
   const cancelBookingMutation = useMutation({
-    mutationFn: (bookingid) => {
+    mutationFn: ({ bookingid, bookedFor }) => {
       return new Promise((resolve, reject) => {
         handleAPICall(
           'POST',
@@ -64,24 +64,53 @@ const RoomBookingCancellation = () => {
           null,
           {
             cardno: user.cardno,
-            bookingid
+            bookingid,
+            bookedFor
           },
           (res) => resolve(res),
           () => reject(new Error('Failed to cancel booking'))
         );
       });
     },
-    onSuccess: (_, bookingid) => {
+    onSuccess: (_, { bookingid, bookedFor }) => {
       queryClient.setQueryData(['rooms', user.cardno], (oldData) => {
         if (!oldData || !oldData.pages) return oldData;
+
         return {
           ...oldData,
           pages: oldData.pages.map((page) =>
-            page.map((booking) =>
-              booking.bookingid === bookingid
-                ? { ...booking, status: status.STATUS_CANCELLED }
-                : booking
-            )
+            page.map((booking) => {
+              const isMatchingBooking =
+                booking.bookingid === bookingid &&
+                (booking.bookedFor !== null
+                  ? booking.bookedFor == bookedFor
+                  : true);
+
+              if (!isMatchingBooking) {
+                return booking;
+              }
+
+              const isPending =
+                booking.transaction_status === status.STATUS_PAYMENT_PENDING ||
+                booking.transaction_status === status.STATUS_CASH_PENDING;
+
+              const isCompleted =
+                booking.transaction_status ===
+                  status.STATUS_PAYMENT_COMPLETED ||
+                booking.transaction_status === status.STATUS_CASH_COMPLETED;
+
+              const newTransactionStatus = isPending
+                ? status.STATUS_CANCELLED
+                : isCompleted
+                ? status.STATUS_CREDITED
+                : booking.transaction_status;
+
+              return {
+                ...booking,
+                status: status.STATUS_CANCELLED,
+                transaction_status: newTransactionStatus
+              };
+            })
           )
         };
       });
@@ -127,6 +156,8 @@ const RoomBookingCancellation = () => {
                         status.STATUS_PAYMENT_PENDING ||
                       item.transaction_status == status.STATUS_CASH_PENDING
                     ? 'Payment Due'
+                    : item.transaction_status == status.STATUS_CREDITED
+                    ? 'Credited'
                     : 'Paid'
                 }
                 textStyles={
@@ -155,20 +186,25 @@ const RoomBookingCancellation = () => {
               {moment(item.checkin).format('Do MMMM')} -{' '}
               {moment(item.checkout).format('Do MMMM, YYYY')}
             </Text>
+            {item.name && (
+              <Text className="font-pmedium">
+                Booked For: <Text className="text-secondary">{item.name}</Text>
+              </Text>
+            )}
           </View>
         </View>
       }
       containerStyles={'mt-3'}
     >
       <HorizontalSeparator />
-      <View className="flex px-2 pb-2 mt-2 flex-row space-x-2">
+      <View className="flex px-2 mt-2 flex-row space-x-2">
         <Image source={icons.ac} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">Room Type: </Text>
         <Text className="text-black font-pmedium">
           {item.roomtype === 'ac' ? 'AC Room' : 'Non AC Room'}
         </Text>
       </View>
-      <View className="flex px-2 pb-2 flex-row space-x-2">
+      <View className="flex px-2 mt-2 flex-row space-x-2">
         <Image source={icons.elder} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">
           Ground Floor Booking:
@@ -177,15 +213,18 @@ const RoomBookingCancellation = () => {
           {item.gender.includes('SC') ? 'Yes' : 'No'}
         </Text>
       </View>
-      <View className="flex px-2 flex-row space-x-2">
-        <Image
-          source={icons.roomNumber}
-          className="w-4 h-4"
-          resizeMode="contain"
-        />
-        <Text className="text-gray-400 font-pregular">Room Number:</Text>
-        <Text className="text-black font-pmedium">{item.roomno}</Text>
-      </View>
+      {(item.transaction_status == status.STATUS_CASH_COMPLETED ||
+        item.transaction_status == status.STATUS_PAYMENT_COMPLETED) && (
+        <View className="flex px-2 flex-row space-x-2">
+          <Image
+            source={icons.roomNumber}
+            className="w-4 h-4"
+            resizeMode="contain"
+          />
+          <Text className="text-gray-400 font-pregular">Room Number:</Text>
+          <Text className="text-black font-pmedium">{item.roomno}</Text>
+        </View>
+      )}
       <View className="flex px-2 mt-2 flex-row space-x-2">
         <Image source={icons.charge} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">Charge: </Text>
@@ -196,21 +235,26 @@ const RoomBookingCancellation = () => {
         item.status !== status.STATUS_CANCELLED &&
         item.status !== status.STATUS_ADMIN_CANCELLED && (
           <View className="flex-row space-x-2">
-            {item.transaction_status == status.STATUS_PAYMENT_PENDING ||
-              (item.transaction_status == status.STATUS_CASH_PENDING && (
-                <CustomButton
-                  text="Pay Now"
-                  containerStyles={'mt-5 py-3 mx-1 flex-1'}
-                  textStyles={'text-sm'}
-                  handlePress={async () => {}}
-                />
-              ))}
+            {(item.transaction_status == status.STATUS_PAYMENT_PENDING ||
+              item.transaction_status == status.STATUS_CASH_PENDING) && (
+              <CustomButton
+                text="Pay Now"
+                containerStyles={'mt-5 py-3 mx-1 flex-1'}
+                textStyles={'text-sm'}
+                handlePress={async () => {}}
+              />
+            )}
 
             <CustomButton
               text="Cancel Booking"
               containerStyles={'mt-5 py-3 mx-1 flex-1'}
               textStyles={'text-sm'}
-              handlePress={() => cancelBookingMutation.mutate(item.bookingid)}
+              handlePress={() =>
+                cancelBookingMutation.mutate({
+                  bookingid: item.bookingid,
+                  bookedFor: item.bookedFor
+                })
+              }
             />
           </View>
         )}

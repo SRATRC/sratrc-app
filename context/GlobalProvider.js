@@ -18,7 +18,6 @@ const removeItem = async (key) => {
 };
 
 const GlobalProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [data, setData] = useState({});
   const [guestData, setGuestData] = useState({});
@@ -30,10 +29,8 @@ const GlobalProvider = ({ children }) => {
       .then((res) => {
         if (isMounted) {
           if (res) {
-            setIsLoggedIn(true);
             setUser(res);
           } else {
-            setIsLoggedIn(false);
             setUser(null);
           }
         }
@@ -52,7 +49,7 @@ const GlobalProvider = ({ children }) => {
 
   const updateBooking = async (bookingType, item) => {
     setData((prev) => {
-      const updated = { ...prev, [bookingType]: item };
+      const updated = { ...prev, [bookingType]: item, primary: bookingType };
       const keysToDelete = ['room', 'travel', 'food', 'adhyayan'].filter(
         (key) => key !== bookingType
       );
@@ -63,7 +60,7 @@ const GlobalProvider = ({ children }) => {
 
   const updateGuestBooking = async (bookingType, item) => {
     setGuestData((prev) => {
-      const updated = { ...prev, [bookingType]: item };
+      const updated = { ...prev, [bookingType]: item, primary: bookingType };
       const keysToDelete = ['room', 'travel', 'food', 'adhyayan'].filter(
         (key) => key !== bookingType
       );
@@ -75,8 +72,6 @@ const GlobalProvider = ({ children }) => {
   return (
     <GlobalContext.Provider
       value={{
-        isLoggedIn,
-        setIsLoggedIn,
         user,
         setUser,
         data,

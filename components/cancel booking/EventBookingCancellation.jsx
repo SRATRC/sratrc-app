@@ -15,15 +15,15 @@ import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
 import LottieView from 'lottie-react-native';
 
-const TravelBookingCancellation = () => {
+const EventBookingCancellation = () => {
   const { user } = useGlobalContext();
   const queryClient = useQueryClient();
 
-  const fetchTravels = async ({ pageParam = 1 }) => {
+  const fetchUtsavs = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
         'GET',
-        '/travel/history',
+        '/utsav/booking',
         {
           cardno: user.cardno,
           page: pageParam
@@ -32,7 +32,7 @@ const TravelBookingCancellation = () => {
         (res) => {
           resolve(Array.isArray(res.data) ? res.data : []);
         },
-        () => reject(new Error('Failed to fetch travels'))
+        () => reject(new Error('Failed to fetch utsavs'))
       );
     });
   };
@@ -46,8 +46,8 @@ const TravelBookingCancellation = () => {
     isLoading,
     isError
   } = useInfiniteQuery({
-    queryKey: ['travels', user.cardno],
-    queryFn: fetchTravels,
+    queryKey: ['utsavBooking', user.cardno],
+    queryFn: fetchUtsavs,
     staleTime: 1000 * 60 * 5,
     getNextPageParam: (lastPage, pages) => {
       if (!lastPage || lastPage.length === 0) return undefined;
@@ -56,23 +56,24 @@ const TravelBookingCancellation = () => {
   });
 
   const cancelBookingMutation = useMutation({
-    mutationFn: (bookingid) => {
+    mutationFn: ({ bookingid, bookedFor }) => {
       return new Promise((resolve, reject) => {
         handleAPICall(
           'DELETE',
-          '/travel/booking',
+          '/utsav/booking',
           null,
           {
             cardno: user.cardno,
-            bookingid
+            bookingid,
+            bookedFor
           },
           (res) => resolve(res),
           () => reject(new Error('Failed to cancel booking'))
         );
       });
     },
-    onSuccess: (_, bookingid) => {
-      queryClient.setQueryData(['travels', user.cardno], (oldData) => {
+    onSuccess: (_, { bookingid, bookedFor }) => {
+      queryClient.setQueryData(['utsavBooking', user.cardno], (oldData) => {
         if (!oldData || !oldData.pages) return oldData;
 
         return {
@@ -117,7 +118,7 @@ const TravelBookingCancellation = () => {
       visibleContent={
         <View className="flex flex-row items-center space-x-4">
           <Image
-            source={icons.travel}
+            source={icons.adhyayan}
             className="w-10 h-10 items-center"
             resizeMode="contain"
           />
@@ -177,14 +178,15 @@ const TravelBookingCancellation = () => {
                 } mx-1`}
               />
             </View>
-            <Text className="font-pmedium">
-              {moment(item.date).format('Do MMMM, YYYY')}
-            </Text>
-            <Text className="font-pmedium text-secondary">
-              {item.pickup_point == 'RC'
-                ? 'Research Centre to Mumbai'
-                : 'Mumbai to Research Centre'}
-            </Text>
+            <Text className="font-pmedium">{item.utsav_name}</Text>
+            {item.guest_name && (
+              <Text className="font-pmedium">
+                Booked For:{' '}
+                <Text className="font-pmedium text-secondary">
+                  {item.guest_name}
+                </Text>
+              </Text>
+            )}
           </View>
         </View>
       }
@@ -192,49 +194,15 @@ const TravelBookingCancellation = () => {
     >
       <HorizontalSeparator />
       <View className="mt-3">
-        {item.drop_point == 'RC' ? (
-          <View className="flex px-2 mt-2 flex-row space-x-2">
-            <Image
-              source={icons.marker}
-              className="w-4 h-4"
-              resizeMode="contain"
-            />
-            <Text className="text-gray-400 font-pregular">Pickup Point: </Text>
-            <Text className="text-black font-pmedium">{item.pickup_point}</Text>
-          </View>
-        ) : (
-          <View className="flex px-2 mt-2 flex-row space-x-2">
-            <Image
-              source={icons.marker}
-              className="w-4 h-4"
-              resizeMode="contain"
-            />
-            <Text className="text-gray-400 font-pregular">Drop Point: </Text>
-            <Text className="text-black font-pmedium">{item.drop_point}</Text>
-          </View>
-        )}
         <View className="flex px-2 mt-2 flex-row space-x-2">
           <Image
             source={icons.luggage}
             className="w-4 h-4"
             resizeMode="contain"
           />
-          <Text className="text-gray-400 font-pregular">Luggage: </Text>
-          <Text className="text-black font-pmedium">{item.luggage}</Text>
+          <Text className="text-gray-400 font-pregular">Package: </Text>
+          <Text className="text-black font-pmedium">{item.package_name}</Text>
         </View>
-        {item.comments && (
-          <View className="flex px-2 mt-2 flex-row space-x-2">
-            <Image
-              source={icons.request}
-              className="w-4 h-4"
-              resizeMode="contain"
-            />
-            <Text className="text-gray-400 font-pregular">
-              Special Request:{' '}
-            </Text>
-            <Text className="text-black font-pmedium">{item.comments}</Text>
-          </View>
-        )}
         <View className="flex px-2 mt-2 flex-row space-x-2">
           <Image
             source={icons.charge}
@@ -264,7 +232,10 @@ const TravelBookingCancellation = () => {
                   containerStyles={'mt-5 py-3 mx-1 flex-1'}
                   textStyles={'text-sm'}
                   handlePress={() => {
-                    cancelBookingMutation.mutate(item.bookingid);
+                    cancelBookingMutation.mutate({
+                      bookingid: item.bookingid,
+                      bookedFor: item.bookedFor
+                    });
                   }}
                 />
               </View>
@@ -326,4 +297,4 @@ const TravelBookingCancellation = () => {
   );
 };
 
-export default TravelBookingCancellation;
+export default EventBookingCancellation;

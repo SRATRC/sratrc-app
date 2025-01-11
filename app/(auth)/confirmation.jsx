@@ -1,34 +1,46 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Alert,
-  TouchableOpacity
-} from 'react-native';
+import { View, Text, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { icons, images } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { useNotification } from '../../context/NotificationContext';
+import { handleUserNavigation } from '../../utils/navigationValidations';
+import handleAPICall from '../../utils/HandleApiCall';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import PageHeader from '../../components/PageHeader';
+import * as Brightness from 'expo-brightness';
 
 const Confirmation = () => {
   const { user, setCurrentUser } = useGlobalContext();
+  const { expoPushToken } = useNotification();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const submit = async () => {
     setIsSubmitting(true);
     try {
-      if (user.pfp) {
+      const onSuccess = async (data) => {
         await setCurrentUser(user);
-        router.replace('/home');
-      } else {
-        router.replace('/imageCapture');
-      }
+        // TODO: test this permission
+        // const { status } = await Brightness.requestPermissionsAsync();
+        await handleUserNavigation(user, router);
+      };
+
+      const onFinally = () => {
+        setIsSubmitting(false);
+      };
+
+      await handleAPICall(
+        'POST',
+        '/client/login',
+        null,
+        { cardno: user.cardno, token: expoPushToken },
+        onSuccess,
+        onFinally
+      );
     } catch (error) {
       Alert.alert('Error', error.message);
     } finally {
@@ -39,14 +51,6 @@ const Confirmation = () => {
   return (
     <SafeAreaView className="h-full bg-white">
       <PageHeader title={''} icon={icons.backArrow} />
-      {/* <TouchableOpacity onPress={() => router.back()}>
-        <Image
-          source={icons.backArrow}
-          className="w-5 h-5 p-2 m-5"
-          resizeMode="contain"
-        />
-      </TouchableOpacity> */}
-      {/* <ScrollView alwaysBounceVertical={false}> */}
       <View className="w-full justify-center min-h-[83vh] px-4">
         <Image
           source={images.logo}
@@ -76,7 +80,6 @@ const Confirmation = () => {
           isLoading={isSubmitting}
         />
       </View>
-      {/* </ScrollView> */}
     </SafeAreaView>
   );
 };

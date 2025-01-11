@@ -1,11 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
 import { Stack } from 'expo-router';
+import React from 'react';
 
 const DetailsLayout = () => {
   return (
     <>
-      <StatusBar style="dark" />
       <Stack>
         <Stack.Screen name="[booking]" options={{ headerShown: false }} />
         <Stack.Screen

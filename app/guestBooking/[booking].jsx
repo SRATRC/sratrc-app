@@ -18,6 +18,7 @@ import GuestAdhyayanBookingDetails from '../../components/booking details cards/
 import GuestRoomAddon from '../../components/booking addons/GuestRoomAddon';
 import GuestFoodAddon from '../../components/booking addons/GuestFoodAddon';
 import GuestAdhyayanAddon from '../../components/booking addons/GuestAdhyayanAddon';
+import Toast from 'react-native-toast-message';
 
 const INITIAL_ROOM_FORM = {
   startDay: '',
@@ -265,7 +266,11 @@ const guestAddons = () => {
                     !roomForm.startDay ||
                     !roomForm.endDay
                   ) {
-                    Alert.alert('Please fill all the room booking fields');
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Please fill all the room booking fields',
+                      text2: ''
+                    });
                     setIsSubmitting(false);
                     return;
                   }
@@ -274,19 +279,24 @@ const guestAddons = () => {
 
                 // Validate and set Food Form data
                 if (isFoodFormEmpty()) {
-                  const hasEmptyFields = foodForm.guestGroup.some(
-                    (group) =>
+                  const hasEmptyFields = foodForm.guestGroup.some((group) => {
+                    return (
                       group.meals.length === 0 ||
-                      !group.spicy ||
-                      group.guests.length === 0
-                  );
+                      group.guests.length === 0 ||
+                      group.spicy === ''
+                    );
+                  });
 
                   if (
                     hasEmptyFields ||
                     !foodForm.startDay ||
                     !foodForm.endDay
                   ) {
-                    Alert.alert('Please fill all the food booking fields');
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Please fill all the food booking fields',
+                      text2: ''
+                    });
                     setIsSubmitting(false);
                     return;
                   }
@@ -302,7 +312,11 @@ const guestAddons = () => {
                     Object.keys(adhyayanForm.adhyayan).length === 0 ||
                     adhyayanForm.guests.length === 0
                   ) {
-                    Alert.alert('Please fill all the adhyayan booking fields');
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Please fill all the adhyayan booking fields',
+                      text2: ''
+                    });
                     setIsSubmitting(false);
                     return;
                   }
@@ -310,7 +324,7 @@ const guestAddons = () => {
                 }
 
                 setIsSubmitting(false);
-                router.push('/booking/bookingConfirmation');
+                router.push('/guestBooking/guestBookingConfirmation');
               }}
               containerStyles="mb-8 min-h-[62px]"
               isLoading={isSubmitting}

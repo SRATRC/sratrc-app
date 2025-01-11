@@ -4,9 +4,9 @@ import { icons } from '../../constants';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { handleUserNavigation } from '../../utils/navigationValidations';
 import * as ImageManipulator from 'expo-image-manipulator';
 import CustomButton from '../../components/CustomButton';
-// import * as MediaLibrary from 'expo-media-library';
 
 const camera = () => {
   const { setUser, setCurrentUser, user } = useGlobalContext();
@@ -52,7 +52,6 @@ const camera = () => {
 
         setCapturedImage(mirroredImage.uri);
         setUser((prev) => ({ ...prev, pfp: mirroredImage.uri }));
-        // await MediaLibrary.saveToLibraryAsync(mirroredImage.uri);
       } catch (error) {
         console.error('Failed to take picture:', error);
       }
@@ -66,17 +65,28 @@ const camera = () => {
       {capturedImage ? (
         <View className="flex-1">
           <Image className="flex-1" source={{ uri: capturedImage }} />
-          <CustomButton
-            text={'Save'}
-            handlePress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace('/home');
-              }
-            }}
-            containerStyles={'absolute bottom-20 left-20 right-20 p-2'}
-          />
+          <View className="flex-row flex-1 max-h-[70px] bg-white py-2 px-6">
+            <CustomButton
+              text={'Retake'}
+              handlePress={() => {
+                setCapturedImage(null);
+              }}
+              containerStyles={'flex-1 p-2 mx-1 mb-3 border border-secondary'}
+              textStyles={'text-secondary'}
+              bgcolor={'bg-white'}
+            />
+            <CustomButton
+              text={'Save'}
+              handlePress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  handleUserNavigation(user, router);
+                }
+              }}
+              containerStyles={'flex-1 p-2 mx-1 mb-3'}
+            />
+          </View>
         </View>
       ) : (
         <CameraView

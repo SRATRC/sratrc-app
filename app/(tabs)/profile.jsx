@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 
 const Profile = () => {
-  const { setIsLoggedIn, user, setUser, removeItem } = useGlobalContext();
+  const { user, setUser, removeItem } = useGlobalContext();
   const router = useRouter();
 
   const profileList = [
@@ -38,7 +38,6 @@ const Profile = () => {
       name: 'Logout',
       icon: icons.logout,
       onPress: () => {
-        setIsLoggedIn(false);
         setUser(null);
         removeItem('user');
         router.replace('/sign-in');

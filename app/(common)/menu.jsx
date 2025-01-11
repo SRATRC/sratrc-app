@@ -66,44 +66,34 @@ const Menu = () => {
     </View>
   );
 
-  const renderEmptyDate = () => (
-    <View
-      style={{ height: 50, justifyContent: 'center', alignItems: 'center' }}
-    >
-      <Text>No menu available</Text>
-    </View>
-  );
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={colors.orange} />
+        </View>
+      );
+    }
 
-  if (isLoading) {
+    if (isError) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <Text>{error.message || 'Error loading menu data'}</Text>
+        </View>
+      );
+    }
+
+    const { firstDate, lastDate } = getFirstAndLastDate(menuData);
+
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color={colors.orange} />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <Text>{error.message || 'Error loading menu data'}</Text>
-      </View>
-    );
-  }
-
-  const { firstDate, lastDate } = getFirstAndLastDate(menuData);
-
-  return (
-    <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
-      <PageHeader title={'Menu'} icon={icons.backArrow} />
       <Agenda
         items={menuData}
         selected={moment(firstDate).format('YYYY-MM-DD')}
         minDate={moment(firstDate).format('YYYY-MM-DD')}
         maxDate={moment(lastDate).format('YYYY-MM-DD')}
         pastScrollRange={1}
-        futureScrollRange={2}
+        futureScrollRange={1}
         renderItem={renderItem}
-        renderEmptyDate={renderEmptyDate}
         hideKnob={true}
         theme={{
           selectedDayBackgroundColor: colors.orange,
@@ -114,6 +104,13 @@ const Menu = () => {
           textDayFontFamily: 'Poppins-Light'
         }}
       />
+    );
+  };
+
+  return (
+    <SafeAreaView className="h-full bg-white" edges={['right', 'top', 'left']}>
+      <PageHeader title={'Menu'} icon={icons.backArrow} />
+      {renderContent()}
     </SafeAreaView>
   );
 };

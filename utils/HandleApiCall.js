@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { Alert } from 'react-native';
 import { BASE_URL } from '../constants';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
 
 const handleAPICall = async (
   method,
@@ -21,16 +21,26 @@ const handleAPICall = async (
       timeout: 10000,
       validateStatus: () => true
     });
+
     if (res.status === 200 || res.status === 201) {
       successCallback(res.data);
     } else {
-      Alert.alert('Error', res.data.message);
+      console.log(JSON.stringify(res.data));
+
+      Toast.show({
+        type: 'error',
+        text1: 'An error occurred!',
+        text2: res.data.message
+      });
     }
   } catch (error) {
     if (error.response) {
-      Alert.alert('Failure Error', error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'An error occurred',
+        text2: error.message
+      });
     }
-    console.log(error);
   } finally {
     if (finallyCallback) finallyCallback();
   }

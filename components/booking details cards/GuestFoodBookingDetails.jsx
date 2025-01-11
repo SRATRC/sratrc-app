@@ -12,7 +12,15 @@ const GuestFoodBookingDetails = ({ containerStyles }) => {
     'Do MMMM, YYYY'
   );
 
-  const meals = guestData.food.meals.map((meal) => meal).join(', ');
+  // const mealEntries = guestData.food.guestGroup.map((group, index) => {
+  //   const mealNames = group.meals.join(', ');
+  //   const guestNames = group.guests.map((guest) => guest.name).join(', ');
+  //   return (
+  //     <Text key={index} className="text-black font-pmedium text-xs">
+  //       {`${mealNames} for ${guestNames}`}
+  //     </Text>
+  //   );
+  // });
 
   return (
     <View className={`w-full px-4 ${containerStyles}`}>
@@ -43,7 +51,7 @@ const GuestFoodBookingDetails = ({ containerStyles }) => {
 
         <HorizontalSeparator otherStyles={'mb-4'} />
 
-        <View className="flex px-6 pb-4 flex-row space-x-2">
+        <View className="flex px-6 pb-4 flex-row space-x-1">
           <Image
             source={icons.person}
             className="w-4 h-4"
@@ -51,9 +59,18 @@ const GuestFoodBookingDetails = ({ containerStyles }) => {
           />
           <Text className="text-gray-400 font-pregular">Booked For: </Text>
           <Text className="text-black font-pmedium">
-            {guestData.food.guests.length} Guests
+            {guestData.food.guestGroup.reduce(
+              (acc, group) => acc + group.guests.length,
+              0
+            )}{' '}
+            Guests
           </Text>
         </View>
+        {/* <View className="flex px-6 pb-4 flex-row space-x-2">
+          <Image source={icons.meal} className="w-4 h-4" resizeMode="contain" />
+          <Text className="text-gray-400 font-pregular">Meals: </Text>
+          <View>{mealEntries}</View>
+        </View> */}
       </View>
     </View>
   );

@@ -52,7 +52,7 @@ const GuestAdhyayanAddon = ({
     error,
     data: adhyayanList
   } = useQuery({
-    queryKey: ['adhyayans', guestData.room?.startDay],
+    queryKey: ['adhyayans', guestData.room?.startDay && guestData.room?.endDay],
     queryFn: fetchAdhyayans,
     staleTime: 1000 * 60 * 30
   });
@@ -168,7 +168,7 @@ const GuestAdhyayanAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      {!isLoading && !isError && adhyayanList.length == 0 && (
+      {!isLoading && !isError && adhyayanList?.length == 0 && (
         <View className="flex flex-col items-center justify-center">
           <LottieView
             style={{
@@ -184,31 +184,33 @@ const GuestAdhyayanAddon = ({
           </Text>
         </View>
       )}
-      <ScrollView horizontal={true} className="w-full" scrollEnabled={false}>
-        <View className="w-full flex-col items-center justify-center">
-          <CustomMultiSelectDropdown
-            otherStyles="mt-5 w-full"
-            text={'Select Guests'}
-            placeholder="Select Guests"
-            data={guest_dropdown}
-            value={adhyayanForm.guestIndices}
-            setSelected={(val) => {
-              updateAdhyayanForm('guestIndices', val);
-            }}
-            guest={true}
-          />
-          <FlatList
-            className="py-2 mt-2 flex-grow-1 w-full"
-            showsHorizontalScrollIndicator={false}
-            nestedScrollEnabled={true}
-            data={adhyayanList}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            ListFooterComponent={renderFooter}
-            scrollEnabled={false}
-          />
-        </View>
-      </ScrollView>
+      {(adhyayanList?.length > 0 || isError) && (
+        <ScrollView horizontal={true} className="w-full" scrollEnabled={false}>
+          <View className="w-full flex-col items-center justify-center">
+            <CustomMultiSelectDropdown
+              otherStyles="mt-5 w-full"
+              text={'Select Guests'}
+              placeholder="Select Guests"
+              data={guest_dropdown}
+              value={adhyayanForm.guestIndices}
+              setSelected={(val) => {
+                updateAdhyayanForm('guestIndices', val);
+              }}
+              guest={true}
+            />
+            <FlatList
+              className="py-2 mt-2 flex-grow-1 w-full"
+              showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled={true}
+              data={adhyayanList}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              ListFooterComponent={renderFooter}
+              scrollEnabled={false}
+            />
+          </View>
+        </ScrollView>
+      )}
     </AddonItem>
   );
 };

@@ -4,7 +4,7 @@ const TYPE_REFUND = 'refund';
 // STATUS
 const STATUS_WAITING = 'waiting';
 const STATUS_CONFIRMED = 'confirmed';
-const STATUS_CANCELLED = 'canceled';
+const STATUS_CANCELLED = 'cancelled';
 const STATUS_PENDING = 'pending';
 const STATUS_REJECTED = 'rejected';
 const STATUS_ACTIVE = 'active';
@@ -13,12 +13,12 @@ const STATUS_AVAILABLE = 'available';
 const STATUS_TAKEN = 'taken';
 const STATUS_OPEN = 'open';
 const STATUS_CLOSED = 'closed';
-const STATUS_ADMIN_CANCELLED = 'admin canceled';
-const STATUS_PAYMENT_PENDING = 'payment pending';
+const STATUS_ADMIN_CANCELLED = 'admin cancelled';
+const STATUS_PAYMENT_PENDING = 'pending';
 const STATUS_CASH_PENDING = 'cash pending';
 const STATUS_CASH_COMPLETED = 'cash completed';
-const STATUS_PAYMENT_COMPLETED = 'payment completed';
-const STATUS_AWAITING_REFUND = 'awaiting refund';
+const STATUS_PAYMENT_COMPLETED = 'completed';
+const STATUS_CREDITED = 'credited';
 const STATUS_PAYMENT_PARTIAL_COMPLETED = 'partially paid';
 const STATUS_ONPREM = 'onprem';
 const STATUS_OFFPREM = 'offprem';
@@ -55,7 +55,7 @@ export default {
   STATUS_CASH_PENDING,
   STATUS_CASH_COMPLETED,
   STATUS_PAYMENT_COMPLETED,
-  STATUS_AWAITING_REFUND,
+  STATUS_CREDITED,
   STATUS_PAYMENT_PARTIAL_COMPLETED,
   STATUS_ONPREM,
   STATUS_OFFPREM,

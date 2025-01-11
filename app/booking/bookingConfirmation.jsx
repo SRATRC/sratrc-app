@@ -10,10 +10,11 @@ import TravelBookingDetails from '../../components/booking details cards/TravelB
 import AdhyayanBookingDetails from '../../components/booking details cards/AdhyayanBookingDetails';
 import CustomButton from '../../components/CustomButton';
 import FoodBookingDetails from '../../components/booking details cards/FoodBookingDetails';
+import handleAPICall from '../../utils/HandleApiCall';
 
 const bookingConfirmation = () => {
   const router = useRouter();
-  const { data } = useGlobalContext();
+  const { user, data } = useGlobalContext();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,9 +93,114 @@ const bookingConfirmation = () => {
         <View className="w-full px-4 mt-6">
           <CustomButton
             text="Proceed to Payment"
-            handlePress={() => {
+            handlePress={async () => {
               setIsSubmitting(true);
-              router.push('/booking/paymentConfirmation');
+
+              const payload = {
+                cardno: user.cardno,
+                transaction_type: 'upi',
+                transaction_ref: 'none'
+              };
+
+              if (data.primary === 'room') {
+                payload.primary_booking = {
+                  booking_type: 'room',
+                  details: {
+                    checkin_date: data.room?.startDay,
+                    checkout_date: data.room?.endDay,
+                    room_type: data.room?.roomType,
+                    floor_type: data.room?.floorType
+                  }
+                };
+              } else if (data.primary === 'travel') {
+                payload.primary_booking = {
+                  booking_type: 'travel',
+                  details: {
+                    date: data.travel?.date,
+                    pickup_point: data.travel?.pickup,
+                    drop_point: data.travel?.drop,
+                    luggage: data.travel?.luggage,
+                    type: data.travel?.type,
+                    special_request: data.travel?.special_request
+                  }
+                };
+              } else if (data.primary === 'adhyayan') {
+                payload.primary_booking = {
+                  booking_type: 'adhyayan',
+                  details: {
+                    shibir_ids: [data.adhyayan?.id]
+                  }
+                };
+              }
+
+              const addons = [];
+              if (data.primary !== 'room' && data.room) {
+                addons.push({
+                  booking_type: 'room',
+                  details: {
+                    checkin_date: data.room?.startDay,
+                    checkout_date: data.room?.endDay,
+                    room_type: data.room?.roomType,
+                    floor_type: data.room?.floorType
+                  }
+                });
+              }
+              if (data.primary !== 'food' && data.food) {
+                addons.push({
+                  booking_type: 'food',
+                  details: {
+                    start_date: data.food?.startDay,
+                    end_date: data.food?.endDay,
+                    breakfast: data.food?.meals.includes('breakfast'),
+                    lunch: data.food?.meals.includes('lunch'),
+                    dinner: data.food?.meals.includes('dinner'),
+                    spicy: data.food?.spicy,
+                    hightea: data.food?.hightea
+                  }
+                });
+              }
+              if (data.primary !== 'travel' && data.travel) {
+                addons.push({
+                  booking_type: 'travel',
+                  details: {
+                    date: data.travel?.date,
+                    pickup_point: data.travel?.pickup,
+                    drop_point: data.travel?.drop,
+                    luggage: data.travel?.luggage,
+                    type: data.travel?.type,
+                    comments: data.travel?.special_request
+                  }
+                });
+              }
+              if (data.primary !== 'adhyayan' && data.adhyayan) {
+                addons.push({
+                  booking_type: 'adhyayan',
+                  details: {
+                    shibir_ids: [data.adhyayan?.id]
+                  }
+                });
+              }
+
+              if (addons.length > 0) {
+                payload.addons = addons;
+              }
+
+              const onSuccess = (_data) => {
+                router.push('/booking/paymentConfirmation');
+              };
+
+              const onFinally = () => {
+                setIsSubmitting(false);
+              };
+
+              await handleAPICall(
+                'POST',
+                '/unified/booking',
+                null,
+                payload,
+                onSuccess,
+                onFinally
+              );
             }}
             containerStyles="mb-8 min-h-[62px]"
             isLoading={isSubmitting}

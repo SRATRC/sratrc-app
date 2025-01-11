@@ -81,7 +81,11 @@ const TravelAddon = ({
       >
         <FormDisplayField
           text="Date"
-          value={travelForm.date ? travelForm.date : 'Travel Date'}
+          value={
+            travelForm.date
+              ? moment(travelForm.date).format('Do MMMM YYYY')
+              : 'Date'
+          }
           otherStyles="mt-7"
           backgroundColor="bg-gray-100"
         />
@@ -115,7 +119,6 @@ const TravelAddon = ({
         otherStyles="mt-7"
         text={'Pickup Location'}
         placeholder={'Select Location'}
-        save={'value'}
         data={LOCATION_LIST}
         setSelected={(val) =>
           setTravelForm({
@@ -130,7 +133,6 @@ const TravelAddon = ({
         otherStyles="mt-7"
         text={'Drop Location'}
         placeholder={'Select Location'}
-        save={'value'}
         data={LOCATION_LIST}
         setSelected={(val) =>
           setTravelForm({

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '../constants';
 
@@ -9,7 +9,9 @@ const PageHeader = ({ title, icon, onPress }) => {
       <TouchableOpacity onPress={onPress ? onPress : () => router.back()}>
         <Image
           source={icon ? icon : icons.backArrow}
-          className="w-9 h-9 p-2 ml-2 mr-4"
+          className={`p-1 ml-2 mr-4 ${
+            Platform.OS == 'android' ? 'w-4 h-4' : 'w-6 h-6'
+          }`}
           resizeMode="contain"
           tintColor={'#000000'}
         />

@@ -56,7 +56,7 @@ const AdhyayanBookingCancellation = () => {
   });
 
   const cancelBookingMutation = useMutation({
-    mutationFn: (shibirid) => {
+    mutationFn: ({ shibir_id, bookedFor }) => {
       return new Promise((resolve, reject) => {
         handleAPICall(
           'DELETE',
@@ -64,24 +64,53 @@ const AdhyayanBookingCancellation = () => {
           null,
           {
             cardno: user.cardno,
-            shibir_id: shibirid
+            shibir_id: shibir_id,
+            bookedFor: bookedFor
           },
           (res) => resolve(res),
           () => reject(new Error('Failed to cancel booking'))
         );
       });
     },
-    onSuccess: (_, shibirid) => {
+    onSuccess: (_, { shibir_id, bookedFor }) => {
       queryClient.setQueryData(['cancelAdhyayans', user.cardno], (oldData) => {
         if (!oldData || !oldData.pages) return oldData;
+
         return {
           ...oldData,
           pages: oldData.pages.map((page) =>
-            page.map((booking) =>
-              booking.shibir_id === shibirid
-                ? { ...booking, status: status.STATUS_CANCELLED }
-                : booking
-            )
+            page.map((booking) => {
+              const isMatchingBooking =
+                booking.shibir_id === shibir_id &&
+                (booking.bookedFor !== null
+                  ? booking.bookedFor == bookedFor
+                  : true);
+
+              if (!isMatchingBooking) {
+                return booking;
+              }
+
+              const isPending =
+                booking.transaction_status === status.STATUS_PAYMENT_PENDING ||
+                booking.transaction_status === status.STATUS_CASH_PENDING;
+
+              const isCompleted =
+                booking.transaction_status ===
+                  status.STATUS_PAYMENT_COMPLETED ||
+                booking.transaction_status === status.STATUS_CASH_COMPLETED;
+
+              const newTransactionStatus = isPending
+                ? status.STATUS_CANCELLED
+                : isCompleted
+                ? status.STATUS_CREDITED
+                : booking.transaction_status;
+
+              return {
+                ...booking,
+                status: status.STATUS_CANCELLED,
+                transaction_status: newTransactionStatus
+              };
+            })
           )
         };
       });
@@ -127,6 +156,8 @@ const AdhyayanBookingCancellation = () => {
                         status.STATUS_PAYMENT_PENDING ||
                       item.transaction_status == status.STATUS_CASH_PENDING
                     ? 'Payment Due'
+                    : item.transaction_status == status.STATUS_CREDITED
+                    ? 'Credited'
                     : 'Paid'
                 }
                 textStyles={
@@ -152,7 +183,9 @@ const AdhyayanBookingCancellation = () => {
               />
             </View>
             <View className="flex-col">
-              <Text className="font-pmedium text-gray-700">{item.name}</Text>
+              <Text className="font-pmedium text-gray-700">
+                {item.shibir_name}
+              </Text>
               <Text className="font-pmedium text-secondary-100">
                 {moment(item.start_date).format('Do MMMM')} -{' '}
                 {moment(item.end_date).format('Do MMMM, YYYY')}
@@ -183,26 +216,40 @@ const AdhyayanBookingCancellation = () => {
           <Text className="text-gray-400 font-pregular">Charge: </Text>
           <Text className="text-black font-pmedium">₹ {item.amount}</Text>
         </View>
+        <View className="flex px-2 mt-2 flex-row space-x-2">
+          <Image
+            source={icons.person}
+            className="w-4 h-4"
+            resizeMode="contain"
+          />
+          <Text className="text-gray-400 font-pregular">Booked For: </Text>
+          <Text className="text-black font-pmedium">
+            {item.name ? item.name : 'Self'}
+          </Text>
+        </View>
         {moment(item.start_date).diff(moment().format('YYYY-MM-DD')) > 6 &&
           item.status !== status.STATUS_CANCELLED &&
           item.status !== status.STATUS_ADMIN_CANCELLED && (
             <View className="flex-row space-x-2">
-              {item.transaction_status == status.STATUS_PAYMENT_PENDING ||
-                (item.transaction_status == status.STATUS_CASH_PENDING && (
-                  <CustomButton
-                    text="Pay Now"
-                    containerStyles={'mt-5 py-3 mx-1 flex-1'}
-                    textStyles={'text-sm'}
-                    handlePress={async () => {}}
-                  />
-                ))}
+              {(item.transaction_status == status.STATUS_PAYMENT_PENDING ||
+                item.transaction_status == status.STATUS_CASH_PENDING) && (
+                <CustomButton
+                  text="Pay Now"
+                  containerStyles={'mt-5 py-3 mx-1 flex-1'}
+                  textStyles={'text-sm'}
+                  handlePress={async () => {}}
+                />
+              )}
 
               <CustomButton
                 text="Cancel Booking"
                 containerStyles={'mt-5 py-3 mx-1 flex-1'}
                 textStyles={'text-sm'}
                 handlePress={() => {
-                  cancelBookingMutation.mutate(item.shibir_id);
+                  cancelBookingMutation.mutate({
+                    shibir_id: item.shibir_id,
+                    bookedFor: item.bookedFor
+                  });
                 }}
               />
             </View>

@@ -9,8 +9,7 @@ import {
   Alert,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback
+  Platform
 } from 'react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -34,7 +33,7 @@ const INITIAL_GUEST_FORM = {
       name: '',
       gender: '',
       mobno: '',
-      guestType: ''
+      type: ''
     }
   ]
 };
@@ -66,7 +65,7 @@ const AdhyayanBooking = () => {
           name: '',
           gender: '',
           mobno: '',
-          guestType: ''
+          type: ''
         }
       ]
     }));
@@ -97,14 +96,10 @@ const AdhyayanBooking = () => {
 
   const isGuestFormValid = () => {
     return guestForm.guests.every((guest) => {
-      // Check if common fields are filled
-      const commonFields = guest.name && guest.gender && guest.guestType;
-
-      // If guest type is 'VIP', only common fields are required
-      if (guest.guestType === 'VIP') {
+      const commonFields = guest.name && guest.gender && guest.type;
+      if (guest.type === 'vip' || guest.type === 'driver') {
         return commonFields;
       } else {
-        // For other guest types, common fields and mobno must be filled
         return commonFields && guest.mobno;
       }
     });
@@ -196,7 +191,7 @@ const AdhyayanBooking = () => {
     <View className="items-center">
       {(isFetchingNextPage || isLoading) && <ActivityIndicator />}
       {!hasNextPage && data?.pages?.[0]?.length > 0 && (
-        <Text>No more bookings at the moment</Text>
+        <Text>No more adhyayans at the moment</Text>
       )}
     </View>
   );
@@ -220,113 +215,126 @@ const AdhyayanBooking = () => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
-          <TouchableWithoutFeedback>
-            <View className="flex-1 justify-center items-center bg-black/50">
-              <View className="bg-white rounded-lg p-5 w-[80%] max-w-[300px] max-h-[80%]">
-                <View className="flex-row justify-between mb-2">
-                  <View className="flex-col space-y-1">
-                    <Text className="text-black font-pmedium text-sm">
-                      {selectedItem?.name}
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-lg p-5 w-[80%] max-w-[300px] max-h-[80%]">
+              <View className="flex-row justify-between mb-2">
+                <View className="flex-col space-y-1">
+                  <Text className="text-black font-pmedium text-sm">
+                    {selectedItem?.name}
+                  </Text>
+                  <View className="flex-row space-x-1">
+                    <Text className="text-gray-500 font-pregular text-xs">
+                      Date:
                     </Text>
-                    <View className="flex-row space-x-1">
-                      <Text className="text-gray-500 font-pregular text-xs">
-                        Date:
-                      </Text>
-                      <Text className="text-secondary font-pregular text-xs">
-                        {moment(selectedItem?.start_date).format('Do MMMM')} -{' '}
-                        {moment(selectedItem?.end_date).format('Do MMMM')}
-                      </Text>
-                    </View>
+                    <Text className="text-secondary font-pregular text-xs">
+                      {moment(selectedItem?.start_date).format('Do MMMM')} -{' '}
+                      {moment(selectedItem?.end_date).format('Do MMMM')}
+                    </Text>
                   </View>
-                  <TouchableOpacity onPress={toggleModal}>
-                    <Image
-                      source={icons.remove}
-                      tintColor={'black'}
-                      className="w-4 h-4"
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
                 </View>
+                <TouchableOpacity onPress={toggleModal}>
+                  <Image
+                    source={icons.remove}
+                    tintColor={'black'}
+                    className="w-4 h-4"
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
 
-                <HorizontalSeparator otherStyles={'w-full'} />
+              <HorizontalSeparator otherStyles={'w-full'} />
 
-                <FlatList
-                  data={[
-                    { key: 'bookFor' },
-                    { key: 'guestForm' },
-                    { key: 'confirmButton' }
-                  ]}
-                  renderItem={({ item }) => {
-                    if (item.key === 'bookFor') {
-                      return (
-                        <View className="flex-col mt-2">
-                          <Text className="font-pregular text-base text-black">
-                            Book For
-                          </Text>
-                          <CustomChipGroup
-                            chips={CHIPS}
-                            selectedChip={selectedChip}
-                            handleChipPress={handleChipClick}
-                            containerStyles={'mt-1'}
-                            chipContainerStyles={'py-1'}
-                            textStyles={'text-sm'}
-                          />
-                        </View>
-                      );
-                    } else if (
-                      item.key === 'guestForm' &&
-                      selectedChip == CHIPS[1]
-                    ) {
-                      return (
-                        <View>
-                          <GuestForm
-                            guestForm={guestForm}
-                            handleGuestFormChange={handleGuestFormChange}
-                            addGuestForm={addGuestForm}
-                            removeGuestForm={removeGuestForm}
-                            handleSuggestionSelect={handleSuggestionSelect}
-                          />
-                        </View>
-                      );
-                    } else if (item.key === 'confirmButton') {
-                      return (
-                        <CustomButton
-                          handlePress={async () => {
-                            if (selectedChip == CHIPS[0]) {
-                              await updateBooking('adhyayan', selectedItem);
-                              router.push(
-                                `/booking/${types.ADHYAYAN_DETAILS_TYPE}`
-                              );
-                            }
-                            if (selectedChip == CHIPS[1]) {
-                              if (!isGuestFormValid()) {
-                                Alert.alert('Fill all Fields');
-                                return;
-                              }
-                              await updateGuestBooking('adhyayan', guestForm);
-                              setGuestForm(INITIAL_GUEST_FORM);
-                              router.push(
-                                `/guestBooking/${types.ADHYAYAN_DETAILS_TYPE}`
-                              );
-                            }
-                            setSelectedItem(null);
-                            setSelectedChip('Self');
-                            toggleModal();
-                          }}
-                          text={'Confirm'}
-                          bgcolor="bg-secondary"
-                          containerStyles="mt-4 p-2"
+              <FlatList
+                data={[
+                  { key: 'bookFor' },
+                  { key: 'guestForm' },
+                  { key: 'confirmButton' }
+                ]}
+                renderItem={({ item }) => {
+                  if (item.key === 'bookFor') {
+                    return (
+                      <View className="flex-col mt-2">
+                        <Text className="font-pregular text-base text-black">
+                          Book For
+                        </Text>
+                        <CustomChipGroup
+                          chips={CHIPS}
+                          selectedChip={selectedChip}
+                          handleChipPress={handleChipClick}
+                          containerStyles={'mt-1'}
+                          chipContainerStyles={'py-1'}
                           textStyles={'text-sm'}
                         />
-                      );
-                    }
-                  }}
-                  keyExtractor={(item) => item.key}
-                  showsVerticalScrollIndicator={false}
-                />
-              </View>
+                      </View>
+                    );
+                  } else if (
+                    item.key === 'guestForm' &&
+                    selectedChip == CHIPS[1]
+                  ) {
+                    return (
+                      <View>
+                        <GuestForm
+                          guestForm={guestForm}
+                          handleGuestFormChange={handleGuestFormChange}
+                          addGuestForm={addGuestForm}
+                          removeGuestForm={removeGuestForm}
+                          handleSuggestionSelect={handleSuggestionSelect}
+                        />
+                      </View>
+                    );
+                  } else if (item.key === 'confirmButton') {
+                    return (
+                      <CustomButton
+                        handlePress={async () => {
+                          if (selectedChip == CHIPS[0]) {
+                            await updateBooking('adhyayan', selectedItem);
+                            router.push(
+                              `/booking/${types.ADHYAYAN_DETAILS_TYPE}`
+                            );
+                          }
+                          if (selectedChip == CHIPS[1]) {
+                            if (!isGuestFormValid()) {
+                              Alert.alert('Fill all Fields');
+                              return;
+                            }
+                            await handleAPICall(
+                              'POST',
+                              '/guest',
+                              null,
+                              {
+                                cardno: user.cardno,
+                                guests: guestForm.guests
+                              },
+                              async (res) => {
+                                guestForm.guests = res.guests;
+                                await updateGuestBooking('adhyayan', guestForm);
+                                setGuestForm(INITIAL_GUEST_FORM);
+                                router.push(
+                                  `/guestBooking/${types.ADHYAYAN_DETAILS_TYPE}`
+                                );
+                              },
+                              () => {
+                                setIsSubmitting(false);
+                              }
+                            );
+                          }
+                          setSelectedItem(null);
+                          setSelectedChip('Self');
+                          toggleModal();
+                        }}
+                        text={'Confirm'}
+                        bgcolor="bg-secondary"
+                        containerStyles="mt-4 p-2"
+                        textStyles={'text-sm'}
+                      />
+                    );
+                  }
+                }}
+                keyExtractor={(item) => item.key}
+                showsVerticalScrollIndicator={false}
+              />
             </View>
-          </TouchableWithoutFeedback>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
       <SectionList

@@ -6,15 +6,13 @@ import {
   TouchableOpacity,
   Modal,
   Image,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback
+  Platform
 } from 'react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { icons, status, types } from '../../constants';
+import { icons, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
 import CustomButton from '../CustomButton';
@@ -24,8 +22,18 @@ import HorizontalSeparator from '../HorizontalSeparator';
 import moment from 'moment';
 import CustomChipGroup from '../CustomChipGroup';
 import GuestForm from '../GuestForm';
+import FormField from '../FormField';
+import CustomDropdown from '../CustomDropdown';
+import Toast from 'react-native-toast-message';
 
 const CHIPS = ['Self', 'Guest'];
+const ARRIVAL = [
+  { key: 'car', value: 'Self Car' },
+  { key: 'raj pravas', value: 'Raj Pravas' },
+  { key: 'other', value: 'Other' }
+];
+
+var PACKAGES = [];
 
 const INITIAL_GUEST_FORM = {
   adhyayan: null,
@@ -34,21 +42,33 @@ const INITIAL_GUEST_FORM = {
       name: '',
       gender: '',
       mobno: '',
-      guestType: ''
+      guestType: '',
+      package: null,
+      arrival: null,
+      carno: null,
+      other: null
     }
   ]
 };
 
+const INITIAL_SELF_FORM = {
+  package: null,
+  arrival: null,
+  carno: null,
+  other: null
+};
+
 const EventBooking = () => {
   const router = useRouter();
-  //TODO: remove unused updateBooking and similar variables
-  const { user, updateBooking, updateGuestBooking } = useGlobalContext();
+  const { user } = useGlobalContext();
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+    setSelfForm(INITIAL_SELF_FORM);
+    setGuestForm(INITIAL_GUEST_FORM);
   };
 
   const [selectedChip, setSelectedChip] = useState('Self');
@@ -56,6 +76,7 @@ const EventBooking = () => {
     setSelectedChip(chip);
   };
 
+  const [selfForm, setSelfForm] = useState(INITIAL_SELF_FORM);
   const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
 
   const addGuestForm = () => {
@@ -67,7 +88,11 @@ const EventBooking = () => {
           name: '',
           gender: '',
           mobno: '',
-          guestType: ''
+          guestType: '',
+          package: null,
+          arrival: null,
+          carno: null,
+          other: null
         }
       ]
     }));
@@ -111,11 +136,11 @@ const EventBooking = () => {
     });
   };
 
-  const fetchAdhyayans = async ({ pageParam = 1 }) => {
+  const fetchUtsavs = async ({ pageParam = 1 }) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
         'GET',
-        '/adhyayan/getall',
+        '/utsav/upcoming',
         {
           cardno: user.cardno,
           page: pageParam
@@ -138,8 +163,8 @@ const EventBooking = () => {
     isLoading,
     isError
   } = useInfiniteQuery({
-    queryKey: ['adhyayans', user.cardno],
-    queryFn: fetchAdhyayans,
+    queryKey: ['utsavs', user.cardno],
+    queryFn: fetchUtsavs,
     staleTime: 1000 * 60 * 30,
     getNextPageParam: (lastPage, pages) => {
       if (!lastPage || lastPage.length === 0) return undefined;
@@ -163,18 +188,19 @@ const EventBooking = () => {
       <HorizontalSeparator />
       <View className="mt-3">
         <View className="flex-row space-x-2">
-          <Text className="font-psemibold text-gray-400">Swadhyay Karta:</Text>
+          <Text className="font-psemibold text-gray-400">Package Type:</Text>
           <Text className="font-pregular">{item.speaker}</Text>
-        </View>
-        <View className="flex-row space-x-2">
-          <Text className="font-psemibold text-gray-400">Charges:</Text>
-          <Text className="font-pregular">{item.amount}</Text>
         </View>
         <CustomButton
           text={
             item.status == status.STATUS_CLOSED ? 'Add to waitlist' : 'Register'
           }
           handlePress={() => {
+            PACKAGES = item.UtsavPackagesDbs.map((item) => ({
+              key: item.id,
+              value: item.name
+            }));
+
             setSelectedItem(item);
             setGuestForm((prev) => ({
               ...prev,
@@ -221,115 +247,276 @@ const EventBooking = () => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
-          <TouchableWithoutFeedback>
-            <View className="flex-1 justify-center items-center bg-black/50">
-              <View className="bg-white rounded-lg p-5 w-[80%] max-w-[300px] max-h-[80%]">
-                <View className="flex-row justify-between mb-2">
-                  <View className="flex-col space-y-1">
-                    <Text className="text-black font-pmedium text-sm">
-                      {selectedItem?.name}
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-lg p-5 w-[80%] max-w-[300px] max-h-[80%]">
+              <View className="flex-row justify-between mb-2">
+                <View className="flex-col space-y-1">
+                  <Text className="text-black font-pmedium text-sm">
+                    {selectedItem?.name}
+                  </Text>
+                  <View className="flex-row space-x-1">
+                    <Text className="text-gray-500 font-pregular text-xs">
+                      Date:
                     </Text>
-                    <View className="flex-row space-x-1">
-                      <Text className="text-gray-500 font-pregular text-xs">
-                        Date:
-                      </Text>
-                      <Text className="text-secondary font-pregular text-xs">
-                        {moment(selectedItem?.start_date).format('Do MMMM')} -{' '}
-                        {moment(selectedItem?.end_date).format('Do MMMM')}
-                      </Text>
-                    </View>
+                    <Text className="text-secondary font-pregular text-xs">
+                      {moment(selectedItem?.start_date).format('Do MMMM')} -{' '}
+                      {moment(selectedItem?.end_date).format('Do MMMM')}
+                    </Text>
                   </View>
-                  <TouchableOpacity onPress={toggleModal}>
-                    <Image
-                      source={icons.remove}
-                      tintColor={'black'}
-                      className="w-4 h-4"
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
                 </View>
+                <TouchableOpacity onPress={toggleModal}>
+                  <Image
+                    source={icons.remove}
+                    tintColor={'black'}
+                    className="w-4 h-4"
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
 
-                <HorizontalSeparator otherStyles={'w-full'} />
+              <HorizontalSeparator otherStyles={'w-full'} />
 
-                <FlatList
-                  data={[
-                    { key: 'bookFor' },
-                    { key: 'guestForm' },
-                    { key: 'confirmButton' }
-                  ]}
-                  renderItem={({ item }) => {
-                    if (item.key === 'bookFor') {
-                      return (
-                        <View className="flex-col mt-2">
-                          <Text className="font-pregular text-base text-black">
-                            Book For
-                          </Text>
-                          <CustomChipGroup
-                            chips={CHIPS}
-                            selectedChip={selectedChip}
-                            handleChipPress={handleChipClick}
-                            containerStyles={'mt-1'}
-                            chipContainerStyles={'py-1'}
-                            textStyles={'text-sm'}
-                          />
-                        </View>
-                      );
-                    } else if (
-                      item.key === 'guestForm' &&
-                      selectedChip == CHIPS[1]
-                    ) {
-                      return (
-                        <View>
-                          <GuestForm
-                            guestForm={guestForm}
-                            handleGuestFormChange={handleGuestFormChange}
-                            addGuestForm={addGuestForm}
-                            removeGuestForm={removeGuestForm}
-                            handleSuggestionSelect={handleSuggestionSelect}
-                          />
-                        </View>
-                      );
-                    } else if (item.key === 'confirmButton') {
-                      return (
-                        <CustomButton
-                          handlePress={async () => {
-                            if (selectedChip == CHIPS[0]) {
-                              await updateBooking('adhyayan', selectedItem);
-                              router.push(
-                                `/booking/${types.ADHYAYAN_DETAILS_TYPE}`
-                              );
-                            }
-                            if (selectedChip == CHIPS[1]) {
-                              if (!isGuestFormValid()) {
-                                Alert.alert('Fill all Fields');
-                                return;
-                              }
-                              await updateGuestBooking('adhyayan', guestForm);
-                              setGuestForm(INITIAL_GUEST_FORM);
-                              router.push(
-                                `/guestBooking/${types.ADHYAYAN_DETAILS_TYPE}`
-                              );
-                            }
-                            setSelectedItem(null);
-                            setSelectedChip('Self');
-                            toggleModal();
-                          }}
-                          text={'Confirm'}
-                          bgcolor="bg-secondary"
-                          containerStyles="mt-4 p-2"
+              <FlatList
+                data={[
+                  { key: 'bookFor' },
+                  { key: 'guestForm' },
+                  { key: 'confirmButton' }
+                ]}
+                renderItem={({ item }) => {
+                  if (item.key === 'bookFor') {
+                    return (
+                      <View className="flex-col mt-2">
+                        <Text className="font-pregular text-base text-black">
+                          Book For
+                        </Text>
+                        <CustomChipGroup
+                          chips={CHIPS}
+                          selectedChip={selectedChip}
+                          handleChipPress={handleChipClick}
+                          containerStyles={'mt-1'}
+                          chipContainerStyles={'py-1'}
                           textStyles={'text-sm'}
                         />
-                      );
-                    }
-                  }}
-                  keyExtractor={(item) => item.key}
-                  showsVerticalScrollIndicator={false}
-                />
-              </View>
+                        {selectedChip == CHIPS[0] && (
+                          <View>
+                            <CustomDropdown
+                              otherStyles="mt-7"
+                              text={'Package'}
+                              placeholder={'Select Package'}
+                              data={PACKAGES}
+                              value={selfForm.package}
+                              setSelected={(val) => {
+                                setSelfForm({ ...selfForm, package: val });
+                              }}
+                            />
+
+                            <CustomDropdown
+                              otherStyles="mt-7"
+                              text={'How will you arrive?'}
+                              placeholder={'How will you arrive?'}
+                              data={ARRIVAL}
+                              value={selfForm.arrival}
+                              setSelected={(val) => {
+                                setSelfForm({ ...selfForm, arrival: val });
+                              }}
+                            />
+
+                            {selfForm.arrival == 'car' && (
+                              <View>
+                                <FormField
+                                  text="Enter Car Number"
+                                  value={selfForm.carno}
+                                  handleChangeText={(e) =>
+                                    setSelfForm({ ...selfForm, carno: e })
+                                  }
+                                  otherStyles="mt-7"
+                                  inputStyles="font-pmedium text-base text-gray-400"
+                                  containerStyles="bg-gray-100"
+                                  placeholder="XX-XXX-XXXX"
+                                  maxLength={10}
+                                  autoComplete={'off'}
+                                />
+                              </View>
+                            )}
+
+                            <FormField
+                              text="Any other details?"
+                              value={selfForm.other}
+                              handleChangeText={(e) =>
+                                setSelfForm({ ...selfForm, other: e })
+                              }
+                              otherStyles="mt-7"
+                              inputStyles="font-pmedium text-base text-gray-400"
+                              containerStyles="bg-gray-100"
+                              placeholder="Enter details here..."
+                            />
+                          </View>
+                        )}
+                      </View>
+                    );
+                  } else if (
+                    item.key === 'guestForm' &&
+                    selectedChip == CHIPS[1]
+                  ) {
+                    return (
+                      <View>
+                        <GuestForm
+                          guestForm={guestForm}
+                          handleGuestFormChange={handleGuestFormChange}
+                          addGuestForm={addGuestForm}
+                          removeGuestForm={removeGuestForm}
+                          handleSuggestionSelect={handleSuggestionSelect}
+                        >
+                          {(index) => (
+                            <View>
+                              <CustomDropdown
+                                otherStyles="mt-7"
+                                text={'Package'}
+                                placeholder={'Select Package'}
+                                data={PACKAGES}
+                                value={guestForm.guests[index].package}
+                                setSelected={(val) => {
+                                  handleGuestFormChange(index, 'package', val);
+                                }}
+                              />
+
+                              <CustomDropdown
+                                otherStyles="mt-7"
+                                text={'How will you arrive?'}
+                                placeholder={'How will you arrive?'}
+                                data={ARRIVAL}
+                                value={guestForm.guests[index].arrival}
+                                setSelected={(val) => {
+                                  setSelfForm({ ...selfForm, arrival: val });
+                                }}
+                              />
+
+                              {selfForm.arrival == 'car' && (
+                                <View>
+                                  <FormField
+                                    text="Enter Car Number"
+                                    value={guestForm.guests[index].carno}
+                                    handleChangeText={(e) =>
+                                      setSelfForm({ ...selfForm, carno: e })
+                                    }
+                                    otherStyles="mt-7"
+                                    inputStyles="font-pmedium text-base text-gray-400"
+                                    containerStyles="bg-gray-100"
+                                    placeholder="XX-XXX-XXXX"
+                                    maxLength={10}
+                                    autoComplete={false}
+                                  />
+                                </View>
+                              )}
+
+                              <FormField
+                                text="Any other details?"
+                                value={guestForm.guests[index].other}
+                                handleChangeText={(e) =>
+                                  setSelfForm({ ...selfForm, other: e })
+                                }
+                                otherStyles="mt-7"
+                                inputStyles="font-pmedium text-base text-gray-400"
+                                containerStyles="bg-gray-100"
+                                placeholder="Enter details here..."
+                              />
+                            </View>
+                          )}
+                        </GuestForm>
+                      </View>
+                    );
+                  } else if (item.key === 'confirmButton') {
+                    return (
+                      <CustomButton
+                        handlePress={async () => {
+                          setIsSubmitting(true);
+                          if (selectedChip == CHIPS[0]) {
+                            handleAPICall(
+                              'POST',
+                              '/utsav/booking',
+                              null,
+                              {
+                                cardno: user.cardno,
+                                utsavid: selectedItem.id,
+                                packageid: selfForm.package
+                              },
+                              (res) => {
+                                if (res.status == 200) {
+                                  setIsModalVisible(false);
+                                  setIsSubmitting(false);
+                                  queryClient.invalidateQueries([
+                                    'utsavBooking',
+                                    user.cardno
+                                  ]);
+                                  Toast.show({
+                                    text1: 'Booking Successful!'
+                                  });
+                                }
+                              },
+                              () => {
+                                setIsSubmitting(false);
+                              }
+                            );
+                          }
+                          if (selectedChip == CHIPS[1]) {
+                            handleAPICall(
+                              'POST',
+                              '/utsav/guest',
+                              null,
+                              {
+                                cardno: user.cardno,
+                                utsavid: selectedItem.id,
+                                guests: guestForm.guests.map((guest) => ({
+                                  id: guest.id,
+                                  name: guest.name,
+                                  gender: guest.gender,
+                                  mobno: guest.mobno,
+                                  type: guest.guestType,
+                                  packageid: guest.package,
+                                  arrival: guest.arrival,
+                                  carno: guest.carno,
+                                  other: guest.other
+                                }))
+                              },
+                              (res) => {
+                                if (res.status == 200) {
+                                  setIsModalVisible(false);
+                                  setIsSubmitting(false);
+                                  queryClient.invalidateQueries([
+                                    'utsavBooking',
+                                    user.cardno
+                                  ]);
+                                  Toast.show({
+                                    text1: 'Booking Successful!'
+                                  });
+                                }
+                              },
+                              () => {
+                                setIsSubmitting(false);
+                              }
+                            );
+                          }
+                          setSelectedItem(null);
+                          setSelectedChip('Self');
+                          toggleModal();
+                        }}
+                        text={'Confirm'}
+                        bgcolor="bg-secondary"
+                        containerStyles="mt-4 p-2"
+                        textStyles={'text-sm'}
+                        isLoading={isSubmitting}
+                      />
+                    );
+                  }
+                }}
+                keyExtractor={(item) => item.key}
+                showsVerticalScrollIndicator={false}
+              />
             </View>
-          </TouchableWithoutFeedback>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
+
       <SectionList
         className="px-2 py-2 flex-grow-1"
         sections={data?.pages?.flatMap((page) => page) || []}

@@ -49,7 +49,11 @@ const GuestRoomBookingDetails = ({ containerStyles }) => {
         <Image source={icons.person} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">Booked For: </Text>
         <Text className="text-black font-pmedium">
-          {guestData.room.guests.length} Guests
+          {guestData.room.guestGroup.reduce(
+            (acc, group) => acc + group.guests.length,
+            0
+          )}{' '}
+          Guests
         </Text>
       </View>
       {/* <View className="flex px-6 pb-4 flex-row space-x-2">
