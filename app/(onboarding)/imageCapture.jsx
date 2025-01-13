@@ -13,9 +13,11 @@ import { colors, icons, images } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
 import * as Brightness from 'expo-brightness';
+import handleAPICall from '../../utils/HandleApiCall';
+import Toast from 'react-native-toast-message';
 
 const ImageCaptureOnboarding = () => {
-  const { setUser, removeItem } = useGlobalContext();
+  const { user, setUser, removeItem } = useGlobalContext();
   const [permissionResponse, requestPermission] = Brightness.usePermissions();
   const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
@@ -128,10 +130,29 @@ const ImageCaptureOnboarding = () => {
             </View> */}
 
             <TouchableWithoutFeedback
-              onPress={() => {
-                setUser(null);
-                removeItem('user');
-                router.replace('/sign-in');
+              onPress={async () => {
+                try {
+                  const onSuccess = async (data) => {
+                    setUser(null);
+                    removeItem('user');
+                    router.replace('/sign-in');
+                  };
+
+                  await handleAPICall(
+                    'GET',
+                    '/client/logout',
+                    { cardno: user.cardno },
+                    null,
+                    onSuccess,
+                    () => {}
+                  );
+                } catch (error) {
+                  Toast.show({
+                    type: 'error',
+                    text1: 'An error occurred!',
+                    text2: error.message
+                  });
+                }
               }}
             >
               <View className="flex flex-row items-center">

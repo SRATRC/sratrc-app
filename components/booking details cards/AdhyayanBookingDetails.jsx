@@ -25,18 +25,20 @@ const AdhyayanBookingDetails = ({ containerStyles }) => {
           resizeMode="contain"
         />
         <View className="w-full flex-1 justify-center space-y-1">
-          {data.adhyayan.booking_status && (
+          {data.validationData?.adhyayanDetails[0] && (
             <CustomTag
-              text={data.adhyayan.booking_status}
+              text={data.validationData?.adhyayanDetails[0]?.status}
               textStyles={
-                data.adhyayan.booking_status == status.STATUS_WAITING
-                  ? 'text-red-200'
-                  : 'text-green-200'
+                data.validationData?.adhyayanDetails[0]?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'text-green-200'
+                  : 'text-red-200'
               }
               containerStyles={
-                data.adhyayan.booking_status == status.STATUS_WAITING
-                  ? 'bg-red-100'
-                  : 'bg-green-100'
+                data.validationData?.adhyayanDetails[0]?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'bg-green-100'
+                  : 'bg-red-100'
               }
             />
           )}
@@ -61,13 +63,6 @@ const AdhyayanBookingDetails = ({ containerStyles }) => {
         <Image source={icons.person} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">Swadhyay Karta:</Text>
         <Text className="text-black font-pmedium">{data.adhyayan.speaker}</Text>
-      </View>
-      <View className="flex px-6 pb-4 flex-row space-x-2">
-        <Image source={icons.charge} className="w-4 h-4" resizeMode="contain" />
-        <Text className="text-gray-400 font-pregular">Charges:</Text>
-        <Text className="text-black font-pmedium">
-          ₹ {data.adhyayan.amount}
-        </Text>
       </View>
     </PrimaryAddonBookingCard>
   );

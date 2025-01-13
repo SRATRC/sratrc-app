@@ -119,7 +119,9 @@ const FormField = ({
                   paddingHorizontal: 15
                 }}
               >
-                <Text className="font-pregular text-base">{item}</Text>
+                <Text className="font-pregular text-base text-gray-500">
+                  {item}
+                </Text>
               </TouchableOpacity>
             )}
           />

@@ -118,7 +118,7 @@ const EventBookingCancellation = () => {
       visibleContent={
         <View className="flex flex-row items-center space-x-4">
           <Image
-            source={icons.adhyayan}
+            source={icons.events}
             className="w-10 h-10 items-center"
             resizeMode="contain"
           />

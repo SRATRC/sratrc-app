@@ -21,18 +21,20 @@ const TravelBookingDetails = ({ containerStyles }) => {
           resizeMode="contain"
         />
         <View className="w-full flex-1 justify-center space-y-1">
-          {data.travel.booking_status && (
+          {data.validationData?.travelDetails?.status && (
             <CustomTag
-              text={data.travel.booking_status}
+              text={data.validationData?.travelDetails?.status}
               textStyles={
-                data.travel.booking_status == status.STATUS_WAITING
-                  ? 'text-red-200'
-                  : 'text-green-200'
+                data.validationData?.travelDetails?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'text-green-200'
+                  : 'text-red-200'
               }
               containerStyles={
-                data.travel.booking_status == status.STATUS_WAITING
-                  ? 'bg-red-100'
-                  : 'bg-green-100'
+                data.validationData?.travelDetails?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'bg-green-100'
+                  : 'bg-red-100'
               }
             />
           )}

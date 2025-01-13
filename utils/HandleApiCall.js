@@ -25,7 +25,7 @@ const handleAPICall = async (
     if (res.status === 200 || res.status === 201) {
       successCallback(res.data);
     } else {
-      console.log(JSON.stringify(res.data));
+      console.log('ERROR: ', JSON.stringify(res.data));
 
       Toast.show({
         type: 'error',

@@ -20,7 +20,6 @@ import { useRouter } from 'expo-router';
 import PageHeader from '../../components/PageHeader';
 import handleAPICall from '../../utils/HandleApiCall';
 import CustomChipGroup from '../../components/CustomChipGroup';
-import LottieView from 'lottie-react-native';
 import CustomTag from '../../components/CustomTag';
 import ExpandableItem from '../../components/ExpandableItem';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
@@ -28,6 +27,7 @@ import CustomDropdown from '../../components/CustomDropdown';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import moment from 'moment';
+import CustomEmptyMessage from '../../components/CustomEmptyMessage';
 
 const CHIPS = [
   types.MAINTENANCE_TYPE_ALL,
@@ -192,21 +192,10 @@ const maintenanceRequestList = () => {
         <Text>No more bookings at the moment</Text>
       )}
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg text-center font-pregular text-secondary">
-            You dont have any maintenance requests yet
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'You dont have any maintenance requests yet'}
+        />
       )}
     </View>
   );

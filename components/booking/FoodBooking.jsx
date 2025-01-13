@@ -291,8 +291,6 @@ const FoodBooking = () => {
             handlePress={async () => {
               setIsSubmitting(true);
               if (!isGuestFormValid()) {
-                console.log(JSON.stringify(guestForm));
-
                 setIsSubmitting(false);
                 setModalMessage('Please fill all fields');
                 setModalVisible(true);

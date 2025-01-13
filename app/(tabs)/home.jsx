@@ -1,7 +1,13 @@
-import { View, Text, Image, ImageBackground, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  ImageBackground,
+  ScrollView,
+  Linking
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { icons, images } from '../../constants';
-import { openApp } from '../../utils/linkingUtils';
+import { icons, images, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { router } from 'expo-router';
 import CustomHomeIcon from '../../components/CustomHomeIcon';
@@ -40,13 +46,15 @@ const Home = () => {
       <View className="mt-7 w-full px-4">
         <Text className="text-lg text-black font-pmedium">Our Services</Text>
         <View className="mt-3 w-full flex flex-row items-center">
-          <CustomHomeIcon
-            image={icons.wifiHome}
-            title={'Wifi'}
-            onPress={() => {
-              router.push('/wifi');
-            }}
-          />
+          {user.res_status != status.STATUS_RESIDENT && (
+            <CustomHomeIcon
+              image={icons.wifiHome}
+              title={'Wifi'}
+              onPress={() => {
+                router.push('/wifi');
+              }}
+            />
+          )}
           <CustomHomeIcon
             image={icons.menuHome}
             title={'Menu'}
@@ -76,40 +84,46 @@ const Home = () => {
             <CustomHomeIcon
               image={icons.satshrut}
               title={'Satshrut'}
-              onPress={() => {
-                openApp('https://satshrut.vitraagvigyaan.org/');
+              onPress={async () => {
+                await Linking.openURL('https://satshrut.vitraagvigyaan.org/');
               }}
             />
 
             <CustomHomeIcon
               image={icons.vvYt}
               title={'Youtube'}
-              onPress={() => {
-                openApp('https://www.youtube.com/@VitraagVigyaan');
+              onPress={async () => {
+                await Linking.openURL('https://youtube.com/@vitraagvigyaan');
               }}
             />
 
             <CustomHomeIcon
               image={icons.vvInsta}
               title={'VV Insta'}
-              onPress={() => {
-                openApp('https://www.instagram.com/vitraag.vigyaan/');
+              onPress={async () => {
+                await Linking.openURL(
+                  'https://www.instagram.com/vitraag.vigyaan/'
+                );
               }}
             />
 
             <CustomHomeIcon
               image={icons.rcGlobalInsta}
               title={'RC Global'}
-              onPress={() => {
-                openApp('https://www.instagram.com/researchcentre_global/');
+              onPress={async () => {
+                await Linking.openURL(
+                  'https://www.instagram.com/researchcentre_global/'
+                );
               }}
             />
 
             <CustomHomeIcon
               image={icons.sparshInsta}
               title={'Sparsh'}
-              onPress={() => {
-                openApp('https://www.instagram.com/sparsh.international/');
+              onPress={async () => {
+                await Linking.openURL(
+                  'https://www.instagram.com/sparsh.international/'
+                );
               }}
             />
           </View>

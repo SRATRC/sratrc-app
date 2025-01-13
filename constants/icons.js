@@ -22,6 +22,7 @@ import elder from '../assets/icons/elder.png';
 import room from '../assets/icons/room.png';
 import travel from '../assets/icons/travel.png';
 import charge from '../assets/icons/charge.png';
+import events from '../assets/icons/events.png';
 import id from '../assets/icons/id.png';
 import yellowArrowUp from '../assets/icons/yellow-arrow-up.png';
 import yellowArrowDown from '../assets/icons/yellow-arrow-down.png';
@@ -87,6 +88,7 @@ export default {
   room,
   travel,
   charge,
+  events,
   id,
   yellowArrowUp,
   yellowArrowDown,

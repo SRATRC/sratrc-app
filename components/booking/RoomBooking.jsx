@@ -1,5 +1,6 @@
 import { View, Alert, Text } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { types, dropdowns } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -48,6 +49,14 @@ const RoomBooking = () => {
   useEffect(
     useCallback(() => {
       setIsSubmitting(false);
+    }, [])
+  );
+
+  // To re-render the page when navigating
+  const [key, setKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setKey((prevKey) => prevKey + 1);
     }, [])
   );
 
@@ -135,7 +144,7 @@ const RoomBooking = () => {
   };
 
   return (
-    <View className="flex-1 justify-center mt-10">
+    <View className="flex-1 justify-center mt-10" key={key}>
       <SegmentedControl
         segments={SWITCH_OPTIONS}
         onSegmentChange={(segment) => {
@@ -216,8 +225,6 @@ const RoomBooking = () => {
               />
             </View>
           )}
-          {/* FIXME: why does guestType and gender values disappear when
-          navigating back to room booking? */}
           {selectedChip === CHIPS[1] && (
             <View>
               <GuestForm
@@ -282,7 +289,7 @@ const RoomBooking = () => {
                         }));
                         updateGuestBooking('room', guestForm);
                         setIsSubmitting(false);
-                        // setGuestForm(INITIAL_GUEST_FORM);
+                        setGuestForm(INITIAL_GUEST_FORM);
                         router.push(`/guestBooking/${types.ROOM_DETAILS_TYPE}`);
                       },
                       () => {

@@ -21,6 +21,8 @@ import HorizontalSeparator from '../../components/HorizontalSeparator';
 import moment from 'moment';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
+import CustomEmptyMessage from '../../components/CustomEmptyMessage';
+import CustomErrorMessage from '../../components/CustomErrorMessage';
 
 const wifi = () => {
   const { user } = useGlobalContext();
@@ -177,15 +179,9 @@ const wifi = () => {
       )}
       {wifiList?.length == 0 ? (
         <View className="w-full h-full flex flex-col px-4 items-center justify-center space-y-6">
-          <Text className="text-lgf font-pregular text-center">
-            No WiFi code generated Yet!
-          </Text>
-          <LottieView
-            source={require('../../assets/lottie/empty.json')}
-            style={{ height: 350, width: 300 }}
-            resizeMode="cover"
-            autoPlay
-            loop
+          <CustomEmptyMessage
+            lottiePath={require('../../assets/lottie/empty.json')}
+            message={'No WiFi code generated Yet!'}
           />
           <CustomButton
             text={'Generate new Code'}
@@ -212,9 +208,8 @@ const wifi = () => {
   if (isError)
     return (
       <SafeAreaView className="h-full bg-white">
-        <Text className="text-red-500 text-lg font-pregular items-center justify-center">
-          An error occurred
-        </Text>
+        <PageHeader title={'Wifi Passwords'} icon={icons.backArrow} />
+        <CustomErrorMessage />
       </SafeAreaView>
     );
   return (

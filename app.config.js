@@ -25,26 +25,7 @@ export default {
         backgroundColor: '#ffffff'
       },
       package: 'com.vandit.sratrc',
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
-      intentFilters: [
-        {
-          action: 'VIEW',
-          autoVerify: true,
-          data: [
-            {
-              scheme: 'https',
-              host: '*.instagram.com',
-              pathPrefix: '/'
-            },
-            {
-              scheme: 'https',
-              host: '*.youtube.com',
-              pathPrefix: '/'
-            }
-          ],
-          category: ['BROWSABLE', 'DEFAULT']
-        }
-      ]
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON
     },
     web: {
       favicon: './assets/favicon.png'
@@ -76,6 +57,15 @@ export default {
         'expo-camera',
         {
           cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera'
+        }
+      ],
+      [
+        'expo-notifications',
+        {
+          icon: './assets/images/logo.png',
+          // "color": "#ffffff",
+          // "defaultChannel": "default",
+          enableBackgroundRemoteNotifications: true
         }
       ]
     ],

@@ -4,9 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import Toast from 'react-native-toast-message';
+import handleAPICall from '../../utils/HandleApiCall';
 
 const Profile = () => {
-  const { user, setUser, removeItem } = useGlobalContext();
+  const { user, removeItem } = useGlobalContext();
   const router = useRouter();
 
   const profileList = [
@@ -37,10 +39,28 @@ const Profile = () => {
     {
       name: 'Logout',
       icon: icons.logout,
-      onPress: () => {
-        setUser(null);
-        removeItem('user');
-        router.replace('/sign-in');
+      onPress: async () => {
+        try {
+          const onSuccess = async (_data) => {
+            removeItem('user');
+            router.replace('/sign-in');
+          };
+
+          await handleAPICall(
+            'GET',
+            '/client/logout',
+            { cardno: user.cardno },
+            null,
+            onSuccess,
+            () => {}
+          );
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'An error occurred!',
+            text2: error.message
+          });
+        }
       }
     }
   ];

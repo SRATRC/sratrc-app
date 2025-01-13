@@ -20,18 +20,20 @@ const RoomBookingDetails = ({ containerStyles }) => {
       <View className="flex p-4 flex-row items-center space-x-4">
         <Image source={icons.room} className="w-10 h-10" resizeMode="contain" />
         <View className="w-full flex-1 justify-center space-y-1">
-          {data.room.booking_status && (
+          {data.validationData?.roomDetails?.status && (
             <CustomTag
-              text={data.room.booking_status}
+              text={data.validationData?.roomDetails?.status}
               textStyles={
-                data.room.booking_status == status.STATUS_WAITING
-                  ? 'text-red-200'
-                  : 'text-green-200'
+                data.validationData?.roomDetails?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'text-green-200'
+                  : 'text-red-200'
               }
               containerStyles={
-                data.room.booking_status == status.STATUS_WAITING
-                  ? 'bg-red-100'
-                  : 'bg-green-100'
+                data.validationData?.roomDetails?.status ==
+                status.STATUS_AVAILABLE
+                  ? 'bg-green-100'
+                  : 'bg-red-100'
               }
             />
           )}

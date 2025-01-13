@@ -18,13 +18,14 @@ import CustomChipGroup from '../../components/CustomChipGroup';
 import LottieView from 'lottie-react-native';
 import CustomTag from '../../components/CustomTag';
 import moment from 'moment';
+import CustomEmptyMessage from '../../components/CustomEmptyMessage';
 
 const CHIPS = [
   types.transaction_type_all,
   types.transaction_type_pending,
   types.transaction_type_completed,
-  types.transaction_type_cancelled,
-  types.transaction_type_admin_cancelled
+  types.transaction_type_credited,
+  types.transaction_type_cancelled
 ];
 
 const transactions = () => {
@@ -98,21 +99,10 @@ const transactions = () => {
         <Text>No more bookings at the moment</Text>
       )}
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg font-pregular text-secondary">
-            You dont have any transactions yet
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'You dont have any transactions yet'}
+        />
       )}
     </View>
   );
@@ -146,7 +136,6 @@ const transactions = () => {
   );
 };
 
-//FIXME: add event icon here and manage bookedfor and naming constants as we have few more constants to account for
 const TransactionItem = ({ item }) => {
   return (
     <View className="px-5">
@@ -161,60 +150,83 @@ const TransactionItem = ({ item }) => {
           <View className="flex h-full justify-center">
             <Image
               source={
-                item.category == types.ROOM_DETAILS_TYPE
+                item.category == types.ROOM_DETAILS_TYPE ||
+                item.category == types.GUEST_ROOM_DETAILS_TYPE
                   ? icons.room
-                  : item.category == types.TRAVEL_DETAILS_TYPE
+                  : item.category == types.TRAVEL_DETAILS_TYPE ||
+                    item.category == types.GUEST_TRAVEL_DETAILS_TYPE
                   ? icons.travel
-                  : item.category == types.ADHYAYAN_DETAILS_TYPE
+                  : item.category == types.ADHYAYAN_DETAILS_TYPE ||
+                    item.category == types.GUEST_ADHYAYAN_DETAILS_TYPE
                   ? icons.adhyayan
-                  : icons.logout //TODO: add event icon here
+                  : item.category == types.EVENT_DETAILS_TYPE ||
+                    item.category == types.GUEST_EVENT_DETAILS_TYPE
+                  ? icons.events
+                  : icons.logout
               }
               className="w-10 h-10"
               resizeMode="contain"
             />
           </View>
           <View className="flex flex-col space-y-2">
+            <CustomTag
+              text={
+                item.status == status.STATUS_PAYMENT_PENDING ||
+                item.status == status.STATUS_CASH_PENDING
+                  ? 'Payment Due'
+                  : item.status == status.STATUS_CASH_COMPLETED ||
+                    item.status == status.STATUS_PAYMENT_COMPLETED
+                  ? 'Payment Completed'
+                  : item.status == status.STATUS_CREDITED
+                  ? 'Credited'
+                  : item.status == status.STATUS_ADMIN_CANCELLED ||
+                    item.status == status.STATUS_CANCELLED
+                  ? 'Cancelled'
+                  : ''
+              }
+              textStyles={
+                item.status == status.STATUS_CANCELLED ||
+                item.status == status.STATUS_ADMIN_CANCELLED
+                  ? 'text-red-200'
+                  : item.status == status.STATUS_PAYMENT_PENDING ||
+                    item.status == status.STATUS_CASH_PENDING
+                  ? 'text-secondary-200'
+                  : item.status == status.STATUS_CASH_COMPLETED ||
+                    item.status == status.STATUS_PAYMENT_COMPLETED ||
+                    item.status == status.STATUS_CREDITED
+                  ? 'text-green-200'
+                  : ''
+              }
+              containerStyles={`${
+                item.status == status.STATUS_CANCELLED ||
+                item.status == status.STATUS_ADMIN_CANCELLED
+                  ? 'bg-red-100'
+                  : item.status == status.STATUS_PAYMENT_PENDING ||
+                    item.status == status.STATUS_CASH_PENDING
+                  ? 'bg-secondary-50'
+                  : item.status == status.STATUS_CASH_COMPLETED ||
+                    item.status == status.STATUS_PAYMENT_COMPLETED ||
+                    item.status == status.STATUS_CREDITED
+                  ? 'bg-green-100'
+                  : ''
+              }`}
+            />
             <View className="flex flex-row items-center">
               <Text className="font-pmedium">
-                {item.category == types.ROOM_DETAILS_TYPE
+                {item.category == types.ROOM_DETAILS_TYPE ||
+                item.category == types.GUEST_ROOM_DETAILS_TYPE
                   ? 'Room Booking'
-                  : item.category == types.TRAVEL_DETAILS_TYPE
+                  : item.category == types.TRAVEL_DETAILS_TYPE ||
+                    item.category == types.GUEST_TRAVEL_DETAILS_TYPE
                   ? 'Travel Booking'
-                  : item.category == types.ADHYAYAN_DETAILS_TYPE
+                  : item.category == types.ADHYAYAN_DETAILS_TYPE ||
+                    item.category == types.GUEST_ADHYAYAN_DETAILS_TYPE
                   ? 'Adhyayan Booking'
-                  : 'Event Booking'}
+                  : item.category == types.EVENT_DETAILS_TYPE ||
+                    item.category == types.GUEST_EVENT_DETAILS_TYPE
+                  ? 'Event Booking'
+                  : ''}
               </Text>
-              <CustomTag
-                text={
-                  item.status == status.STATUS_CANCELLED
-                    ? 'Cancelled'
-                    : item.status == status.STATUS_ADMIN_CANCELLED
-                    ? 'Admin Cancelled'
-                    : item.status == status.STATUS_PAYMENT_PENDING
-                    ? 'Payment Due'
-                    : item.status == status.STATUS_CASH_PENDING
-                    ? 'Cash Due'
-                    : 'Paid'
-                }
-                textStyles={
-                  item.status == status.STATUS_CANCELLED ||
-                  item.status == status.STATUS_ADMIN_CANCELLED
-                    ? 'text-red-200'
-                    : item.status == status.STATUS_PAYMENT_PENDING ||
-                      item.status == status.STATUS_CASH_PENDING
-                    ? 'text-secondary-200'
-                    : 'text-green-200'
-                }
-                containerStyles={`${
-                  item.status == status.STATUS_CANCELLED ||
-                  item.status == status.STATUS_ADMIN_CANCELLED
-                    ? 'bg-red-100'
-                    : item.status == status.STATUS_PAYMENT_PENDING ||
-                      item.status == status.STATUS_CASH_PENDING
-                    ? 'bg-secondary-50'
-                    : 'bg-green-100'
-                } mx-1`}
-              />
             </View>
             <Text className="font-pmedium text-secondary">
               {moment(item.createdAt).format('Do MMMM, YYYY')}

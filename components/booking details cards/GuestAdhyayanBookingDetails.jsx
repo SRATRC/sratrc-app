@@ -1,5 +1,5 @@
-import { View, Text, Image } from 'react-native';
-import { icons, status } from '../../constants';
+import { View, Text, Image, ScrollView } from 'react-native';
+import { icons } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import HorizontalSeparator from '../HorizontalSeparator';
 import CustomTag from '../CustomTag';
@@ -10,11 +10,11 @@ const GuestAdhyayanBookingDetails = ({ containerStyles }) => {
   const { guestData } = useGlobalContext();
 
   const formattedStartDate = moment(
-    guestData.adhyayan.adhyayan.start_date
+    guestData.adhyayan?.adhyayan?.start_date
   ).format('Do MMMM');
-  const formattedEndDate = moment(guestData.adhyayan.adhyayan.end_date).format(
-    'Do MMMM, YYYY'
-  );
+  const formattedEndDate = moment(
+    guestData.adhyayan?.adhyayan?.end_date
+  ).format('Do MMMM, YYYY');
 
   return (
     <PrimaryAddonBookingCard
@@ -28,21 +28,28 @@ const GuestAdhyayanBookingDetails = ({ containerStyles }) => {
           resizeMode="contain"
         />
         <View className="w-full flex-1 justify-center space-y-1">
-          {guestData.adhyayan.booking_status && (
-            <CustomTag
-              text={guestData.adhyayan.booking_status}
-              textStyles={
-                guestData.adhyayan.booking_status == status.STATUS_WAITING
-                  ? 'text-red-200'
-                  : 'text-green-200'
-              }
-              containerStyles={
-                guestData.adhyayan.booking_status == status.STATUS_WAITING
-                  ? 'bg-red-100'
-                  : 'bg-green-100'
-              }
-            />
-          )}
+          <ScrollView horizontal>
+            {guestData.validationData &&
+              Object.keys(guestData.validationData).length > 0 &&
+              guestData.validationData.adhyayanDetails[0].available && (
+                <CustomTag
+                  text={`available: ${guestData.validationData.adhyayanDetails[0].available}`}
+                  textStyles={'text-green-200'}
+                  containerStyles={'bg-green-100'}
+                />
+              )}
+
+            {guestData.validationData &&
+              Object.keys(guestData.validationData).length > 0 &&
+              guestData.validationData.adhyayanDetails[0].waiting && (
+                <CustomTag
+                  text={`waiting: ${guestData.validationData.adhyayanDetails[0].waiting}`}
+                  textStyles={'text-green-200'}
+                  containerStyles={'bg-green-100'}
+                />
+              )}
+          </ScrollView>
+
           <Text className="font-pmedium text-md">
             {`${formattedStartDate} - ${formattedEndDate}`}
           </Text>

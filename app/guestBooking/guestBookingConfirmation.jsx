@@ -1,9 +1,10 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../constants';
+import { useQuery } from '@tanstack/react-query';
 import GuestRoomBookingDetails from '../../components/booking details cards/GuestRoomBookingDetails';
 import GuestAdhyayanBookingDetails from '../../components/booking details cards/GuestAdhyayanBookingDetails';
 import GuestFoodBookingDetails from '../../components/booking details cards/GuestFoodBookingDetails';
@@ -13,7 +14,7 @@ import handleAPICall from '../../utils/HandleApiCall';
 
 const guestBookingConfirmation = () => {
   const router = useRouter();
-  const { user, guestData } = useGlobalContext();
+  const { user, guestData, setGuestData } = useGlobalContext();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -97,10 +98,13 @@ const guestBookingConfirmation = () => {
                   guests: input[key].guests.map((guest) => guest.id)
                 }
               };
+            case 'validationData':
+              return null;
             default:
               throw new Error(`Unsupported addon type: ${key}`);
           }
-        });
+        })
+        .filter(Boolean);
 
     return {
       cardno: user.cardno,
@@ -111,6 +115,33 @@ const guestBookingConfirmation = () => {
     };
   };
   const transformedData = transformData(JSON.parse(JSON.stringify(guestData)));
+
+  const fetchValidation = async () => {
+    return new Promise((resolve, reject) => {
+      handleAPICall(
+        'POST',
+        '/guest/validate',
+        null,
+        transformedData,
+        (res) => {
+          setGuestData((prev) => ({ ...prev, validationData: res.data }));
+          resolve(res.data);
+        },
+        () =>
+          reject(new Error('Failed to fetch validation and transaction data'))
+      );
+    });
+  };
+
+  const {
+    isLoading: isValidationDataLoading,
+    isError: isValidationDataError,
+    error: validationDataError,
+    data: validationData
+  } = useQuery({
+    queryKey: ['guestValidations', user.cardno],
+    queryFn: fetchValidation
+  });
 
   return (
     <SafeAreaView className="h-full bg-white">
@@ -126,53 +157,98 @@ const guestBookingConfirmation = () => {
         )}
         {guestData.food && <GuestFoodBookingDetails containerStyles={'mt-6'} />}
 
-        <View className="w-full px-4 mt-4">
-          <Text className="text-xl font-psemibold text-secondary">Charges</Text>
-          <View className="flex-col mt-2">
-            {guestData.room && (
-              <View className="flex-row justify-between mt-2">
-                <Text className="text-gray-400 font-pregular text-base">
-                  Room Charge
-                </Text>
-                <Text className="text-black font-pregular text-base">
-                  ₹ {guestData.room.charge}
-                </Text>
+        {validationData && (
+          <View className="w-full px-4 mt-4">
+            <Text className="text-xl font-psemibold text-secondary mb-4">
+              Charges
+            </Text>
+            <View
+              className={`bg-white rounded-2xl p-4 ${
+                Platform.OS === 'ios'
+                  ? 'shadow-lg shadow-gray-200'
+                  : 'shadow-2xl shadow-gray-400'
+              }`}
+            >
+              <View className="flex-col space-y-2">
+                {validationData.roomDetails &&
+                  validationData.roomDetails?.length > 0 &&
+                  validationData.roomDetails.reduce(
+                    (total, room) => total + room.charge,
+                    0
+                  ) > 0 && (
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-gray-500 font-pregular text-base">
+                        Room Charge
+                      </Text>
+                      <Text className="text-black font-pregular text-base">
+                        ₹{' '}
+                        {validationData.roomDetails.reduce(
+                          (total, room) => total + room.charge,
+                          0
+                        )}
+                      </Text>
+                    </View>
+                  )}
+                {validationData.travelDetails &&
+                  validationData.travelDetails.length > 0 &&
+                  validationData.travelDetails.reduce(
+                    (total, adhyayan) => total + adhyayan.charge,
+                    0
+                  ) && (
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-gray-500 font-pregular text-base">
+                        Travel Charge
+                      </Text>
+                      <Text className="text-black font-pregular text-base">
+                        ₹{' '}
+                        {validationData.travelDetails.reduce(
+                          (total, adhyayan) => total + adhyayan.charge,
+                          0
+                        )}
+                      </Text>
+                    </View>
+                  )}
+                {validationData.adhyayanDetails &&
+                  validationData.adhyayanDetails.length > 0 &&
+                  validationData.adhyayanDetails.reduce(
+                    (total, shibir) => total + shibir.charge,
+                    0
+                  ) && (
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-gray-500 font-pregular text-base">
+                        Adhyayan Charge
+                      </Text>
+                      <Text className="text-black font-pregular text-base">
+                        ₹{' '}
+                        {validationData.adhyayanDetails.reduce(
+                          (total, shibir) => total + shibir.charge,
+                          0
+                        )}
+                      </Text>
+                    </View>
+                  )}
+                {validationData.taxes && (
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-gray-500 font-pregular text-base">
+                      Tax
+                    </Text>
+                    <Text className="text-black font-pregular text-base">
+                      ₹ {validationData.taxes}
+                    </Text>
+                  </View>
+                )}
+                <View className="flex-row justify-between items-center border-t border-gray-200 pt-4 mt-2">
+                  <Text className="text-gray-800 font-psemibold text-xl">
+                    Total Charge
+                  </Text>
+                  <Text className="text-secondary font-psemibold text-xl">
+                    ₹ {validationData.totalCharge}
+                  </Text>
+                </View>
               </View>
-            )}
-            {guestData.adhyayan && (
-              <View className="flex-row justify-between mt-2">
-                <Text className="text-gray-400 font-pregular text-base">
-                  Adhyayan Charge
-                </Text>
-                <Text className="text-black font-pregular text-base">
-                  ₹{' '}
-                  {Array.isArray(guestData.adhyayan)
-                    ? guestData.adhyayan.reduce(
-                        (total, item) => total + (item.amount ?? 0),
-                        0
-                      )
-                    : guestData.adhyayan.amount ?? 0}
-                </Text>
-              </View>
-            )}
-
-            <View className="flex-row justify-between mt-4">
-              <Text className="text-gray-400 font-psemibold text-xl">
-                Total Charge
-              </Text>
-              <Text className="text-black font-psemibold text-xl">
-                ₹{' '}
-                {(guestData.room?.charge ?? 0) +
-                  (Array.isArray(guestData.adhyayan)
-                    ? guestData.adhyayan.reduce(
-                        (total, item) => total + (item.amount ?? 0),
-                        0
-                      )
-                    : guestData.adhyayan?.amount ?? 0)}
-              </Text>
             </View>
           </View>
-        </View>
+        )}
 
         <View className="w-full px-4 mt-6">
           <CustomButton

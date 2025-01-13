@@ -10,7 +10,6 @@ import handleAPICall from '../../utils/HandleApiCall';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import PageHeader from '../../components/PageHeader';
-import * as Brightness from 'expo-brightness';
 
 const Confirmation = () => {
   const { user, setCurrentUser } = useGlobalContext();
@@ -22,10 +21,13 @@ const Confirmation = () => {
   const submit = async () => {
     setIsSubmitting(true);
     try {
-      const onSuccess = async (data) => {
+      if (!expoPushToken) {
+        Alert.alert('Error', 'Please enable push notifications');
+        return;
+      }
+
+      const onSuccess = async (_data) => {
         await setCurrentUser(user);
-        // TODO: test this permission
-        // const { status } = await Brightness.requestPermissionsAsync();
         await handleUserNavigation(user, router);
       };
 
