@@ -13,6 +13,9 @@ const handleAPICall = async (
   try {
     const url = `${BASE_URL}${endpoint}`;
 
+    console.log('URL: ', url);
+    console.log('BODY: ', JSON.stringify(body));
+
     const res = await axios({
       method: method,
       url: url,

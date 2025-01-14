@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../constants';
@@ -116,6 +116,10 @@ const guestBookingConfirmation = () => {
   };
   const transformedData = transformData(JSON.parse(JSON.stringify(guestData)));
 
+  useEffect(() => {
+    console.log('GUEST BOOKING CONFIRMATION CALLED');
+  }, []);
+
   const fetchValidation = async () => {
     return new Promise((resolve, reject) => {
       handleAPICall(
@@ -189,25 +193,16 @@ const guestBookingConfirmation = () => {
                       </Text>
                     </View>
                   )}
-                {validationData.travelDetails &&
-                  validationData.travelDetails.length > 0 &&
-                  validationData.travelDetails.reduce(
-                    (total, adhyayan) => total + adhyayan.charge,
-                    0
-                  ) && (
-                    <View className="flex-row justify-between items-center">
-                      <Text className="text-gray-500 font-pregular text-base">
-                        Travel Charge
-                      </Text>
-                      <Text className="text-black font-pregular text-base">
-                        ₹{' '}
-                        {validationData.travelDetails.reduce(
-                          (total, adhyayan) => total + adhyayan.charge,
-                          0
-                        )}
-                      </Text>
-                    </View>
-                  )}
+                {validationData.foodDetails?.charge && (
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-gray-500 font-pregular text-base">
+                      Food Charge
+                    </Text>
+                    <Text className="text-black font-pregular text-base">
+                      ₹ {validationData.foodDetails.charge}
+                    </Text>
+                  </View>
+                )}
                 {validationData.adhyayanDetails &&
                   validationData.adhyayanDetails.length > 0 &&
                   validationData.adhyayanDetails.reduce(
@@ -256,8 +251,7 @@ const guestBookingConfirmation = () => {
             handlePress={async () => {
               setIsSubmitting(true);
               const onSuccess = (_data) => {
-                setIsSubmitting(true);
-                router.push('/booking/paymentConfirmation');
+                router.replace('/booking/paymentConfirmation');
               };
 
               const onFinally = () => {
@@ -272,13 +266,6 @@ const guestBookingConfirmation = () => {
                 onSuccess,
                 onFinally
               );
-              // console.log('GUEST DATA: ', JSON.stringify(guestData));
-              // console.log(
-              //   'TRANSFORMED DATA: ',
-              //   JSON.stringify(transformedData)
-              // );
-              // setIsSubmitting(true);
-              // router.push('/booking/paymentConfirmation');
             }}
             containerStyles="mb-8 min-h-[62px]"
             isLoading={isSubmitting}

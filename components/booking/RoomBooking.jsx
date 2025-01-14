@@ -282,12 +282,35 @@ const RoomBooking = () => {
                         guests: guestForm.guests
                       },
                       async (res) => {
-                        guestForm.guests = res.guests.map((guest) => ({
-                          ...guest,
-                          roomType: guestForm.guests[0]?.roomType || '',
-                          floorType: guestForm.guests[0]?.floorType || ''
-                        }));
-                        updateGuestBooking('room', guestForm);
+                        console.log('res: ', res);
+
+                        const updatedGuests = guestForm.guests.map(
+                          (formGuest) => {
+                            const matchingApiGuest = res.guests.find(
+                              (apiGuest) => apiGuest.name === formGuest.name
+                            );
+                            return matchingApiGuest
+                              ? { ...formGuest, id: matchingApiGuest.id }
+                              : formGuest;
+                          }
+                        );
+
+                        await new Promise((resolve) => {
+                          setGuestForm((prev) => {
+                            const newForm = {
+                              ...prev,
+                              guests: updatedGuests
+                            };
+                            console.log('Updated guestForm: ', newForm);
+                            resolve(newForm);
+                            return newForm;
+                          });
+                        });
+
+                        const temp = transformApiResponse(guestForm);
+                        console.log(JSON.stringify(temp));
+
+                        updateGuestBooking('room', temp);
                         setIsSubmitting(false);
                         setGuestForm(INITIAL_GUEST_FORM);
                         router.push(`/guestBooking/${types.ROOM_DETAILS_TYPE}`);
@@ -359,5 +382,41 @@ const RoomBooking = () => {
     </View>
   );
 };
+
+function transformApiResponse(apiResponse) {
+  const { startDay, endDay, guests } = apiResponse;
+
+  // Group guests by roomType and floorType
+  const groupedGuests = guests.reduce((acc, guest, index) => {
+    const { roomType, floorType, id, name } = guest;
+
+    // Find existing group with the same roomType and floorType
+    const groupKey = `${roomType}_${floorType}`;
+    if (!acc[groupKey]) {
+      acc[groupKey] = {
+        roomType,
+        floorType,
+        guests: [],
+        guestIndices: []
+      };
+    }
+
+    // Add the guest to the appropriate group
+    acc[groupKey].guests.push({ id, name });
+    acc[groupKey].guestIndices.push(index);
+
+    return acc;
+  }, {});
+
+  // Convert groupedGuests object into an array
+  const guestGroup = Object.values(groupedGuests);
+
+  // Return the final transformed object
+  return {
+    startDay,
+    endDay,
+    guestGroup
+  };
+}
 
 export default RoomBooking;

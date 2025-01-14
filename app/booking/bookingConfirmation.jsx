@@ -234,7 +234,7 @@ const bookingConfirmation = () => {
               const payload = prepareRequestBody();
 
               const onSuccess = (_data) => {
-                router.push('/booking/paymentConfirmation');
+                router.replace('/booking/paymentConfirmation');
               };
 
               const onFinally = () => {
@@ -251,7 +251,7 @@ const bookingConfirmation = () => {
               );
             }}
             containerStyles="mb-8 min-h-[62px]"
-            isLoading={isSubmitting && validationData}
+            isLoading={isSubmitting}
           />
         </View>
       </ScrollView>

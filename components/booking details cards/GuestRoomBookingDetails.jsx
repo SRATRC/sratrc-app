@@ -9,9 +9,6 @@ import PrimaryAddonBookingCard from '../PrimaryAddonBookingCard';
 
 const GuestRoomBookingDetails = ({ containerStyles }) => {
   const { guestData } = useGlobalContext();
-
-  console.log('GUEST DATA: ', JSON.stringify(guestData));
-
   const formattedStartDate = moment(guestData?.room?.startDay).format(
     'Do MMMM'
   );
@@ -36,31 +33,17 @@ const GuestRoomBookingDetails = ({ containerStyles }) => {
               {Object.entries(validationData).map(([key, value]) => (
                 <CustomTag
                   key={key}
-                  text={
-                    <CustomTag
-                      text={`${key}: ${value}`}
-                      textStyles={
-                        key == status.STATUS_AVAILABLE
-                          ? 'text-green-200'
-                          : 'text-red-200'
-                      }
-                      containerStyles={
-                        key == status.STATUS_AVAILABLE
-                          ? 'bg-green-100'
-                          : 'bg-red-100'
-                      }
-                    />
-                  }
+                  text={`${key}: ${value}`}
                   textStyles={
                     key == status.STATUS_AVAILABLE
                       ? 'text-green-200'
                       : 'text-red-200'
                   }
-                  containerStyles={
+                  containerStyles={`${
                     key == status.STATUS_AVAILABLE
                       ? 'bg-green-100'
                       : 'bg-red-100'
-                  }
+                  } mx-1`}
                 />
               ))}
             </ScrollView>

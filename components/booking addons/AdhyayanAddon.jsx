@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  ScrollView,
   Image,
   TouchableOpacity,
   FlatList,
@@ -189,18 +188,16 @@ const AdhyayanAddon = ({
           </Text>
         </View>
       )}
-      <ScrollView horizontal={true} className="w-full" scrollEnabled={false}>
-        <FlatList
-          className="py-2 mt-2 flex-grow-1 w-full"
-          showsHorizontalScrollIndicator={false}
-          nestedScrollEnabled={true}
-          data={adhyayanList}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          ListFooterComponent={renderFooter}
-          scrollEnabled={false}
-        />
-      </ScrollView>
+      <FlatList
+        className="py-2 mt-2 w-full"
+        showsHorizontalScrollIndicator={false}
+        nestedScrollEnabled={true}
+        data={adhyayanList}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListFooterComponent={renderFooter}
+        scrollEnabled={false}
+      />
     </AddonItem>
   );
 };

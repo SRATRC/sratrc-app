@@ -43,7 +43,17 @@ const INITIAL_ADHYAYAN_FORM = {
 const guestAddons = () => {
   const { booking } = useLocalSearchParams();
   const { guestData, setGuestData } = useGlobalContext();
-  const guests = guestData.adhyayan?.guests || guestData.room?.guests;
+  console.log(JSON.stringify(guestData));
+
+  // const guests = guestData.adhyayan?.guests || guestData.room?.guests;
+  // const guest_dropdown = guests.map((guest, index) => ({
+  //   value: index,
+  //   label: guest.name
+  // }));
+
+  const guests = guestData.room.guestGroup.flatMap((group) => group.guests);
+
+  // Map guests to dropdown format
   const guest_dropdown = guests.map((guest, index) => ({
     value: index,
     label: guest.name
