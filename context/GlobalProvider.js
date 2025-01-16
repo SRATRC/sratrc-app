@@ -61,9 +61,13 @@ const GlobalProvider = ({ children }) => {
   const updateGuestBooking = async (bookingType, item) => {
     setGuestData((prev) => {
       const updated = { ...prev, [bookingType]: item, primary: bookingType };
-      const keysToDelete = ['room', 'travel', 'food', 'adhyayan'].filter(
-        (key) => key !== bookingType
-      );
+      const keysToDelete = [
+        'room',
+        'travel',
+        'food',
+        'adhyayan',
+        'validationData'
+      ].filter((key) => key !== bookingType);
       keysToDelete.forEach((key) => delete updated[key]);
       return updated;
     });

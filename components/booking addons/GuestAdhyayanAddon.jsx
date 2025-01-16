@@ -139,11 +139,7 @@ const GuestAdhyayanAddon = ({
   const renderFooter = () => (
     <View className="items-center justify-center w-full">
       {isLoading && <ActivityIndicator />}
-      {isError && (
-        <Text>
-          Error fetching data: {error.message} {console.log(error.message)}
-        </Text>
-      )}
+      {isError && <Text>Error fetching data: {error.message}</Text>}
     </View>
   );
 
@@ -185,31 +181,29 @@ const GuestAdhyayanAddon = ({
         </View>
       )}
       {(adhyayanList?.length > 0 || isError) && (
-        <ScrollView horizontal={true} className="w-full" scrollEnabled={false}>
-          <View className="w-full flex-col items-center justify-center">
-            <CustomMultiSelectDropdown
-              otherStyles="mt-5 w-full"
-              text={'Select Guests'}
-              placeholder="Select Guests"
-              data={guest_dropdown}
-              value={adhyayanForm.guestIndices}
-              setSelected={(val) => {
-                updateAdhyayanForm('guestIndices', val);
-              }}
-              guest={true}
-            />
-            <FlatList
-              className="py-2 mt-2 flex-grow-1 w-full"
-              showsHorizontalScrollIndicator={false}
-              nestedScrollEnabled={true}
-              data={adhyayanList}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id}
-              ListFooterComponent={renderFooter}
-              scrollEnabled={false}
-            />
-          </View>
-        </ScrollView>
+        <View className="w-full flex-col items-center justify-center">
+          <CustomMultiSelectDropdown
+            otherStyles="mt-5 w-full"
+            text={'Select Guests'}
+            placeholder="Select Guests"
+            data={guest_dropdown}
+            value={adhyayanForm.guestIndices}
+            setSelected={(val) => {
+              updateAdhyayanForm('guestIndices', val);
+            }}
+            guest={true}
+          />
+          <FlatList
+            className="py-2 mt-2 flex-grow-1 w-full"
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
+            data={adhyayanList}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            ListFooterComponent={renderFooter}
+            scrollEnabled={false}
+          />
+        </View>
       )}
     </AddonItem>
   );

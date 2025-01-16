@@ -32,8 +32,15 @@ import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 import BottomSheetFilter from '../BottomSheetFilter';
 
-const FOOD_TYPE_LIST = ['Breakfast', 'Lunch', 'Dinner'];
-const SPICE_LIST = ['Regular', 'Non Spicy'];
+const FOOD_TYPE_LIST = [
+  { key: 'breakfast', value: 'Breakfast' },
+  { key: 'lunch', value: 'Lunch' },
+  { key: 'dinner', value: 'Dinner' }
+];
+const SPICE_LIST = [
+  { key: 'true', value: 'Regular' },
+  { key: 'false', value: 'Non Spicy' }
+];
 
 const FoodBookingCancellation = () => {
   const { user } = useGlobalContext();
@@ -86,8 +93,8 @@ const FoodBookingCancellation = () => {
           cardno: user.cardno,
           page: pageParam,
           date: filter.date,
-          meal: filter.meal,
-          spice: filter.spice,
+          meal: filter.meal?.key,
+          spice: filter.spice?.key,
           bookedFor: filter.bookedFor?.key
         },
         null,
@@ -111,8 +118,8 @@ const FoodBookingCancellation = () => {
       'foods',
       user.cardno,
       filter.date,
-      filter.meal,
-      filter.spice,
+      filter.meal?.key,
+      filter.spice?.key,
       filter.bookedFor?.key
     ],
     queryFn: fetchFoods,
@@ -161,20 +168,19 @@ const FoodBookingCancellation = () => {
         'foods',
         user.cardno,
         filter.date,
-        filter.meal,
-        filter.spice,
+        filter.meal?.key,
+        filter.spice?.key,
         filter.bookedFor?.key
       ]);
     }
   });
 
   const renderItem = ({ item, section }) => {
-    const itemKey = `${item.date}-${item.mealType}-${item.bookedFor?.key}`;
+    const itemKey = `${item.date}-${item.mealType}-${item.bookedFor}`;
 
     const isSelected = selectedItems.some(
       (selected) =>
-        `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` ===
-        itemKey
+        `${selected.date}-${selected.mealType}-${item.bookedFor}` === itemKey
     );
 
     const shakeTranslateX = useSharedValue(0);
@@ -208,11 +214,11 @@ const FoodBookingCancellation = () => {
           onPress={() => {
             if (section.title === 'upcoming') {
               const prevSelectedItems = [...selectedItems];
-              const itemKey = `${item.date}-${item.mealType}-${item.bookedFor?.key}`;
+              const itemKey = `${item.date}-${item.mealType}-${item.bookedFor}`;
 
               const itemExists = prevSelectedItems.some(
                 (selected) =>
-                  `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` ===
+                  `${selected.date}-${selected.mealType}-${item.bookedFor}` ===
                   itemKey
               );
 
@@ -220,7 +226,7 @@ const FoodBookingCancellation = () => {
                 setSelectedItems(
                   prevSelectedItems.filter(
                     (selected) =>
-                      `${selected.date}-${selected.mealType}-${item.bookedFor?.key}` !==
+                      `${selected.date}-${selected.mealType}-${item.bookedFor}` !==
                       itemKey
                   )
                 );
@@ -230,7 +236,7 @@ const FoodBookingCancellation = () => {
                   {
                     date: item.date,
                     mealType: item.mealType,
-                    bookedFor: item.bookedFor?.key
+                    bookedFor: item.bookedFor
                   }
                 ]);
               }
@@ -295,6 +301,13 @@ const FoodBookingCancellation = () => {
                       : 'bg-green-100'
                     : 'bg-gray-100'
                 }
+                tintColor={
+                  section.title === 'upcoming'
+                    ? item.spicy
+                      ? '#EB5757'
+                      : '#05B617'
+                    : null
+                }
               />
               <View className="flex-row items-center">
                 <Image
@@ -344,7 +357,7 @@ const FoodBookingCancellation = () => {
                 (item) =>
                   item.date === selected.date &&
                   item.mealType === selected.mealType &&
-                  item.bookedFor?.key === selected.bookedFor?.key
+                  item.bookedFor === selected.bookedFor?.key
               )
           )
         );
@@ -352,7 +365,7 @@ const FoodBookingCancellation = () => {
         const newSelections = data.map((item) => ({
           date: item.date,
           mealType: item.mealType,
-          bookedFor: item.bookedFor?.key
+          bookedFor: item.bookedFor
         }));
         setSelectedItems([...selectedItems, ...newSelections]);
       }
@@ -442,7 +455,7 @@ const FoodBookingCancellation = () => {
                   filter.meal ? 'text-black' : 'text-gray-400'
                 } font-pregular`}
               >
-                {filter.meal ? filter.meal : 'Meal Type'}
+                {filter.meal ? filter.meal.value : 'Meal Type'}
               </Text>
             </TouchableOpacity>
 
@@ -467,7 +480,7 @@ const FoodBookingCancellation = () => {
                   filter.spice ? 'text-black' : 'text-gray-400'
                 } font-pregular`}
               >
-                {filter.spice ? filter.spice : 'Spice Level'}
+                {filter.spice ? filter.spice.value : 'Spice Level'}
               </Text>
             </TouchableOpacity>
 

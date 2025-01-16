@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import PageHeader from '../../components/PageHeader';
 import handleAPICall from '../../utils/HandleApiCall';
-import LottieView from 'lottie-react-native';
 import CustomButton from '../../components/CustomButton';
 import HorizontalSeparator from '../../components/HorizontalSeparator';
 import moment from 'moment';

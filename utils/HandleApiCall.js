@@ -1,6 +1,7 @@
 import { BASE_URL } from '../constants';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import * as Haptics from 'expo-haptics';
 
 const handleAPICall = async (
   method,
@@ -12,9 +13,6 @@ const handleAPICall = async (
 ) => {
   try {
     const url = `${BASE_URL}${endpoint}`;
-
-    console.log('URL: ', url);
-    console.log('BODY: ', JSON.stringify(body));
 
     const res = await axios({
       method: method,
@@ -33,16 +31,23 @@ const handleAPICall = async (
       Toast.show({
         type: 'error',
         text1: 'An error occurred!',
-        text2: res.data.message
+        text2: res.data.message,
+        style: { backgroundColor: 'red' },
+        text1Style: { color: 'red' },
+        text2Style: { color: 'black', fontWeight: 'bold', fontSize: 14 }
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   } catch (error) {
     if (error.response) {
       Toast.show({
         type: 'error',
-        text1: 'An error occurred',
-        text2: error.message
+        text1: 'An error occurred!',
+        text2: res.data.message,
+        text1Style: { color: 'red' },
+        text2Style: { color: 'black', fontWeight: 'bold', fontSize: 14 }
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   } finally {
     if (finallyCallback) finallyCallback();

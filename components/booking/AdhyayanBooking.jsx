@@ -307,7 +307,12 @@ const AdhyayanBooking = () => {
                               },
                               async (res) => {
                                 guestForm.guests = res.guests;
-                                await updateGuestBooking('adhyayan', guestForm);
+                                const transformedData =
+                                  transformData(guestForm);
+                                await updateGuestBooking(
+                                  'adhyayan',
+                                  transformedData
+                                );
                                 setGuestForm(INITIAL_GUEST_FORM);
                                 router.push(
                                   `/guestBooking/${types.ADHYAYAN_DETAILS_TYPE}`
@@ -372,5 +377,18 @@ const AdhyayanBooking = () => {
     </View>
   );
 };
+
+function transformData(inputData) {
+  const { adhyayan, guests } = inputData;
+
+  return {
+    adhyayan: adhyayan,
+    guestGroup: guests.map((guest) => ({
+      id: guest.id,
+      name: guest.name
+    })),
+    guestIndices: guests.map((_, index) => index)
+  };
+}
 
 export default AdhyayanBooking;

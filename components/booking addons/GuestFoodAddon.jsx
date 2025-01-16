@@ -13,10 +13,10 @@ const GuestFoodAddon = ({
   foodForm,
   setFoodForm,
   addFoodForm,
+  resetFoodForm,
   updateFoodForm,
   reomveFoodForm,
   guest_dropdown,
-  INITIAL_FOOD_FORM,
   isDatePickerVisible,
   setDatePickerVisibility
 }) => {
@@ -25,11 +25,7 @@ const GuestFoodAddon = ({
   return (
     <AddonItem
       onCollapse={() => {
-        setFoodForm(INITIAL_FOOD_FORM);
-        setGuestData((prev) => {
-          const { food, ...rest } = prev;
-          return rest;
-        });
+        resetFoodForm();
       }}
       visibleContent={
         <View className="flex flex-row items-center space-x-4">

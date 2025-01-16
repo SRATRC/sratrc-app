@@ -10,6 +10,7 @@ import GlobalProvider from '../context/GlobalProvider';
 import Toast from 'react-native-toast-message';
 import * as Sentry from '@sentry/react-native';
 import * as Notifications from 'expo-notifications';
+import * as NavigationBar from 'expo-navigation-bar';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -48,6 +49,11 @@ const RootLayout = () => {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, error]);
+
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync('#FFFCF5');
+    NavigationBar.setButtonStyleAsync('dark');
+  }, []);
 
   if (!fontsLoaded && !error) {
     return null;

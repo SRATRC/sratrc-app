@@ -87,7 +87,13 @@ const FoodBooking = () => {
 
   const handleGuestFormChange = (index, field, value) => {
     const updatedForms = guestForm.guests.map((guest, i) =>
-      i === index ? { ...guest, [field]: value } : guest
+      i === index
+        ? {
+            ...guest,
+            [field]: value,
+            ...(field === 'name' && { id: undefined })
+          }
+        : guest
     );
     setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
@@ -109,6 +115,10 @@ const FoodBooking = () => {
   };
 
   const isGuestFormValid = () => {
+    if (!guestForm.endDay) {
+      guestForm.endDay = guestForm.startDay;
+    }
+
     if (!guestForm.startDay) {
       return false;
     }
@@ -209,19 +219,26 @@ const FoodBooking = () => {
 
               await handleAPICall(
                 'POST',
-                '/food/book',
+                '/unified/booking',
                 null,
                 {
                   cardno: user.cardno,
-                  start_date: foodForm.startDay,
-                  end_date: foodForm.endDay
-                    ? foodForm.endDay
-                    : foodForm.startDay,
-                  breakfast: type.includes('breakfast') ? 1 : 0,
-                  lunch: type.includes('lunch') ? 1 : 0,
-                  dinner: type.includes('dinner') ? 1 : 0,
-                  spicy: foodForm.spicy == 'Regular' ? 1 : 0,
-                  high_tea: foodForm.hightea
+                  transaction_type: 'upi',
+                  transaction_ref: '7XAB46098628492',
+                  primary_booking: {
+                    booking_type: 'food',
+                    details: {
+                      start_date: foodForm.startDay,
+                      end_date: foodForm.endDay
+                        ? foodForm.endDay
+                        : foodForm.startDay,
+                      breakfast: type.includes('breakfast') ? 1 : 0,
+                      lunch: type.includes('lunch') ? 1 : 0,
+                      dinner: type.includes('dinner') ? 1 : 0,
+                      spicy: foodForm.spicy == 'Regular' ? 1 : 0,
+                      high_tea: foodForm.hightea
+                    }
+                  }
                 },
                 onSuccess,
                 onFinally
@@ -296,21 +313,72 @@ const FoodBooking = () => {
                 setModalVisible(true);
                 return;
               }
-              const onSuccess = (_data) => {
-                Alert.alert('Booking Successful');
-              };
 
-              const onFinally = () => {
-                setIsSubmitting(false);
-              };
+              const guests = guestForm.guests.map((guest) => ({
+                id: guest.id ? guest.id : null,
+                name: guest.name,
+                gender: guest.gender,
+                type: guest.type,
+                mobno: guest.mobno ? guest.mobno : null
+              }));
 
               await handleAPICall(
                 'POST',
-                '/food/bookGuest',
-                { cardno: user.cardno },
-                JSON.stringify(guestForm),
-                onSuccess,
-                onFinally
+                '/guest',
+                null,
+                {
+                  cardno: user.cardno,
+                  guests: guests
+                },
+                async (res) => {
+                  const updatedGuests = guestForm.guests.map((formGuest) => {
+                    const matchingApiGuest = res.guests.find(
+                      (apiGuest) => apiGuest.name === formGuest.name
+                    );
+                    return matchingApiGuest
+                      ? { ...formGuest, id: matchingApiGuest.id }
+                      : formGuest;
+                  });
+
+                  console.log(
+                    'Updated Guests: ',
+                    JSON.stringify(updatedGuests)
+                  );
+
+                  const transformedData = transformGuestData({
+                    ...guestForm,
+                    guests: updatedGuests
+                  });
+
+                  console.log(
+                    'Transformed Data: ',
+                    JSON.stringify(transformedData)
+                  );
+
+                  await handleAPICall(
+                    'POST',
+                    '/guest/booking',
+                    null,
+                    {
+                      cardno: user.cardno,
+                      transaction_type: 'upi',
+                      transaction_ref: '7XAB46098628492',
+                      primary_booking: {
+                        booking_type: 'food',
+                        details: transformedData
+                      }
+                    },
+                    (_data) => {
+                      Alert.alert('Booking Successful');
+                    },
+                    () => {
+                      setIsSubmitting(false);
+                    }
+                  );
+                },
+                () => {
+                  setIsSubmitting(false);
+                }
               );
             }}
             containerStyles="mt-7 w-full px-1 min-h-[62px]"
@@ -327,5 +395,40 @@ const FoodBooking = () => {
     </View>
   );
 };
+
+function transformGuestData(inputData) {
+  const { startDay, endDay, guests } = inputData;
+
+  // Group guests by shared attributes
+  const groupedGuests = guests.reduce((acc, guest) => {
+    const key = JSON.stringify({
+      meals: guest.meals,
+      spicy: guest.spicy,
+      hightea: guest.hightea
+    });
+
+    if (!acc[key]) {
+      acc[key] = {
+        guests: [],
+        meals: guest.meals,
+        spicy: guest.spicy,
+        high_tea: guest.hightea
+      };
+    }
+
+    acc[key].guests.push(guest.id);
+
+    return acc;
+  }, {});
+
+  // Transform grouped data into an array
+  const guestGroup = Object.values(groupedGuests);
+
+  return {
+    start_date: startDay,
+    end_date: endDay,
+    guestGroup
+  };
+}
 
 export default FoodBooking;

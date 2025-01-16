@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../constants';
@@ -59,7 +59,7 @@ const guestBookingConfirmation = () => {
             booking_type: 'adhyayan',
             details: {
               shibir_ids: [primaryData.adhyayan.id],
-              guests: primaryData.guests.map((guest) => guest.id)
+              guests: primaryData.guestGroup.map((guest) => guest.id)
             }
           };
         default:
@@ -115,10 +115,6 @@ const guestBookingConfirmation = () => {
     };
   };
   const transformedData = transformData(JSON.parse(JSON.stringify(guestData)));
-
-  useEffect(() => {
-    console.log('GUEST BOOKING CONFIRMATION CALLED');
-  }, []);
 
   const fetchValidation = async () => {
     return new Promise((resolve, reject) => {

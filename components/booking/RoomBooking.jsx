@@ -282,8 +282,6 @@ const RoomBooking = () => {
                         guests: guestForm.guests
                       },
                       async (res) => {
-                        console.log('res: ', res);
-
                         const updatedGuests = guestForm.guests.map(
                           (formGuest) => {
                             const matchingApiGuest = res.guests.find(
@@ -301,15 +299,12 @@ const RoomBooking = () => {
                               ...prev,
                               guests: updatedGuests
                             };
-                            console.log('Updated guestForm: ', newForm);
                             resolve(newForm);
                             return newForm;
                           });
                         });
 
                         const temp = transformApiResponse(guestForm);
-                        console.log(JSON.stringify(temp));
-
                         updateGuestBooking('room', temp);
                         setIsSubmitting(false);
                         setGuestForm(INITIAL_GUEST_FORM);

@@ -143,11 +143,7 @@ const AdhyayanAddon = ({
   const renderFooter = () => (
     <View className="items-center justify-center w-full">
       {isLoading && <ActivityIndicator />}
-      {isError && (
-        <Text>
-          Error fetching data: {error.message} {console.log(error.message)}
-        </Text>
-      )}
+      {isError && <Text>Error fetching data: {error.message}</Text>}
     </View>
   );
 

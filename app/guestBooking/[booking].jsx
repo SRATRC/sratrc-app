@@ -6,7 +6,7 @@ import {
   Platform
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons, types } from '../../constants';
@@ -43,17 +43,10 @@ const INITIAL_ADHYAYAN_FORM = {
 const guestAddons = () => {
   const { booking } = useLocalSearchParams();
   const { guestData, setGuestData } = useGlobalContext();
-  console.log(JSON.stringify(guestData));
 
-  // const guests = guestData.adhyayan?.guests || guestData.room?.guests;
-  // const guest_dropdown = guests.map((guest, index) => ({
-  //   value: index,
-  //   label: guest.name
-  // }));
-
-  const guests = guestData.room.guestGroup.flatMap((group) => group.guests);
-
-  // Map guests to dropdown format
+  const guests =
+    guestData.room?.guestGroup?.flatMap((group) => group.guests) ||
+    guestData.adhyayan?.guestGroup;
   const guest_dropdown = guests.map((guest, index) => ({
     value: index,
     label: guest.name
@@ -107,6 +100,14 @@ const guestAddons = () => {
   };
 
   const [foodForm, setFoodForm] = useState(INITIAL_FOOD_FORM);
+  const resetFoodForm = () => {
+    setFoodForm(INITIAL_FOOD_FORM);
+    setGuestData((prev) => {
+      const { food, ...rest } = prev;
+      return rest;
+    });
+  };
+
   const addFoodForm = () => {
     setFoodForm((prevFoodForm) => ({
       ...prevFoodForm,
@@ -213,9 +214,9 @@ const guestAddons = () => {
               foodForm={foodForm}
               setFoodForm={setFoodForm}
               addFoodForm={addFoodForm}
+              resetFoodForm={resetFoodForm}
               reomveFoodForm={reomveFoodForm}
               updateFoodForm={updateFoodForm}
-              INITIAL_FOOD_FORM={INITIAL_FOOD_FORM}
               guest_dropdown={guest_dropdown}
               isDatePickerVisible={isDatePickerVisible}
               setDatePickerVisibility={setDatePickerVisibility}
