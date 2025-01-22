@@ -23,8 +23,9 @@ import HorizontalSeparator from '../HorizontalSeparator';
 import moment from 'moment';
 import CustomChipGroup from '../CustomChipGroup';
 import GuestForm from '../GuestForm';
+import OtherMumukshuForm from '../OtherMumukshuForm';
 
-const CHIPS = ['Self', 'Guest'];
+const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 
 const INITIAL_GUEST_FORM = {
   adhyayan: null,
@@ -38,9 +39,19 @@ const INITIAL_GUEST_FORM = {
   ]
 };
 
+const INITIAL_MUMUKSHU_FORM = {
+  adhyayan: null,
+  mumukshus: [
+    {
+      mobno: ''
+    }
+  ]
+};
+
 const AdhyayanBooking = () => {
   const router = useRouter();
-  const { user, updateBooking, updateGuestBooking } = useGlobalContext();
+  const { user, updateBooking, updateGuestBooking, updateMumukshuBooking } =
+    useGlobalContext();
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +92,7 @@ const AdhyayanBooking = () => {
   const handleSuggestionSelect = (index, suggestion) => {
     const updatedForms = guestForm.guests.map((guest, i) =>
       i === index
-        ? { ...guest, ...suggestion, mobno: suggestion.mobno.toString() }
+        ? { ...guest, ...suggestion, mobno: suggestion.mobno?.toString() }
         : guest
     );
     setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
@@ -102,6 +113,42 @@ const AdhyayanBooking = () => {
       } else {
         return commonFields && guest.mobno;
       }
+    });
+  };
+
+  const [mumukshuForm, setMumukshuForm] = useState(INITIAL_MUMUKSHU_FORM);
+
+  const addMumukshuForm = () => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: [
+        ...prev.mumukshus,
+        {
+          mobno: ''
+        }
+      ]
+    }));
+  };
+
+  const removeMumukshuForm = (indexToRemove) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const handleMumukshuFormChange = (index, key, value) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.map((mumukshu, i) =>
+        i === index ? { ...mumukshu, [key]: value } : mumukshu
+      )
+    }));
+  };
+
+  const isMumukshuFormValid = () => {
+    return mumukshuForm.mumukshus.every((mumukshu) => {
+      return mumukshu.mobno && mumukshu.mobno?.length == 10;
     });
   };
 
@@ -171,6 +218,10 @@ const AdhyayanBooking = () => {
           handlePress={() => {
             setSelectedItem(item);
             setGuestForm((prev) => ({
+              ...prev,
+              adhyayan: item
+            }));
+            setMumukshuForm((prev) => ({
               ...prev,
               adhyayan: item
             }));
@@ -267,21 +318,31 @@ const AdhyayanBooking = () => {
                         />
                       </View>
                     );
-                  } else if (
-                    item.key === 'guestForm' &&
-                    selectedChip == CHIPS[1]
-                  ) {
-                    return (
-                      <View>
-                        <GuestForm
-                          guestForm={guestForm}
-                          handleGuestFormChange={handleGuestFormChange}
-                          addGuestForm={addGuestForm}
-                          removeGuestForm={removeGuestForm}
-                          handleSuggestionSelect={handleSuggestionSelect}
-                        />
-                      </View>
-                    );
+                  } else if (item.key === 'guestForm') {
+                    if (selectedChip == CHIPS[1]) {
+                      return (
+                        <View>
+                          <GuestForm
+                            guestForm={guestForm}
+                            handleGuestFormChange={handleGuestFormChange}
+                            addGuestForm={addGuestForm}
+                            removeGuestForm={removeGuestForm}
+                            handleSuggestionSelect={handleSuggestionSelect}
+                          />
+                        </View>
+                      );
+                    } else if (selectedChip == CHIPS[2]) {
+                      return (
+                        <View>
+                          <OtherMumukshuForm
+                            mumukshuForm={mumukshuForm}
+                            handleMumukshuFormChange={handleMumukshuFormChange}
+                            addMumukshuForm={addMumukshuForm}
+                            removeMumukshuForm={removeMumukshuForm}
+                          />
+                        </View>
+                      );
+                    }
                   } else if (item.key === 'confirmButton') {
                     return (
                       <CustomButton
@@ -309,6 +370,7 @@ const AdhyayanBooking = () => {
                                 guestForm.guests = res.guests;
                                 const transformedData =
                                   transformData(guestForm);
+
                                 await updateGuestBooking(
                                   'adhyayan',
                                   transformedData
@@ -321,6 +383,19 @@ const AdhyayanBooking = () => {
                               () => {
                                 setIsSubmitting(false);
                               }
+                            );
+                          }
+                          if (selectedChip == CHIPS[2]) {
+                            if (!isMumukshuFormValid()) {
+                              Alert.alert('Fill all Fields');
+                              return;
+                            }
+
+                            const temp = transformMumukshuData(mumukshuForm);
+
+                            await updateMumukshuBooking('adhyayan', temp);
+                            router.push(
+                              `/mumukshuBooking/${types.ADHYAYAN_DETAILS_TYPE}`
                             );
                           }
                           setSelectedItem(null);
@@ -386,8 +461,16 @@ function transformData(inputData) {
     guestGroup: guests.map((guest) => ({
       id: guest.id,
       name: guest.name
-    })),
-    guestIndices: guests.map((_, index) => index)
+    }))
+  };
+}
+
+function transformMumukshuData(inputData) {
+  const { adhyayan, mumukshus } = inputData;
+
+  return {
+    adhyayan: adhyayan,
+    mumukshuGroup: mumukshus.map((mumukshu) => mumukshu.mobno)
   };
 }
 

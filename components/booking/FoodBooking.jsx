@@ -10,6 +10,7 @@ import CustomMultiSelectDropdown from '../../components/CustomMultiSelectDropdow
 import CustomChipGroup from '../CustomChipGroup';
 import CustomModal from '../CustomModal';
 import GuestForm from '../GuestForm';
+import OtherMumukshuForm from '../OtherMumukshuForm';
 
 const FOOD_TYPE_LIST = [
   { label: 'breakfast', value: 'breakfast' },
@@ -28,7 +29,7 @@ const HIGHTEA_LIST = [
   { key: 'NONE', value: 'None' }
 ];
 
-const CHIPS = ['Self', 'Guest'];
+const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 
 const FoodBooking = () => {
   const { user } = useGlobalContext();
@@ -140,19 +141,81 @@ const FoodBooking = () => {
     });
   };
 
+  const [mumukshuForm, setMumukshuForm] = useState({
+    startDay: '',
+    endDay: '',
+    mumukshus: [
+      {
+        mobno: '',
+        meals: [],
+        spicy: null,
+        hightea: 'NONE'
+      }
+    ]
+  });
+
+  const addMumukshuForm = () => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: [
+        ...prev.mumukshus,
+        {
+          mobno: '',
+          meals: [],
+          spicy: null,
+          hightea: 'NONE'
+        }
+      ]
+    }));
+  };
+
+  const removeMumukshuForm = (indexToRemove) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const handleMumukshuFormChange = (index, key, value) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.map((mumukshu, i) =>
+        i === index ? { ...mumukshu, [key]: value } : mumukshu
+      )
+    }));
+  };
+
+  const isMumukshuFormValid = () => {
+    if (!mumukshuForm.startDay) {
+      return false;
+    }
+
+    return mumukshuForm.mumukshus.every((mumukshu) => {
+      return (
+        mumukshu.mobno &&
+        mumukshu.mobno?.length == 10 &&
+        mumukshu.meals &&
+        mumukshu.spicy !== null &&
+        mumukshu.hightea
+      );
+    });
+  };
+
   return (
     <View className="flex-1 justify-center items-center">
       <CustomCalender
         type={'period'}
         startDay={foodForm.startDay}
         setStartDay={(day) => {
-          setFoodForm((prev) => ({ ...prev, startDay: day }));
-          setGuestForm((prev) => ({ ...prev, startDay: day }));
+          setFoodForm((prev) => ({ ...prev, startDay: day, endDay: '' }));
+          setGuestForm((prev) => ({ ...prev, startDay: day, endDay: '' }));
+          setMumukshuForm((prev) => ({ ...prev, startDay: day, endDay: '' }));
         }}
         endDay={foodForm.endDay}
         setEndDay={(day) => {
           setFoodForm((prev) => ({ ...prev, endDay: day }));
           setGuestForm((prev) => ({ ...prev, endDay: day }));
+          setMumukshuForm((prev) => ({ ...prev, endDay: day }));
         }}
       />
 
@@ -340,20 +403,10 @@ const FoodBooking = () => {
                       : formGuest;
                   });
 
-                  console.log(
-                    'Updated Guests: ',
-                    JSON.stringify(updatedGuests)
-                  );
-
                   const transformedData = transformGuestData({
                     ...guestForm,
                     guests: updatedGuests
                   });
-
-                  console.log(
-                    'Transformed Data: ',
-                    JSON.stringify(transformedData)
-                  );
 
                   await handleAPICall(
                     'POST',
@@ -380,6 +433,74 @@ const FoodBooking = () => {
                   setIsSubmitting(false);
                 }
               );
+            }}
+            containerStyles="mt-7 w-full px-1 min-h-[62px]"
+            isLoading={isSubmitting}
+          />
+        </View>
+      )}
+
+      {selectedChip == CHIPS[2] && (
+        <View className="w-full flex flex-col">
+          <OtherMumukshuForm
+            mumukshuForm={mumukshuForm}
+            handleMumukshuFormChange={handleMumukshuFormChange}
+            addMumukshuForm={addMumukshuForm}
+            removeMumukshuForm={removeMumukshuForm}
+          >
+            {(index) => (
+              <>
+                <CustomMultiSelectDropdown
+                  otherStyles="mt-5"
+                  text={`Select Meals`}
+                  placeholder="Select Meals"
+                  data={FOOD_TYPE_LIST}
+                  value={mumukshuForm.mumukshus[index].meals}
+                  labelField="key"
+                  valueField="value"
+                  setSelected={(val) =>
+                    handleMumukshuFormChange(index, 'meals', val)
+                  }
+                  guest={true}
+                />
+
+                <CustomDropdown
+                  otherStyles="mt-5 w-full px-1"
+                  text={'Spice Level'}
+                  placeholder={'How much spice do you want?'}
+                  data={dropdowns.SPICE_LIST}
+                  setSelected={(val) =>
+                    handleMumukshuFormChange(index, 'spicy', val)
+                  }
+                  value={mumukshuForm.mumukshus[index].spicy}
+                  autofill={true}
+                />
+
+                <CustomDropdown
+                  otherStyles="mt-5 w-full px-1"
+                  text={'Hightea'}
+                  placeholder={'Hightea'}
+                  data={dropdowns.HIGHTEA_LIST}
+                  defaultOption={{ label: 'None', value: 'NONE' }}
+                  setSelected={(val) =>
+                    handleMumukshuFormChange(index, 'hightea', val)
+                  }
+                  value={mumukshuForm.mumukshus[index].hightea}
+                  autofill={true}
+                />
+              </>
+            )}
+          </OtherMumukshuForm>
+          <CustomButton
+            text="Book Now"
+            handlePress={async () => {
+              setIsSubmitting(true);
+              if (!isMumukshuFormValid()) {
+                setIsSubmitting(false);
+                setModalMessage('Please fill all fields');
+                setModalVisible(true);
+                return;
+              }
             }}
             containerStyles="mt-7 w-full px-1 min-h-[62px]"
             isLoading={isSubmitting}

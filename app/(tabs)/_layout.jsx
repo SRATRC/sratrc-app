@@ -1,11 +1,10 @@
 import { View, Image, Modal, ImageBackground } from 'react-native';
 import { Tabs } from 'expo-router';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { icons, images, colors } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import QRCodeStyled from 'react-native-qrcode-styled';
 import PageHeader from '../../components/PageHeader';
-import * as Brightness from 'expo-brightness';
 
 const TabIcon = React.memo(({ icon, color, name, focused }) => {
   return (
@@ -70,42 +69,6 @@ const QRModal = React.memo(({ isVisible, onClose, user }) => {
 const TabsLayout = () => {
   const { user } = useGlobalContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [originalBrightness, setOriginalBrightness] = useState(null);
-
-  const adjustBrightness = useCallback(async () => {
-    const { status } = await Brightness.requestPermissionsAsync();
-    if (status === 'granted') {
-      try {
-        const currentBrightness = await Brightness.getBrightnessAsync();
-        setOriginalBrightness(currentBrightness);
-        await Brightness.setBrightnessAsync(1); // Increased to maximum brightness
-      } catch (e) {
-        console.log('Error setting brightness:', e);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isModalVisible) {
-      adjustBrightness();
-    } else if (originalBrightness !== null) {
-      // Restore original brightness when modal closes
-      Brightness.setBrightnessAsync(originalBrightness);
-    }
-
-    return () => {
-      if (originalBrightness !== null) {
-        Brightness.setBrightnessAsync(originalBrightness);
-      }
-    };
-  }, [isModalVisible, originalBrightness, adjustBrightness]);
-
-  const closeModal = useCallback(() => {
-    if (originalBrightness !== null) {
-      Brightness.setBrightnessAsync(originalBrightness);
-    }
-    setIsModalVisible(false);
-  }, [originalBrightness]);
 
   const openModal = useCallback(() => {
     setIsModalVisible(true);
@@ -209,7 +172,13 @@ const TabsLayout = () => {
         />
       </Tabs>
 
-      <QRModal isVisible={isModalVisible} onClose={closeModal} user={user} />
+      <QRModal
+        isVisible={isModalVisible}
+        onClose={() => {
+          setIsModalVisible(false);
+        }}
+        user={user}
+      />
     </>
   );
 };

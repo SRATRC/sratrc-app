@@ -25,8 +25,9 @@ import GuestForm from '../GuestForm';
 import FormField from '../FormField';
 import CustomDropdown from '../CustomDropdown';
 import Toast from 'react-native-toast-message';
+import OtherMumukshuForm from '../OtherMumukshuForm';
 
-const CHIPS = ['Self', 'Guest'];
+const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 const ARRIVAL = [
   { key: 'car', value: 'Self Car' },
   { key: 'raj pravas', value: 'Raj Pravas' },
@@ -34,6 +35,13 @@ const ARRIVAL = [
 ];
 
 var PACKAGES = [];
+
+const INITIAL_SELF_FORM = {
+  package: null,
+  arrival: null,
+  carno: null,
+  other: null
+};
 
 const INITIAL_GUEST_FORM = {
   adhyayan: null,
@@ -51,11 +59,18 @@ const INITIAL_GUEST_FORM = {
   ]
 };
 
-const INITIAL_SELF_FORM = {
-  package: null,
-  arrival: null,
-  carno: null,
-  other: null
+const INITIAL_MUMUKSHU_FORM = {
+  startDay: '',
+  endDay: '',
+  mumukshus: [
+    {
+      mobno: '',
+      package: null,
+      arrival: null,
+      carno: null,
+      other: null
+    }
+  ]
 };
 
 const EventBooking = () => {
@@ -123,16 +138,63 @@ const EventBooking = () => {
 
   const isGuestFormValid = () => {
     return guestForm.guests.every((guest) => {
-      // Check if common fields are filled
       const commonFields = guest.name && guest.gender && guest.guestType;
 
-      // If guest type is 'VIP', only common fields are required
       if (guest.guestType === 'VIP') {
         return commonFields;
       } else {
-        // For other guest types, common fields and mobno must be filled
-        return commonFields && guest.mobno;
+        return commonFields && guest.mobno && guest.mobno?.length == 10;
       }
+    });
+  };
+
+  const [mumukshuForm, setMumukshuForm] = useState(INITIAL_MUMUKSHU_FORM);
+
+  const addMumukshuForm = () => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: [
+        ...prev.mumukshus,
+        {
+          mobno: '',
+          package: null,
+          arrival: null,
+          carno: null,
+          other: null
+        }
+      ]
+    }));
+  };
+
+  const removeMumukshuForm = (indexToRemove) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const handleMumukshuFormChange = (index, key, value) => {
+    setMumukshuForm((prev) => ({
+      ...prev,
+      mumukshus: prev.mumukshus.map((mumukshu, i) =>
+        i === index ? { ...mumukshu, [key]: value } : mumukshu
+      )
+    }));
+  };
+
+  const isMumukshuFormValid = () => {
+    if (!mumukshuForm.arrival == 'raj pravas' && !mumukshuForm.carno) {
+      return false;
+    }
+
+    return mumukshuForm.mumukshus.every((mumukshu) => {
+      return (
+        mumukshu.mobno &&
+        mumukshu.mobno?.length == 10 &&
+        mumukshu.package &&
+        mumukshu.arrival &&
+        mumukshu.other
+      );
     });
   };
 
@@ -352,6 +414,81 @@ const EventBooking = () => {
                             />
                           </View>
                         )}
+                        {selectedChip == CHIPS[2] && (
+                          <OtherMumukshuForm
+                            mumukshuForm={mumukshuForm}
+                            handleMumukshuFormChange={handleMumukshuFormChange}
+                            addMumukshuForm={addMumukshuForm}
+                            removeMumukshuForm={removeMumukshuForm}
+                          >
+                            {(index) => (
+                              <View>
+                                <CustomDropdown
+                                  otherStyles="mt-7"
+                                  text={'Package'}
+                                  placeholder={'Select Package'}
+                                  data={PACKAGES}
+                                  value={mumukshuForm.mumukshus[index].package}
+                                  setSelected={(val) => {
+                                    handleMumukshuFormChange(
+                                      index,
+                                      'package',
+                                      val
+                                    );
+                                  }}
+                                />
+
+                                <CustomDropdown
+                                  otherStyles="mt-7"
+                                  text={'How will you arrive?'}
+                                  placeholder={'How will you arrive?'}
+                                  data={ARRIVAL}
+                                  value={mumukshuForm.mumukshus[index].arrival}
+                                  setSelected={(val) => {
+                                    handleMumukshuFormChange(
+                                      index,
+                                      'arrival',
+                                      val
+                                    );
+                                  }}
+                                />
+
+                                {mumukshuForm.mumukshus[index].arrival ==
+                                  'car' && (
+                                  <FormField
+                                    text="Enter Car Number"
+                                    value={mumukshuForm.mumukshus[index].carno}
+                                    handleChangeText={(e) =>
+                                      handleMumukshuFormChange(
+                                        index,
+                                        'carno',
+                                        e
+                                      )
+                                    }
+                                    otherStyles="mt-7"
+                                    inputStyles="font-pmedium text-base text-gray-400"
+                                    containerStyles="bg-gray-100"
+                                    placeholder="XX-XXX-XXXX"
+                                    maxLength={10}
+                                    autoComplete={false}
+                                  />
+                                )}
+
+                                <FormField
+                                  text="Any other details?"
+                                  value={mumukshuForm.mumukshus[index].other}
+                                  handleChangeText={(e) =>
+                                    handleMumukshuFormChange(index, 'other', e)
+                                  }
+                                  otherStyles="mt-7"
+                                  inputStyles="font-pmedium text-base text-gray-400"
+                                  containerStyles="bg-gray-100"
+                                  placeholder="Enter details here..."
+                                />
+                              </View>
+                            )}
+                          </OtherMumukshuForm>
+                        )}
                       </View>
                     );
                   } else if (
@@ -477,6 +614,42 @@ const EventBooking = () => {
                                   carno: guest.carno,
                                   other: guest.other
                                 }))
+                              },
+                              (res) => {
+                                if (res.status == 200) {
+                                  setIsModalVisible(false);
+                                  setIsSubmitting(false);
+                                  queryClient.invalidateQueries([
+                                    'utsavBooking',
+                                    user.cardno
+                                  ]);
+                                  Toast.show({
+                                    text1: 'Booking Successful!'
+                                  });
+                                }
+                              },
+                              () => {
+                                setIsSubmitting(false);
+                              }
+                            );
+                          }
+                          if (selectedChip == CHIPS[2]) {
+                            handleAPICall(
+                              'POST',
+                              '/utsav/mumukshu',
+                              null,
+                              {
+                                cardno: user.cardno,
+                                utsavid: selectedItem.id,
+                                mumukshus: mumukshuForm.mumukshus.map(
+                                  (mumukshu) => ({
+                                    mobno: mumukshu.mobno,
+                                    packageid: mumukshu.package,
+                                    arrival: mumukshu.arrival,
+                                    carno: mumukshu.carno,
+                                    other: mumukshu.other
+                                  })
+                                )
                               },
                               (res) => {
                                 if (res.status == 200) {

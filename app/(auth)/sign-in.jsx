@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { images } from '../../constants';
 import { router } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import { RectButton } from 'react-native-gesture-handler';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
@@ -86,17 +87,17 @@ const SignIn = () => {
               isLoading={isSubmitting}
             />
 
-            {/* <View className="flex flex-row items-center justify-start mt-2 space-x-2">
+            <View className="flex flex-row items-center justify-start mt-2 space-x-2">
               <Text className="text-sm font-pregular">
                 Do not have an account?
               </Text>
 
-              <TouchableOpacity onPress={() => router.push('/guestReferral')}>
+              <RectButton onPress={() => router.push('/guestReferral')}>
                 <Text className="text-secondary-100 text-sm font-pmedium">
                   sign up
                 </Text>
-              </TouchableOpacity>
-            </View> */}
+              </RectButton>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

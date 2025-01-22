@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, Image, Platform } from 'react-native';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { icons } from '../constants';
 import * as Haptics from 'expo-haptics';
 
@@ -13,6 +14,13 @@ const AddonItem = ({
 }) => {
   const [selected, setSelected] = useState(false);
 
+  const [key, setKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setKey((prevKey) => prevKey + 1);
+    }, [])
+  );
+
   const toggleSelection = () => {
     setSelected(!selected);
     if (onCollapse) onCollapse();
@@ -21,6 +29,7 @@ const AddonItem = ({
 
   return (
     <View
+      key={key}
       className={`mb-5 p-3 rounded-2xl ${
         shadowShown == false
           ? ''

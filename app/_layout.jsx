@@ -84,6 +84,10 @@ const RootLayout = () => {
                   name="guestBooking"
                   options={{ headerShown: false }}
                 />
+                <Stack.Screen
+                  name="mumukshuBooking"
+                  options={{ headerShown: false }}
+                />
               </Stack>
               <Toast />
             </BottomSheetModalProvider>
