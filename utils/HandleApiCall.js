@@ -27,28 +27,21 @@ const handleAPICall = async (
       successCallback(res.data);
     } else {
       console.log('ERROR: ', JSON.stringify(res.data));
-
-      Toast.show({
-        type: 'error',
-        text1: 'An error occurred!',
-        text2: res.data.message,
-        style: { backgroundColor: 'red' },
-        text1Style: { color: 'red' },
-        text2Style: { color: 'black', fontWeight: 'bold', fontSize: 14 }
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      throw new Error(res.data.message || 'An error occurred');
     }
   } catch (error) {
-    if (error.response) {
-      Toast.show({
-        type: 'error',
-        text1: 'An error occurred!',
-        text2: res.data.message,
-        text1Style: { color: 'red' },
-        text2Style: { color: 'black', fontWeight: 'bold', fontSize: 14 }
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
+    const errorMessage =
+      error.response?.data?.message || error.message || 'An error occurred';
+
+    Toast.show({
+      type: 'error',
+      text1: 'An error occurred!',
+      text2: errorMessage,
+      text1Style: { color: 'red' },
+      text2Style: { color: 'black', fontWeight: 'bold', fontSize: 14 }
+    });
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
   } finally {
     if (finallyCallback) finallyCallback();
   }

@@ -8,7 +8,8 @@ import {
   Modal,
   Platform,
   KeyboardAvoidingView,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native';
 import { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';

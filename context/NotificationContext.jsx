@@ -49,8 +49,28 @@ export const NotificationProvider = ({ children }) => {
 
         // Navigate using the router if the screen is specified
         if (data?.screen) {
-          // For dynamic screens, you can pass additional params if necessary
-          router.push(data.screen); // Or router.push(`${data.screen}/${data.someId}`) for dynamic routing
+          try {
+            // Remove leading slash if present and ensure proper URL format
+            const screen = data.screen.replace(/^\/+/, '');
+
+            // Handle any additional params if needed
+            if (data.params) {
+              router.push({
+                pathname: screen,
+                params: data.params
+              });
+            } else {
+              router.push(screen);
+            }
+          } catch (error) {
+            console.error('Navigation error:', error);
+            // Fallback navigation if needed
+            try {
+              router.push('/');
+            } catch (fallbackError) {
+              console.error('Fallback navigation failed:', fallbackError);
+            }
+          }
         }
       });
 

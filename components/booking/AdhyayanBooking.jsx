@@ -89,15 +89,6 @@ const AdhyayanBooking = () => {
     setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
 
-  const handleSuggestionSelect = (index, suggestion) => {
-    const updatedForms = guestForm.guests.map((guest, i) =>
-      i === index
-        ? { ...guest, ...suggestion, mobno: suggestion.mobno?.toString() }
-        : guest
-    );
-    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
-  };
-
   const removeGuestForm = (indexToRemove) => {
     setGuestForm((prev) => ({
       ...prev,
@@ -107,12 +98,15 @@ const AdhyayanBooking = () => {
 
   const isGuestFormValid = () => {
     return guestForm.guests.every((guest) => {
-      const commonFields = guest.name && guest.gender && guest.type;
-      if (guest.type === 'vip' || guest.type === 'driver') {
-        return commonFields;
-      } else {
-        return commonFields && guest.mobno;
-      }
+      if (guest.id) return guest.mobno && guest.mobno?.length == 10;
+      else
+        return (
+          guest.name &&
+          guest.gender &&
+          guest.type &&
+          guest.mobno &&
+          guest.mobno?.length == 10
+        );
     });
   };
 
@@ -324,10 +318,10 @@ const AdhyayanBooking = () => {
                         <View>
                           <GuestForm
                             guestForm={guestForm}
+                            setGuestForm={setGuestForm}
                             handleGuestFormChange={handleGuestFormChange}
                             addGuestForm={addGuestForm}
                             removeGuestForm={removeGuestForm}
-                            handleSuggestionSelect={handleSuggestionSelect}
                           />
                         </View>
                       );

@@ -13,20 +13,9 @@ import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 
 const FOOD_TYPE_LIST = [
-  { label: 'breakfast', value: 'breakfast' },
-  { label: 'lunch', value: 'lunch' },
-  { label: 'dinner', value: 'dinner' }
-];
-
-const SPICE_LIST = [
-  { key: 1, value: 'Regular' },
-  { key: 0, value: 'Non Spicy' }
-];
-
-const HIGHTEA_LIST = [
-  { key: 'TEA', value: 'Tea' },
-  { key: 'COFFEE', value: 'Coffee' },
-  { key: 'NONE', value: 'None' }
+  { label: 'Breakfast', value: 'breakfast' },
+  { label: 'Lunch', value: 'lunch' },
+  { label: 'Dinner', value: 'dinner' }
 ];
 
 const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
@@ -99,15 +88,6 @@ const FoodBooking = () => {
     setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
 
-  const handleSuggestionSelect = (index, suggestion) => {
-    const updatedForms = guestForm.guests.map((guest, i) =>
-      i === index
-        ? { ...guest, ...suggestion, mobno: suggestion.mobno.toString() }
-        : guest
-    );
-    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
-  };
-
   const removeGuestForm = (indexToRemove) => {
     setGuestForm((prev) => ({
       ...prev,
@@ -125,19 +105,18 @@ const FoodBooking = () => {
     }
 
     return guestForm.guests.every((guest) => {
-      const commonFields =
-        guest.name &&
-        guest.gender &&
-        guest.type &&
-        guest.meals &&
-        guest.spicy !== null &&
-        guest.hightea;
-
-      if (guest.type === 'vip' || guest.type === 'driver') {
-        return commonFields;
-      } else {
-        return commonFields && guest.mobno;
-      }
+      if (guest.id) return guest.mobno && guest.mobno?.length == 10;
+      else
+        return (
+          guest.mobno &&
+          guest.mobno?.length == 10 &&
+          guest.name &&
+          guest.gender &&
+          guest.type &&
+          guest.meals &&
+          guest.spicy !== null &&
+          guest.hightea
+        );
     });
   };
 
@@ -237,7 +216,7 @@ const FoodBooking = () => {
             otherStyles="mt-5 w-full px-1"
             text={'Food Type'}
             placeholder={'Select Food Type'}
-            data={FOOD_TYPE_LIST}
+            data={dropdowns.FOOD_TYPE_LIST}
             setSelected={(val) => setType(val)}
           />
 
@@ -245,7 +224,7 @@ const FoodBooking = () => {
             otherStyles="mt-5 w-full px-1"
             text={'Spice Level'}
             placeholder={'How much spice do you want?'}
-            data={SPICE_LIST}
+            data={dropdowns.SPICE_LIST}
             setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
           />
 
@@ -253,7 +232,7 @@ const FoodBooking = () => {
             otherStyles="mt-5 w-full px-1"
             text={'Hightea'}
             placeholder={'Hightea'}
-            data={HIGHTEA_LIST}
+            data={dropdowns.HIGHTEA_LIST}
             defaultOption={{ key: 'NONE', value: 'None' }}
             setSelected={(val) => setFoodForm({ ...foodForm, hightea: val })}
           />
@@ -317,10 +296,10 @@ const FoodBooking = () => {
         <View className="w-full flex flex-col">
           <GuestForm
             guestForm={guestForm}
+            setGuestForm={setGuestForm}
             handleGuestFormChange={handleGuestFormChange}
             addGuestForm={addGuestForm}
             removeGuestForm={removeGuestForm}
-            handleSuggestionSelect={handleSuggestionSelect}
           >
             {(index) => (
               <>
@@ -330,8 +309,6 @@ const FoodBooking = () => {
                   placeholder="Select Meals"
                   data={FOOD_TYPE_LIST}
                   value={guestForm.guests[index].meals}
-                  labelField="key"
-                  valueField="value"
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'meals', val)
                   }
@@ -347,7 +324,6 @@ const FoodBooking = () => {
                     handleGuestFormChange(index, 'spicy', val)
                   }
                   value={guestForm.guests[index].spicy}
-                  autofill={true}
                 />
 
                 <CustomDropdown
@@ -355,12 +331,11 @@ const FoodBooking = () => {
                   text={'Hightea'}
                   placeholder={'Hightea'}
                   data={dropdowns.HIGHTEA_LIST}
-                  defaultOption={{ label: 'None', value: 'NONE' }}
+                  defaultOption={{ key: 'NONE', value: 'None' }}
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'hightea', val)
                   }
                   value={guestForm.guests[index].hightea}
-                  autofill={true}
                 />
               </>
             )}
@@ -407,6 +382,8 @@ const FoodBooking = () => {
                     ...guestForm,
                     guests: updatedGuests
                   });
+
+                  console.log(JSON.stringify(transformedData));
 
                   await handleAPICall(
                     'POST',
@@ -456,8 +433,6 @@ const FoodBooking = () => {
                   placeholder="Select Meals"
                   data={FOOD_TYPE_LIST}
                   value={mumukshuForm.mumukshus[index].meals}
-                  labelField="key"
-                  valueField="value"
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'meals', val)
                   }
@@ -473,7 +448,6 @@ const FoodBooking = () => {
                     handleMumukshuFormChange(index, 'spicy', val)
                   }
                   value={mumukshuForm.mumukshus[index].spicy}
-                  autofill={true}
                 />
 
                 <CustomDropdown
@@ -481,12 +455,11 @@ const FoodBooking = () => {
                   text={'Hightea'}
                   placeholder={'Hightea'}
                   data={dropdowns.HIGHTEA_LIST}
-                  defaultOption={{ label: 'None', value: 'NONE' }}
+                  defaultOption={{ key: 'NONE', value: 'None' }}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'hightea', val)
                   }
                   value={mumukshuForm.mumukshus[index].hightea}
-                  autofill={true}
                 />
               </>
             )}

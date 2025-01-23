@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import React, { useState, useCallback, useEffect } from 'react';
-import { types } from '../../constants';
+import { types, dropdowns } from '../../constants';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -10,34 +10,6 @@ import FormField from '../FormField';
 import CustomModal from '../CustomModal';
 import CustomChipGroup from '../CustomChipGroup';
 import OtherMumukshuForm from '../OtherMumukshuForm';
-
-const LOCATION_LIST = [
-  { key: 'rc', value: 'RC' },
-  { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
-  { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
-  { key: 'mullund', value: 'Mullund Airoli Junction' },
-  { key: 'airport t1', value: 'Airport Terminal 1' },
-  { key: 'airport t2', value: 'Airport Terminal 2' },
-  { key: 'ltt', value: 'Lokmanya Tilak Terminus Station (LTT)' },
-  { key: 'cstm', value: 'Chatrapati Shivaji Terminus Station (CSTM)' },
-  { key: 'vile parle', value: 'Vile Parle East' },
-  { key: 'borivali', value: 'Borivali East' },
-  { key: 'full', value: 'Full Car Booking' },
-  { key: 'other', value: 'Other' }
-];
-
-const LUGGAGE_LIST = [
-  { key: 'cabin1', value: '1 Cabin Bag' },
-  { key: 'cabin2', value: '2 Cabin Bags' },
-  { key: 'suitcase1', value: '1 Suitcase' },
-  { key: 'suitcase2', value: '2 Suitcases' },
-  { key: 'none', value: 'NONE' }
-];
-
-const BOOKING_TYPE_LIST = [
-  { key: 'regular', value: 'Regular' },
-  { key: 'full', value: 'Full Car' }
-];
 
 const CHIPS = ['Self', 'Other Mumukshus'];
 
@@ -171,14 +143,14 @@ const TravelBooking = () => {
             text={'Pickup Location'}
             placeholder={'Select Location'}
             save={'value'}
-            data={LOCATION_LIST}
+            data={dropdowns.LOCATION_LIST}
             setSelected={(val) => setTravelForm({ ...travelForm, pickup: val })}
           />
           <CustomDropdown
             otherStyles="mt-7"
             text={'Drop Location'}
             placeholder={'Select Location'}
-            data={LOCATION_LIST}
+            data={dropdowns.LOCATION_LIST}
             save={'value'}
             setSelected={(val) => setTravelForm({ ...travelForm, drop: val })}
           />
@@ -186,7 +158,7 @@ const TravelBooking = () => {
             otherStyles="mt-7"
             text={'Luggage'}
             placeholder={'Select any luggage'}
-            data={LUGGAGE_LIST}
+            data={dropdowns.LUGGAGE_LIST}
             save={'value'}
             setSelected={(val) =>
               setTravelForm({ ...travelForm, luggage: val })
@@ -196,7 +168,7 @@ const TravelBooking = () => {
             otherStyles="mt-7"
             text={'Booking Type'}
             placeholder={'Select booking type'}
-            data={BOOKING_TYPE_LIST}
+            data={dropdowns.BOOKING_TYPE_LIST}
             save={'value'}
             defaultOption={{ key: 'regular', value: 'Regular' }}
             setSelected={(val) => setTravelForm({ ...travelForm, type: val })}
@@ -231,7 +203,7 @@ const TravelBooking = () => {
                   text={'Pickup Location'}
                   placeholder={'Select Location'}
                   save={'value'}
-                  data={LOCATION_LIST}
+                  data={dropdowns.LOCATION_LIST}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'pickup', val)
                   }
@@ -240,7 +212,7 @@ const TravelBooking = () => {
                   otherStyles="mt-7"
                   text={'Drop Location'}
                   placeholder={'Select Location'}
-                  data={LOCATION_LIST}
+                  data={dropdowns.LOCATION_LIST}
                   save={'value'}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'drop', val)
@@ -250,7 +222,7 @@ const TravelBooking = () => {
                   otherStyles="mt-7"
                   text={'Luggage'}
                   placeholder={'Select any luggage'}
-                  data={LUGGAGE_LIST}
+                  data={dropdowns.LUGGAGE_LIST}
                   save={'value'}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'luggage', val)
@@ -260,7 +232,7 @@ const TravelBooking = () => {
                   otherStyles="mt-7"
                   text={'Booking Type'}
                   placeholder={'Select booking type'}
-                  data={BOOKING_TYPE_LIST}
+                  data={dropdowns.BOOKING_TYPE_LIST}
                   save={'value'}
                   defaultOption={{ key: 'regular', value: 'Regular' }}
                   setSelected={(val) =>

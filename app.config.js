@@ -25,11 +25,27 @@ export default {
         backgroundColor: '#ffffff'
       },
       package: 'com.vandit.sratrc',
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+      intentFilters: [
+        {
+          action: 'VIEW',
+          data: [
+            {
+              scheme: 'sratrc'
+            }
+          ],
+          category: ['BROWSABLE', 'DEFAULT']
+        }
+      ]
     },
     web: {
       favicon: './assets/favicon.png'
     },
+    // updates: {
+    //   enabled: true,
+    //   checkAutomatically: 'ON_LOAD',
+    //   fallbackToCacheTimeout: 0
+    // },
     plugins: [
       'expo-router',
       '@react-native-firebase/app',

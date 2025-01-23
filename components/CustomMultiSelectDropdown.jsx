@@ -10,6 +10,8 @@ const CustomMultiSelectDropdown = ({
   placeholder,
   data,
   value,
+  labelField = 'label',
+  valueField = 'value',
   setSelected,
   onSelect,
   boxbg = colors.gray_100,
@@ -55,8 +57,8 @@ const CustomMultiSelectDropdown = ({
           data={data}
           search={enableSearch}
           maxHeight={300}
-          labelField="label"
-          valueField="value"
+          labelField={labelField}
+          valueField={valueField}
           placeholder={placeholder}
           searchPlaceholder="Search..."
           value={value}

@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { colors, icons } from '../constants';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import { useGlobalContext } from '../context/GlobalProvider';
 import React from 'react';
 import CustomDropdown from './CustomDropdown';
@@ -8,37 +8,52 @@ import FormField from './FormField';
 import handleAPICall from '../utils/HandleApiCall';
 
 const GENDER_LIST = [
-  { label: 'Male', value: 'M' },
-  { label: 'Female', value: 'F' }
+  { key: 'M', value: 'Male' },
+  { key: 'F', value: 'Female' }
 ];
 
 const GUEST_TYPE_LIST = [
-  { label: 'Driver', value: 'driver' },
-  { label: 'VIP', value: 'vip' },
-  { label: 'Friend', value: 'friend' },
-  { label: 'Family', value: 'family' }
+  { key: 'driver', value: 'Driver' },
+  { key: 'vip', value: 'VIP' },
+  { key: 'friend', value: 'Friend' },
+  { key: 'family', value: 'Family' }
 ];
 
 const GuestForm = ({
   guestForm,
+  setGuestForm,
   handleGuestFormChange,
   addGuestForm,
   removeGuestForm,
-  handleSuggestionSelect,
   children = () => null
 }) => {
   const { user } = useGlobalContext();
 
-  const fetchGuests = async () => {
+  const verifyGuest = async (mobno) => {
     return new Promise((resolve, reject) => {
       handleAPICall(
         'GET',
-        '/guest',
+        `/guest/check/${mobno}`,
         {
           cardno: user.cardno
         },
         null,
         (res) => {
+          if (res.data) {
+            setGuestForm((prevForm) => {
+              const updatedGuests = [...prevForm.guests];
+              const guestIndex = updatedGuests.findIndex(
+                (guest) => guest.mobno === mobno
+              );
+              if (guestIndex !== -1) {
+                updatedGuests[guestIndex] = {
+                  ...updatedGuests[guestIndex],
+                  ...res.data
+                };
+              }
+              return { ...prevForm, guests: updatedGuests };
+            });
+          }
           resolve(res.data);
         },
         () => reject(new Error('Failed to fetch guests'))
@@ -46,101 +61,49 @@ const GuestForm = ({
     });
   };
 
-  const {
-    data: suggestions,
-    isLoading: isGuestsLoading,
-    isError: isGuestsError
-  } = useQuery({
-    queryKey: ['guests', user.cardno],
-    queryFn: fetchGuests
+  const guestQueries = useQueries({
+    queries: guestForm.guests.map((guest) => ({
+      queryKey: ['verifyGuests', guest.mobno],
+      queryFn: () => verifyGuest(guest.mobno),
+      enabled: guest.mobno?.length === 10,
+      // staleTime: 1000 * 60 * 30,
+      retry: false
+    }))
   });
-
-  if (isGuestsLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="font-pmedium text-gray-400">
-          Loading guest data...
-        </Text>
-      </View>
-    );
-  }
-
-  if (isGuestsError) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="font-pmedium text-red-500">
-          Failed to load guest data. Please try again later.
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View>
-      {guestForm.guests.map((guest, index) => (
-        <View key={index} className="mt-8">
-          <View className="flex flex-row justify-between">
-            <Text className="font-psemibold text-base underline text-black">
-              Details for Guest - {index + 1}
-            </Text>
-            {index !== 0 && (
-              <TouchableOpacity
-                className="mr-3 bg-white"
-                onPress={() => removeGuestForm(index)}
-              >
-                <Image
-                  source={icons.remove}
-                  className="w-5 h-5"
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            )}
-          </View>
+      {guestForm.guests.map((guest, index) => {
+        const {
+          data,
+          isLoading: isVerifyGuestsLoading,
+          isError: isVerifyGuestsError
+        } = guest.mobno?.length === 10
+          ? guestQueries[index]
+          : { data: null, isLoading: false, isError: false };
 
-          <FormField
-            text="Guest Name"
-            value={guest.name}
-            autoCorrect={false}
-            handleChangeText={(e) => handleGuestFormChange(index, 'name', e)}
-            otherStyles="mt-4"
-            inputStyles="font-pmedium text-base text-gray-400"
-            containerStyles="bg-gray-100"
-            keyboardType="default"
-            placeholder="Guest Name"
-            suggestions={suggestions?.map((s) => s.name)}
-            onSelectItem={(name) => {
-              const selectedSuggestion = suggestions?.find(
-                (s) => s.name === name
-              );
-              handleSuggestionSelect(index, selectedSuggestion);
-            }}
-            showAutocomplete={true}
-          />
+        return (
+          <View key={index} className="mt-8">
+            <View className="flex flex-row justify-between">
+              <Text className="font-psemibold text-base underline text-black">
+                Details for Guest - {index + 1}
+              </Text>
+              {index !== 0 && (
+                <TouchableOpacity
+                  className="mr-3 bg-white"
+                  onPress={() => removeGuestForm(index)}
+                >
+                  <Image
+                    source={icons.remove}
+                    className="w-5 h-5"
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
 
-          <CustomDropdown
-            otherStyles="mt-7"
-            text={'Gender'}
-            placeholder={'Select Gender'}
-            data={GENDER_LIST}
-            value={guest.gender}
-            setSelected={(val) => handleGuestFormChange(index, 'gender', val)}
-            autofill={true}
-          />
-
-          <CustomDropdown
-            otherStyles="mt-7"
-            text={'Guest Type'}
-            placeholder={'Select Guest Type'}
-            data={GUEST_TYPE_LIST}
-            value={guest.type}
-            setSelected={(val) => handleGuestFormChange(index, 'type', val)}
-            autofill={true}
-          />
-
-          {guest.type && guest.type !== 'vip' && guest.type !== 'driver' && (
             <FormField
               text="Phone Number"
-              // prefix="+91"
               value={guest.mobno}
               handleChangeText={(e) => handleGuestFormChange(index, 'mobno', e)}
               otherStyles="mt-7"
@@ -149,11 +112,52 @@ const GuestForm = ({
               placeholder="Enter Guest Phone Number"
               maxLength={10}
               containerStyles="bg-gray-100"
+              additionalText={data?.name}
             />
-          )}
-          {children(index)}
-        </View>
-      ))}
+
+            {!data && !isVerifyGuestsLoading && guest.mobno?.length == 10 && (
+              <View>
+                <FormField
+                  text="Guest Name"
+                  value={guest.name}
+                  autoCorrect={false}
+                  handleChangeText={(e) =>
+                    handleGuestFormChange(index, 'name', e)
+                  }
+                  otherStyles="mt-4"
+                  inputStyles="font-pmedium text-base text-gray-400"
+                  containerStyles="bg-gray-100"
+                  keyboardType="default"
+                  placeholder="Guest Name"
+                />
+
+                <CustomDropdown
+                  otherStyles="mt-7"
+                  text={'Gender'}
+                  placeholder={'Select Gender'}
+                  data={GENDER_LIST}
+                  value={guest.gender}
+                  setSelected={(val) =>
+                    handleGuestFormChange(index, 'gender', val)
+                  }
+                />
+
+                <CustomDropdown
+                  otherStyles="mt-7"
+                  text={'Guest Type'}
+                  placeholder={'Select Guest Type'}
+                  data={GUEST_TYPE_LIST}
+                  value={guest.type}
+                  setSelected={(val) =>
+                    handleGuestFormChange(index, 'type', val)
+                  }
+                />
+              </View>
+            )}
+            {children(index)}
+          </View>
+        );
+      })}
       <TouchableOpacity
         className="w-full justify-start items-center mt-4 flex-row space-x-1"
         onPress={addGuestForm}

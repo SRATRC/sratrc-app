@@ -1,28 +1,56 @@
 const ROOM_TYPE_LIST = [
-  { label: 'AC', value: 'ac' },
-  { label: 'Non AC', value: 'nac' }
+  { key: 'ac', value: 'AC' },
+  { key: 'nac', value: 'Non AC' }
 ];
 
 const FLOOR_TYPE_LIST = [
-  { label: 'Yes', value: 'SC' },
-  { label: 'No', value: 'n' }
+  { key: 'SC', value: 'Yes' },
+  { key: 'n', value: 'No' }
 ];
 
 const FOOD_TYPE_LIST = [
-  { label: 'breakfast', value: 'breakfast' },
-  { label: 'lunch', value: 'lunch' },
-  { label: 'dinner', value: 'dinner' }
+  { key: 'breakfast', value: 'Breakfast' },
+  { key: 'lunch', value: 'Lunch' },
+  { key: 'dinner', value: 'Dinner' }
 ];
 
 const SPICE_LIST = [
-  { label: 'Regular', value: 1 },
-  { label: 'Non Spicy', value: 0 }
+  { key: 1, value: 'Regular' },
+  { key: 0, value: 'Non Spicy' }
 ];
 
 const HIGHTEA_LIST = [
-  { label: 'Tea', value: 'TEA' },
-  { label: 'Coffee', value: 'COFFEE' },
-  { label: 'None', value: 'NONE' }
+  { key: 'TEA', value: 'Tea' },
+  { key: 'COFFEE', value: 'Coffee' },
+  { key: 'NONE', value: 'None' }
+];
+
+const LOCATION_LIST = [
+  { key: 'rc', value: 'RC' },
+  { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
+  { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
+  { key: 'mullund', value: 'Mullund Airoli Junction' },
+  { key: 'airport t1', value: 'Airport Terminal 1' },
+  { key: 'airport t2', value: 'Airport Terminal 2' },
+  { key: 'ltt', value: 'Lokmanya Tilak Terminus Station (LTT)' },
+  { key: 'cstm', value: 'Chatrapati Shivaji Terminus Station (CSTM)' },
+  { key: 'vile parle', value: 'Vile Parle East' },
+  { key: 'borivali', value: 'Borivali East' },
+  { key: 'full', value: 'Full Car Booking' },
+  { key: 'other', value: 'Other' }
+];
+
+const LUGGAGE_LIST = [
+  { key: 'cabin1', value: '1 Cabin Bag' },
+  { key: 'cabin2', value: '2 Cabin Bags' },
+  { key: 'suitcase1', value: '1 Suitcase' },
+  { key: 'suitcase2', value: '2 Suitcases' },
+  { key: 'none', value: 'NONE' }
+];
+
+const BOOKING_TYPE_LIST = [
+  { key: 'regular', value: 'Regular' },
+  { key: 'full', value: 'Full Car' }
 ];
 
 export default {
@@ -30,5 +58,8 @@ export default {
   FLOOR_TYPE_LIST,
   FOOD_TYPE_LIST,
   SPICE_LIST,
-  HIGHTEA_LIST
+  HIGHTEA_LIST,
+  LOCATION_LIST,
+  LUGGAGE_LIST,
+  BOOKING_TYPE_LIST
 };

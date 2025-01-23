@@ -128,18 +128,9 @@ const RoomBooking = () => {
     }));
   };
 
-  const handleSingleGuestFormChange = (index, field, value) => {
-    const updatedForms = guestForm.guests.map((guest, i) =>
-      i === index ? { ...guest, [field]: value } : guest
-    );
-    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
-  };
-
-  const handleSingleDaySuggestionSelect = (index, suggestion) => {
+  const handleSingleDayGuestFormChange = (index, field, value) => {
     const updatedForms = singleDayGuestForm.guests.map((guest, i) =>
-      i === index
-        ? { ...guest, ...suggestion, mobno: suggestion.mobno?.toString() }
-        : guest
+      i === index ? { ...guest, [field]: value } : guest
     );
     setSingleDayGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
@@ -157,13 +148,15 @@ const RoomBooking = () => {
     }
 
     return singleDayGuestForm.guests.every((guest) => {
-      const commonFields = guest.name && guest.gender && guest.type;
-
-      if (guest.type === 'vip' || guest.type === 'driver') {
-        return commonFields;
-      } else {
-        return commonFields && guest.mobno;
-      }
+      if (guest.id) return guest.mobno && guest.mobno?.length == 10;
+      else
+        return (
+          guest.name &&
+          guest.gender &&
+          guest.type &&
+          guest.mobno &&
+          guest.mobno?.length == 10
+        );
     });
   };
 
@@ -232,15 +225,6 @@ const RoomBooking = () => {
     setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
   };
 
-  const handleSuggestionSelect = (index, suggestion) => {
-    const updatedForms = guestForm.guests.map((guest, i) =>
-      i === index
-        ? { ...guest, ...suggestion, mobno: suggestion.mobno?.toString() }
-        : guest
-    );
-    setGuestForm((prev) => ({ ...prev, guests: updatedForms }));
-  };
-
   const removeGuestForm = (indexToRemove) => {
     setGuestForm((prev) => ({
       ...prev,
@@ -254,18 +238,23 @@ const RoomBooking = () => {
     }
 
     return guestForm.guests.every((guest) => {
-      const commonFields =
-        guest.name &&
-        guest.gender &&
-        guest.type &&
-        guest.roomType &&
-        guest.floorType;
-
-      if (guest.type === 'vip' || guest.type === 'driver') {
-        return commonFields;
-      } else {
-        return commonFields && guest.mobno;
-      }
+      if (guest.id)
+        return (
+          guest.mobno &&
+          guest.mobno?.length == 10 &&
+          guest.roomType &&
+          guest.floorType
+        );
+      else
+        return (
+          guest.name &&
+          guest.gender &&
+          guest.type &&
+          guest.roomType &&
+          guest.floorType &&
+          guest.mobno &&
+          guest.mobno?.length == 10
+        );
     });
   };
 
@@ -412,10 +401,10 @@ const RoomBooking = () => {
             <View>
               <GuestForm
                 guestForm={guestForm}
+                setGuestForm={setGuestForm}
                 handleGuestFormChange={handleGuestFormChange}
                 addGuestForm={addGuestForm}
                 removeGuestForm={removeGuestForm}
-                handleSuggestionSelect={handleSuggestionSelect}
               >
                 {(index) => (
                   <>
@@ -586,10 +575,10 @@ const RoomBooking = () => {
           {selectedChip === CHIPS[1] && (
             <GuestForm
               guestForm={singleDayGuestForm}
-              handleGuestFormChange={handleSingleGuestFormChange}
+              setGuestForm={setSingleDayGuestForm}
+              handleGuestFormChange={handleSingleDayGuestFormChange}
               addGuestForm={addSingleDayGuestForm}
               removeGuestForm={removeSingleDayGuestForm}
-              handleSuggestionSelect={handleSingleDaySuggestionSelect}
             />
           )}
 
