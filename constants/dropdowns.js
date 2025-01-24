@@ -53,6 +53,23 @@ const BOOKING_TYPE_LIST = [
   { key: 'full', value: 'Full Car' }
 ];
 
+const GUEST_FOOD_TYPE_LIST = [
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch', label: 'Lunch' },
+  { value: 'dinner', label: 'Dinner' }
+];
+
+const GUEST_SPICE_LIST = [
+  { value: 1, label: 'Regular' },
+  { value: 0, label: 'Non Spicy' }
+];
+
+const GUEST_HIGHTEA_LIST = [
+  { value: 'TEA', label: 'Tea' },
+  { value: 'COFFEE', label: 'Coffee' },
+  { value: 'NONE', label: 'None' }
+];
+
 export default {
   ROOM_TYPE_LIST,
   FLOOR_TYPE_LIST,
@@ -61,5 +78,8 @@ export default {
   HIGHTEA_LIST,
   LOCATION_LIST,
   LUGGAGE_LIST,
-  BOOKING_TYPE_LIST
+  BOOKING_TYPE_LIST,
+  GUEST_FOOD_TYPE_LIST,
+  GUEST_SPICE_LIST,
+  GUEST_HIGHTEA_LIST
 };

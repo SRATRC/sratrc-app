@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { icons } from '../../constants';
+import { icons, dropdowns } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import React from 'react';
 import moment from 'moment';
@@ -8,23 +8,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import FormDisplayField from '../FormDisplayField';
 import AddonItem from '../AddonItem';
 import CustomMultiSelectDropdown from '../CustomMultiSelectDropdown';
-
-const FOOD_TYPE_LIST = [
-  { key: 'breakfast', value: 'breakfast' },
-  { key: 'lunch', value: 'lunch' },
-  { key: 'dinner', value: 'dinner' }
-];
-
-const SPICE_LIST = [
-  { key: 1, value: 'Regular' },
-  { key: 0, value: 'Non Spicy' }
-];
-
-const HIGHTEA_LIST = [
-  { key: 'TEA', value: 'Tea' },
-  { key: 'COFFEE', value: 'Coffee' },
-  { key: 'NONE', value: 'None' }
-];
+import CustomDateInput from '../CustomDateInput';
 
 const FoodAddon = ({
   foodForm,
@@ -62,29 +46,22 @@ const FoodAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <TouchableOpacity
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodStart: true
           })
         }
-      >
-        <FormDisplayField
-          text="Start Date"
-          value={
-            foodForm.startDay
-              ? moment(foodForm.startDay).format('Do MMMM YYYY')
-              : 'Start Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.foodStart}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Start Date'}
+        date={new Date(foodForm.startDay)}
+        value={
+          foodForm.startDay
+            ? moment(foodForm.startDay).format('Do MMMM YYYY')
+            : 'Start Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.foodStart}
+        onDateSelect={(date) => {
           setFoodForm({
             ...foodForm,
             startDay:
@@ -97,42 +74,34 @@ const FoodAddon = ({
             foodStart: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodStart: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
       />
 
-      <TouchableOpacity
-        disabled={foodForm.startDay == ''}
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodEnd: true
           })
         }
-      >
-        <FormDisplayField
-          text="End Date"
-          value={
-            foodForm.endDay
-              ? moment(foodForm.endDay).format('Do MMMM YYYY')
-              : 'End Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.foodEnd}
-        mode="date"
-        onConfirm={(date) => {
+        text={'End Date'}
+        date={new Date(foodForm.foodEnd)}
+        minimumDate={moment(foodForm.startDay).toDate()}
+        value={
+          foodForm.foodEnd
+            ? moment(foodForm.foodEnd).format('Do MMMM YYYY')
+            : 'End Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.foodEnd}
+        onDateSelect={(date) => {
           setFoodForm({
             ...foodForm,
-            endDay:
+            foodEnd:
               moment(date) < moment().add(1, 'days').toDate()
                 ? moment().add(1, 'days').format('YYYY-MM-DD')
                 : moment(date).format('YYYY-MM-DD')
@@ -142,20 +111,20 @@ const FoodAddon = ({
             foodEnd: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodEnd: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
+        isDisabled={foodForm.startDay == ''}
       />
 
       <CustomMultiSelectDropdown
         otherStyles="mt-5 w-full px-1"
         text={'Food Type'}
         placeholder={'Select Food Type'}
-        data={FOOD_TYPE_LIST}
+        data={dropdowns.FOOD_TYPE_LIST}
         setSelected={(val) => setMeals(val)}
       />
 
@@ -163,7 +132,7 @@ const FoodAddon = ({
         otherStyles="mt-5 w-full px-1"
         text={'Spice Level'}
         placeholder={'How much spice do you want?'}
-        data={SPICE_LIST}
+        data={dropdowns.SPICE_LIST}
         setSelected={(val) => setFoodForm({ ...foodForm, spicy: val })}
       />
 
@@ -171,7 +140,7 @@ const FoodAddon = ({
         otherStyles="mt-5 w-full px-1"
         text={'Hightea'}
         placeholder={'Hightea'}
-        data={HIGHTEA_LIST}
+        data={dropdowns.HIGHTEA_LIST}
         defaultOption={{ key: 'NONE', value: 'None' }}
         setSelected={(val) => setFoodForm({ ...foodForm, hightea: val })}
       />

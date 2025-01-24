@@ -1,23 +1,12 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { colors, icons } from '../../constants';
+import { colors, icons, dropdowns } from '../../constants';
 import CustomDropdown from '../CustomDropdown';
 import moment from 'moment';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import FormDisplayField from '../FormDisplayField';
 import AddonItem from '../AddonItem';
 import CustomMultiSelectDropdown from '../CustomMultiSelectDropdown';
 import HorizontalSeparator from '../HorizontalSeparator';
-
-const ROOM_TYPE_LIST = [
-  { key: 'ac', value: 'AC' },
-  { key: 'nac', value: 'Non AC' }
-];
-
-const FLOOR_TYPE_LIST = [
-  { key: 'SC', value: 'Yes' },
-  { key: 'n', value: 'No' }
-];
+import CustomDateInput from '../CustomDateInput';
 
 const GuestRoomAddon = ({
   roomForm,
@@ -53,29 +42,22 @@ const GuestRoomAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <TouchableOpacity
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: true
           })
         }
-      >
-        <FormDisplayField
-          text="Checkin Date"
-          value={
-            roomForm.startDay
-              ? moment(roomForm.startDay).format('Do MMMM YYYY')
-              : 'Checkin Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.checkin}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Checkin Date'}
+        date={new Date(roomForm.startDay)}
+        value={
+          roomForm.startDay
+            ? moment(roomForm.startDay).format('Do MMMM YYYY')
+            : 'Checkin Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.checkin}
+        onDateSelect={(date) => {
           setRoomForm({
             ...roomForm,
             startDay:
@@ -88,39 +70,31 @@ const GuestRoomAddon = ({
             checkin: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
       />
 
-      <TouchableOpacity
-        disabled={roomForm.startDay === ''}
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: true
           })
         }
-      >
-        <FormDisplayField
-          text="Checkout Date"
-          value={
-            roomForm.endDay
-              ? moment(roomForm.endDay).format('Do MMMM YYYY')
-              : 'Checkout Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.checkout}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Checkout Date'}
+        date={new Date(roomForm.endDay)}
+        minimumDate={moment(roomForm.startDay).toDate()}
+        value={
+          roomForm.endDay
+            ? moment(roomForm.endDay).format('Do MMMM YYYY')
+            : 'Checkout Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.checkout}
+        onDateSelect={(date) => {
           setRoomForm({
             ...roomForm,
             endDay:
@@ -133,13 +107,13 @@ const GuestRoomAddon = ({
             checkout: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
+        isDisabled={roomForm.startDay === ''}
       />
 
       {roomForm.guestGroup.map((assignment, index) => (
@@ -177,7 +151,7 @@ const GuestRoomAddon = ({
             otherStyles="mt-5"
             text="Room Type"
             placeholder="Select Room Type"
-            data={ROOM_TYPE_LIST}
+            data={dropdowns.ROOM_TYPE_LIST}
             setSelected={(val) => updateRoomForm(index, 'roomType', val)}
           />
 
@@ -185,7 +159,7 @@ const GuestRoomAddon = ({
             otherStyles="mt-5"
             text="Floor Type"
             placeholder="Select Floor Type"
-            data={FLOOR_TYPE_LIST}
+            data={dropdowns.FLOOR_TYPE_LIST}
             setSelected={(val) => updateRoomForm(index, 'floorType', val)}
           />
         </View>

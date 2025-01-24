@@ -1,42 +1,12 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { icons, colors } from '../../constants';
-import { useGlobalContext } from '../../context/GlobalProvider';
-import { RectButton } from 'react-native-gesture-handler';
+import { icons, colors, dropdowns } from '../../constants';
 import CustomDropdown from '../CustomDropdown';
 import CustomMultiSelectDropdowm from '../CustomMultiSelectDropdown';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import CustomDateInput from '../CustomDateInput';
 import FormField from '../FormField';
-import FormDisplayField from '../FormDisplayField';
 import AddonItem from '../AddonItem';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
-
-const LOCATION_LIST = [
-  { key: 'rc', value: 'RC' },
-  { key: 'dadar', value: 'Dadar - Swaminarayan Temple' },
-  { key: 'amar mahar', value: 'Amar Mahal - Chembur/Ghatkopar' },
-  { key: 'mullund', value: 'Mullund Airoli Junction' },
-  { key: 'airport t1', value: 'Airport Terminal 1' },
-  { key: 'airport t2', value: 'Airport Terminal 2' },
-  { key: 'ltt', value: 'Lokmanya Tilak Terminus Station (LTT)' },
-  { key: 'cstm', value: 'Chatrapati Shivaji Terminus Station (CSTM)' },
-  { key: 'vile parle', value: 'Vile Parle East' },
-  { key: 'borivali', value: 'Borivali East' },
-  { key: 'other', value: 'Other' }
-];
-
-const LUGGAGE_LIST = [
-  { key: 'cabin1', value: '1 Cabin Bag' },
-  { key: 'cabin2', value: '2 Cabin Bags' },
-  { key: 'suitcase1', value: '1 Suitcase' },
-  { key: 'suitcase2', value: '2 Suitcases' },
-  { key: 'none', value: 'NONE' }
-];
-
-const BOOKING_TYPE_LIST = [
-  { key: 'regular', value: 'Regular' },
-  { key: 'full', value: 'Full Car' }
-];
 
 const MumukshuTravelAddon = ({
   travelForm,
@@ -49,7 +19,6 @@ const MumukshuTravelAddon = ({
   isDatePickerVisible,
   setDatePickerVisibility
 }) => {
-  const { mumukshuData, setMumukshuData } = useGlobalContext();
   return (
     <AddonItem
       onCollapse={() => {
@@ -67,29 +36,22 @@ const MumukshuTravelAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <TouchableOpacity
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             travel: true
           })
         }
-      >
-        <FormDisplayField
-          text="Date"
-          value={
-            travelForm.date
-              ? moment(travelForm.date).format('Do MMMM YYYY')
-              : 'Date'
-          }
-          otherStyles="mt-7"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.travel}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Date'}
+        date={new Date(travelForm.date)}
+        value={
+          travelForm.date
+            ? moment(travelForm.date).format('Do MMMM YYYY')
+            : 'Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.travel}
+        onDateSelect={(date) => {
           setTravelForm({
             ...travelForm,
             date:
@@ -102,13 +64,12 @@ const MumukshuTravelAddon = ({
             travel: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             travel: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
       />
 
       {travelForm.mumukshuGroup.map((assignment, index) => (
@@ -148,7 +109,7 @@ const MumukshuTravelAddon = ({
             otherStyles="mt-5"
             text={'Pickup Location'}
             placeholder={'Select Location'}
-            data={LOCATION_LIST}
+            data={dropdowns.LOCATION_LIST}
             setSelected={(val) => updateTravelForm(index, 'pickup', val)}
           />
 
@@ -156,7 +117,7 @@ const MumukshuTravelAddon = ({
             otherStyles="mt-5"
             text={'Drop Location'}
             placeholder={'Select Location'}
-            data={LOCATION_LIST}
+            data={dropdowns.LOCATION_LIST}
             setSelected={(val) => updateTravelForm(index, 'drop', val)}
           />
 
@@ -164,7 +125,7 @@ const MumukshuTravelAddon = ({
             otherStyles="mt-5"
             text={'Luggage'}
             placeholder={'Select any luggage'}
-            data={LUGGAGE_LIST}
+            data={dropdowns.LUGGAGE_LIST}
             setSelected={(val) => updateTravelForm(index, 'luggage', val)}
           />
 
@@ -172,7 +133,7 @@ const MumukshuTravelAddon = ({
             otherStyles="mt-5"
             text={'Booking Type'}
             placeholder={'Select booking type'}
-            data={BOOKING_TYPE_LIST}
+            data={dropdowns.BOOKING_TYPE_LIST}
             setSelected={(val) => updateTravelForm(index, 'type', val)}
           />
 

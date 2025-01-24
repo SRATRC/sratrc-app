@@ -1,22 +1,11 @@
-import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
-import { icons } from '../../constants';
-import CustomDropdown from '../CustomDropdown';
+import React, { useEffect } from 'react';
+import { View, Text, Image } from 'react-native';
+import { icons, dropdowns } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import moment from 'moment';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import FormDisplayField from '../FormDisplayField';
-import React from 'react';
+import CustomDropdown from '../CustomDropdown';
+import CustomDateInput from '../CustomDateInput';
 import AddonItem from '../AddonItem';
-
-const ROOM_TYPE_LIST = [
-  { key: 'ac', value: 'AC' },
-  { key: 'nac', value: 'Non AC' }
-];
-
-const FLOOR_TYPE_LIST = [
-  { key: 'SC', value: 'Yes' },
-  { key: 'n', value: 'No' }
-];
+import moment from 'moment';
 
 const RoomAddon = ({
   roomForm,
@@ -51,29 +40,22 @@ const RoomAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <TouchableOpacity
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: true
           })
         }
-      >
-        <FormDisplayField
-          text="Checkin Date"
-          value={
-            roomForm.startDay
-              ? moment(roomForm.startDay).format('Do MMMM YYYY')
-              : 'Checkin Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.checkin}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Checkin Date'}
+        date={new Date(roomForm.startDay)}
+        value={
+          roomForm.startDay
+            ? moment(roomForm.startDay).format('Do MMMM YYYY')
+            : 'Checkin Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.checkin}
+        onDateSelect={(date) => {
           setRoomForm({
             ...roomForm,
             startDay:
@@ -86,39 +68,31 @@ const RoomAddon = ({
             checkin: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
       />
 
-      <TouchableOpacity
-        disabled={roomForm.startDay == ''}
-        onPress={() =>
+      <CustomDateInput
+        openDatePicker={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: true
           })
         }
-      >
-        <FormDisplayField
-          text="Checkout Date"
-          value={
-            roomForm.endDay
-              ? moment(roomForm.endDay).format('Do MMMM YYYY')
-              : 'Checkout Date'
-          }
-          otherStyles="mt-5"
-          backgroundColor="bg-gray-100"
-        />
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible.checkout}
-        mode="date"
-        onConfirm={(date) => {
+        text={'Checkout Date'}
+        date={new Date(roomForm.endDay)}
+        minimumDate={moment(roomForm.startDay).toDate()}
+        value={
+          roomForm.endDay
+            ? moment(roomForm.endDay).format('Do MMMM YYYY')
+            : 'Checkout Date'
+        }
+        isDatePickerVisible={isDatePickerVisible.checkout}
+        onDateSelect={(date) => {
           setRoomForm({
             ...roomForm,
             endDay:
@@ -131,20 +105,20 @@ const RoomAddon = ({
             checkout: false
           });
         }}
-        onCancel={() =>
+        onDateCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: false
           })
         }
-        minimumDate={moment().add(1, 'days').toDate()}
+        isDisabled={roomForm.startDay == ''}
       />
 
       <CustomDropdown
         otherStyles="mt-7"
         text={'Room Type'}
         placeholder={'Select Room Type'}
-        data={ROOM_TYPE_LIST}
+        data={dropdowns.ROOM_TYPE_LIST}
         setSelected={(val) => setRoomForm({ ...roomForm, roomType: val })}
       />
 
@@ -152,7 +126,7 @@ const RoomAddon = ({
         otherStyles="mt-7"
         text={'Book Only if Ground Floor is Available'}
         placeholder={'Select Floor Type'}
-        data={FLOOR_TYPE_LIST}
+        data={dropdowns.FLOOR_TYPE_LIST}
         setSelected={(val) => setRoomForm({ ...roomForm, floorType: val })}
       />
     </AddonItem>
