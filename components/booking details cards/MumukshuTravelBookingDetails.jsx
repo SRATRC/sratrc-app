@@ -21,29 +21,12 @@ const MumukshuTravelBookingDetail = ({ containerStyles }) => {
           resizeMode="contain"
         />
         <View className="w-full flex-1 justify-center space-y-1">
-          {mumukshuData.validationData?.travelDetails?.length > 0 && (
-            <ScrollView horizontal>
-              {mumukshuData.validationData &&
-                Object.keys(mumukshuData.validationData).length > 0 &&
-                mumukshuData.validationData.travelDetails[0]?.available !==
-                  0 && (
-                  <CustomTag
-                    text={`available: ${mumukshuData.validationData.travelDetails[0].available}`}
-                    textStyles={'text-green-200'}
-                    containerStyles={'bg-green-100'}
-                  />
-                )}
-
-              {mumukshuData.validationData &&
-                Object.keys(mumukshuData.validationData).length > 0 &&
-                mumukshuData.validationData.travelDetails[0]?.waiting !== 0 && (
-                  <CustomTag
-                    text={`waiting: ${mumukshuData.validationData.travelDetails[0].waiting}`}
-                    textStyles={'text-red-200'}
-                    containerStyles={'bg-red-100'}
-                  />
-                )}
-            </ScrollView>
+          {mumukshuData.validationData?.travelDetails && (
+            <CustomTag
+              text={mumukshuData.validationData.travelDetails.status}
+              textStyles={'text-red-200'}
+              containerStyles={'bg-red-100'}
+            />
           )}
           <Text className="font-pmedium text-md">
             {moment(mumukshuData.travel.date).format('Do MMMM, YYYY')}
@@ -68,9 +51,11 @@ const MumukshuTravelBookingDetail = ({ containerStyles }) => {
         <Image source={icons.person} className="w-4 h-4" resizeMode="contain" />
         <Text className="text-gray-400 font-pregular">Booked For: </Text>
         <Text className="text-black font-pmedium">
-          {mumukshuData.travel.mumukshuGroup?.length ||
-            mumukshuData.travel.mumukshus?.length}{' '}
-          Mumukshus
+          {mumukshuData?.travel?.mumukshuGroup?.reduce(
+            (acc, group) => acc + group.mumukshus.length,
+            0
+          )}{' '}
+          mumukshus
         </Text>
       </View>
     </PrimaryAddonBookingCard>

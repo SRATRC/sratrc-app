@@ -1,23 +1,11 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { colors, icons } from '../constants';
+import { colors, icons, dropdowns } from '../constants';
 import { useQueries } from '@tanstack/react-query';
 import { useGlobalContext } from '../context/GlobalProvider';
 import React from 'react';
 import CustomDropdown from './CustomDropdown';
 import FormField from './FormField';
 import handleAPICall from '../utils/HandleApiCall';
-
-const GENDER_LIST = [
-  { key: 'M', value: 'Male' },
-  { key: 'F', value: 'Female' }
-];
-
-const GUEST_TYPE_LIST = [
-  { key: 'driver', value: 'Driver' },
-  { key: 'vip', value: 'VIP' },
-  { key: 'friend', value: 'Friend' },
-  { key: 'family', value: 'Family' }
-];
 
 const GuestForm = ({
   guestForm,
@@ -135,7 +123,7 @@ const GuestForm = ({
                   otherStyles="mt-7"
                   text={'Gender'}
                   placeholder={'Select Gender'}
-                  data={GENDER_LIST}
+                  data={dropdowns.GENDER_LIST}
                   value={guest.gender}
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'gender', val)
@@ -146,7 +134,7 @@ const GuestForm = ({
                   otherStyles="mt-7"
                   text={'Guest Type'}
                   placeholder={'Select Guest Type'}
-                  data={GUEST_TYPE_LIST}
+                  data={dropdowns.GUEST_TYPE_LIST}
                   value={guest.type}
                   setSelected={(val) =>
                     handleGuestFormChange(index, 'type', val)

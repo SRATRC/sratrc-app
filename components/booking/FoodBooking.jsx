@@ -421,6 +421,7 @@ const FoodBooking = () => {
         <View className="w-full flex flex-col">
           <OtherMumukshuForm
             mumukshuForm={mumukshuForm}
+            setMumukshuForm={setMumukshuForm}
             handleMumukshuFormChange={handleMumukshuFormChange}
             addMumukshuForm={addMumukshuForm}
             removeMumukshuForm={removeMumukshuForm}

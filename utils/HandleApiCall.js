@@ -14,6 +14,12 @@ const handleAPICall = async (
   try {
     const url = `${BASE_URL}${endpoint}`;
 
+    console.log('------------');
+    console.log('URL: ', url);
+    console.log('PARAMS: ', JSON.stringify(params));
+    console.log('BODY: ', JSON.stringify(body));
+    console.log('------------');
+
     const res = await axios({
       method: method,
       url: url,
@@ -32,6 +38,8 @@ const handleAPICall = async (
   } catch (error) {
     const errorMessage =
       error.response?.data?.message || error.message || 'An error occurred';
+
+    console.log('ERROR: ', errorMessage);
 
     Toast.show({
       type: 'error',

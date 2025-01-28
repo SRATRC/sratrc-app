@@ -97,15 +97,15 @@ const TravelBooking = () => {
 
     return mumukshuForm.mumukshus.every((mumukshu) => {
       if (
-        (mumukshu.pickup == 'RC' && mumukshu.drop == 'RC') ||
-        (mumukshu.pickup != 'RC' && mumukshu.drop != 'RC')
+        (mumukshu.pickup === 'rc' && mumukshu.drop === 'rc') ||
+        (mumukshu.pickup !== 'rc' && mumukshu.drop !== 'rc')
       ) {
         return false;
       }
 
       return (
         mumukshu.mobno &&
-        mumukshu.mobno?.length == 10 &&
+        mumukshu.mobno.length === 10 &&
         mumukshu.pickup &&
         mumukshu.drop &&
         mumukshu.luggage &&
@@ -192,6 +192,7 @@ const TravelBooking = () => {
         <View>
           <OtherMumukshuForm
             mumukshuForm={mumukshuForm}
+            setMumukshuForm={setMumukshuForm}
             handleMumukshuFormChange={handleMumukshuFormChange}
             addMumukshuForm={addMumukshuForm}
             removeMumukshuForm={removeMumukshuForm}
@@ -202,7 +203,6 @@ const TravelBooking = () => {
                   otherStyles="mt-7"
                   text={'Pickup Location'}
                   placeholder={'Select Location'}
-                  save={'value'}
                   data={dropdowns.LOCATION_LIST}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'pickup', val)
@@ -213,7 +213,6 @@ const TravelBooking = () => {
                   text={'Drop Location'}
                   placeholder={'Select Location'}
                   data={dropdowns.LOCATION_LIST}
-                  save={'value'}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'drop', val)
                   }
@@ -223,7 +222,6 @@ const TravelBooking = () => {
                   text={'Luggage'}
                   placeholder={'Select any luggage'}
                   data={dropdowns.LUGGAGE_LIST}
-                  save={'value'}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'luggage', val)
                   }
@@ -233,8 +231,7 @@ const TravelBooking = () => {
                   text={'Booking Type'}
                   placeholder={'Select booking type'}
                   data={dropdowns.BOOKING_TYPE_LIST}
-                  save={'value'}
-                  defaultOption={{ key: 'regular', value: 'Regular' }}
+                  // defaultOption={{ key: 'regular', value: 'Regular' }}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'type', val)
                   }
@@ -293,9 +290,7 @@ const TravelBooking = () => {
               setIsSubmitting(false);
               return;
             }
-
             const temp = transformMumukshuData(mumukshuForm);
-            console.log(temp);
 
             await updateMumukshuBooking('travel', temp);
             router.push(`/mumukshuBooking/${types.TRAVEL_DETAILS_TYPE}`);
@@ -326,7 +321,7 @@ function transformMumukshuData(inputData) {
         mumukshus: []
       };
     }
-    acc[key].mumukshus.push(mumukshu.mobno);
+    acc[key].mumukshus.push(mumukshu);
 
     return acc;
   }, {});

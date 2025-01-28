@@ -70,7 +70,6 @@ const SignIn = () => {
 
             <FormField
               text="Phone Number"
-              prefix="+91"
               value={form.phone}
               handleChangeText={(e) => setForm({ ...form, phone: e })}
               otherStyles="mt-7"

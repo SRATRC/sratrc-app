@@ -55,7 +55,7 @@ const MumukshuFoodBookingDetails = ({ containerStyles }) => {
               (acc, group) => acc + group.mumukshus.length,
               0
             )}{' '}
-            Guests
+            Mumukshus
           </Text>
         </View>
       </View>

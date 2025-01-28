@@ -215,7 +215,7 @@ const RoomBookingCancellation = () => {
       </View>
       {(item.transaction_status == status.STATUS_CASH_COMPLETED ||
         item.transaction_status == status.STATUS_PAYMENT_COMPLETED) && (
-        <View className="flex px-2 flex-row space-x-2">
+        <View className="flex px-2 mt-2 flex-row space-x-2">
           <Image
             source={icons.roomNumber}
             className="w-4 h-4"

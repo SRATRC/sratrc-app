@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  ScrollView,
   Image,
   TouchableOpacity,
   FlatList,
@@ -34,7 +33,7 @@ const MumukshuAdhyayanAddon = ({
         '/adhyayan/getrange',
         {
           cardno: user.cardno,
-          start_date: mumukshuData.room?.startDay,
+          start_date: mumukshuData.room?.startDay || mumukshuData.travel?.date,
           end_date: mumukshuData.room?.endDay
         },
         null,
@@ -57,7 +56,8 @@ const MumukshuAdhyayanAddon = ({
       mumukshuData.room?.startDay && mumukshuData.room?.endDay
     ],
     queryFn: fetchAdhyayans,
-    staleTime: 1000 * 60 * 30
+    staleTime: 1000 * 60 * 30,
+    retry: false
   });
 
   const renderItem = ({ item }) => {

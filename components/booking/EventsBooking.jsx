@@ -410,6 +410,7 @@ const EventBooking = () => {
                         {selectedChip == CHIPS[2] && (
                           <OtherMumukshuForm
                             mumukshuForm={mumukshuForm}
+                            setMumukshuForm={setMumukshuForm}
                             handleMumukshuFormChange={handleMumukshuFormChange}
                             addMumukshuForm={addMumukshuForm}
                             removeMumukshuForm={removeMumukshuForm}

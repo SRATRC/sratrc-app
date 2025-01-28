@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons, types } from '../../constants';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -65,12 +65,15 @@ const MumukshuAddons = () => {
   const { booking } = useLocalSearchParams();
   const { mumukshuData, setMumukshuData } = useGlobalContext();
 
-  const mumukshus =
-    mumukshuData.room?.mumukshuGroup?.flatMap((group) => group.mumukshus) ||
-    mumukshuData.adhyayan?.mumukshuGroup;
+  const mumukshus = (
+    mumukshuData.room?.mumukshuGroup ||
+    mumukshuData.adhyayan?.mumukshuGroup ||
+    mumukshuData.travel?.mumukshuGroup ||
+    []
+  ).flatMap((group) => group.mumukshus || [group]);
   const mumukshu_dropdown = mumukshus.map((mumukshu, index) => ({
-    value: index,
-    label: mumukshu
+    value: `${index}`,
+    label: mumukshu.issuedto
   }));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,6 +87,13 @@ const MumukshuAddons = () => {
 
   // Room Addon Form Data
   const [roomForm, setRoomForm] = useState(INITIAL_ROOM_FORM);
+  const resetRoomForm = () => {
+    setRoomForm(INITIAL_ROOM_FORM);
+    setMumukshuData((prev) => {
+      const { room, ...rest } = prev;
+      return rest;
+    });
+  };
   const addRoomForm = () => {
     setRoomForm((prevRoomForm) => ({
       ...prevRoomForm,
@@ -114,7 +124,7 @@ const MumukshuAddons = () => {
       if (key === 'mumukshus') {
         updatedMumukshuGroup[groupIndex].mumukshuIndices = value;
         updatedMumukshuGroup[groupIndex].mumukshus = mumukshus.filter((_, i) =>
-          value.includes(i)
+          value.includes(i.toString())
         );
       } else {
         updatedMumukshuGroup[groupIndex][key] = value;
@@ -173,7 +183,7 @@ const MumukshuAddons = () => {
       if (key === 'mumukshus') {
         updatedMumukshuGroup[groupIndex].mumukshuIndices = value;
         updatedMumukshuGroup[groupIndex].mumukshus = mumukshus.filter((_, i) =>
-          value.includes(i)
+          value.includes(i.toString())
         );
       } else {
         updatedMumukshuGroup[groupIndex][key] = value;
@@ -234,7 +244,7 @@ const MumukshuAddons = () => {
       if (key === 'mumukshus') {
         updatedMumukshuGroup[groupIndex].mumukshuIndices = value;
         updatedMumukshuGroup[groupIndex].mumukshus = mumukshus.filter((_, i) =>
-          value.includes(i)
+          value.includes(i.toString())
         );
       } else {
         updatedMumukshuGroup[groupIndex][key] = value;
@@ -254,7 +264,9 @@ const MumukshuAddons = () => {
       ...prevAdhyayanForm,
       [field]: value,
       ...(field === 'mumukshuIndices' && {
-        mumukshus: mumukshus.filter((_, i) => value.includes(i))
+        mumukshus: mumukshus.filter((v, i) => {
+          return value.includes(i.toString());
+        })
       })
     }));
   };
@@ -294,7 +306,7 @@ const MumukshuAddons = () => {
                 addRoomForm={addRoomForm}
                 reomveRoomForm={reomveRoomForm}
                 updateRoomForm={updateRoomForm}
-                INITIAL_ROOM_FORM={INITIAL_ROOM_FORM}
+                resetRoomForm={resetRoomForm}
                 mumukshu_dropdown={mumukshu_dropdown}
                 isDatePickerVisible={isDatePickerVisible}
                 setDatePickerVisibility={setDatePickerVisibility}
@@ -344,6 +356,11 @@ const MumukshuAddons = () => {
               text="Confirm"
               handlePress={() => {
                 setIsSubmitting(true);
+
+                console.log(JSON.stringify(roomForm));
+                console.log(JSON.stringify(foodForm));
+                console.log(JSON.stringify(travelForm));
+                console.log(JSON.stringify(adhyayanForm));
 
                 const isRoomFormEmpty = () => {
                   return roomForm.mumukshuGroup.some(

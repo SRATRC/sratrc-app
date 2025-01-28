@@ -15,17 +15,6 @@ import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 
 const SWITCH_OPTIONS = ['Select Dates', 'One Day Visit'];
-
-const ROOM_TYPE_LIST = [
-  { key: 'ac', value: 'AC' },
-  { key: 'nac', value: 'Non AC' }
-];
-
-const FLOOR_TYPE_LIST = [
-  { key: 'SC', value: 'Yes' },
-  { key: 'n', value: 'No' }
-];
-
 const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 
 const INITIAL_SIGNLE_DAY_GUEST_FORM = {
@@ -357,7 +346,7 @@ const RoomBooking = () => {
                 otherStyles="mt-7"
                 text={'Room Type'}
                 placeholder={'Select Room Type'}
-                data={ROOM_TYPE_LIST}
+                data={dropdowns.ROOM_TYPE_LIST}
                 setSelected={(val) =>
                   setMultiDayForm({ ...multiDayForm, roomType: val })
                 }
@@ -367,7 +356,7 @@ const RoomBooking = () => {
                 otherStyles="mt-7"
                 text={'Book Only if Ground Floor is Available'}
                 placeholder={'Select Floor Type'}
-                data={FLOOR_TYPE_LIST}
+                data={dropdowns.FLOOR_TYPE_LIST}
                 setSelected={(val) =>
                   setMultiDayForm({ ...multiDayForm, floorType: val })
                 }
@@ -499,6 +488,7 @@ const RoomBooking = () => {
             <View>
               <OtherMumukshuForm
                 mumukshuForm={mumukshuForm}
+                setMumukshuForm={setMumukshuForm}
                 handleMumukshuFormChange={handleMumukshuFormChange}
                 addMumukshuForm={addMumukshuForm}
                 removeMumukshuForm={removeMumukshuForm}
@@ -509,7 +499,7 @@ const RoomBooking = () => {
                       otherStyles="mt-7"
                       text={'Room Type'}
                       placeholder={'Select Room Type'}
-                      data={ROOM_TYPE_LIST}
+                      data={dropdowns.ROOM_TYPE_LIST}
                       setSelected={(val) =>
                         handleMumukshuFormChange(index, 'roomType', val)
                       }
@@ -519,7 +509,7 @@ const RoomBooking = () => {
                       otherStyles="mt-7"
                       text={'Book Only if Ground Floor is Available'}
                       placeholder={'Select Floor Type'}
-                      data={FLOOR_TYPE_LIST}
+                      data={dropdowns.FLOOR_TYPE_LIST}
                       setSelected={(val) =>
                         handleMumukshuFormChange(index, 'floorType', val)
                       }
@@ -538,7 +528,6 @@ const RoomBooking = () => {
                     setModalVisible(true);
                     return;
                   }
-
                   const temp = transformMumukshuResponse(mumukshuForm);
 
                   updateMumukshuBooking('room', temp);
@@ -585,6 +574,7 @@ const RoomBooking = () => {
           {selectedChip === CHIPS[2] && (
             <OtherMumukshuForm
               mumukshuForm={singleDayMumukshuForm}
+              setMumukshuForm={setSingleDayMumukshuForm}
               handleMumukshuFormChange={handleSingleDayMumukshuFormChange}
               addMumukshuForm={addSingleDayMumukshuForm}
               removeMumukshuForm={removeSingleDayMumukshuForm}
@@ -786,7 +776,7 @@ function transformMumukshuResponse(data) {
         mumukshus: []
       };
     }
-    groupMap[key].mumukshus.push(mumukshu.mobno);
+    groupMap[key].mumukshus.push(mumukshu);
   });
 
   const mumukshuGroup = Object.values(groupMap);

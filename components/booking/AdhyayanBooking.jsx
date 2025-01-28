@@ -330,6 +330,7 @@ const AdhyayanBooking = () => {
                         <View>
                           <OtherMumukshuForm
                             mumukshuForm={mumukshuForm}
+                            setMumukshuForm={setMumukshuForm}
                             handleMumukshuFormChange={handleMumukshuFormChange}
                             addMumukshuForm={addMumukshuForm}
                             removeMumukshuForm={removeMumukshuForm}
@@ -464,7 +465,7 @@ function transformMumukshuData(inputData) {
 
   return {
     adhyayan: adhyayan,
-    mumukshuGroup: mumukshus.map((mumukshu) => mumukshu.mobno)
+    mumukshuGroup: mumukshus.map((mumukshu) => mumukshu)
   };
 }
 

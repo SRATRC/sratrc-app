@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import FormDisplayField from './FormDisplayField';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -22,18 +22,14 @@ const CustomCalendarInput = ({
   };
   return (
     <View>
-      <RectButton
-        onPress={openDatePicker}
-        enabled={!isDisabled}
-        activeOpacity={0}
-      >
+      <TouchableOpacity onPress={openDatePicker} disabled={isDisabled}>
         <FormDisplayField
           text={text}
           value={value}
           otherStyles="mt-5"
           backgroundColor="bg-gray-100"
         />
-      </RectButton>
+      </TouchableOpacity>
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"

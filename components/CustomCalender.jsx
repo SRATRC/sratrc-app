@@ -55,7 +55,6 @@ const CustomCalender = ({
   };
 
   const handleMonthChange = (month) => {
-    // Check if the current month is at or before the minimum allowed date
     const currentMonth = moment(month.dateString).startOf('month');
     const minMonth = moment(MIN_DATE).startOf('month');
 

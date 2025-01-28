@@ -79,7 +79,7 @@ const Confirmation = () => {
           text="Confirm"
           handlePress={submit}
           containerStyles="mt-7 min-h-[62px]"
-          isLoading={isSubmitting}
+          isDisabled={isSubmitting}
         />
       </View>
     </SafeAreaView>

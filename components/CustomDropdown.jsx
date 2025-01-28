@@ -14,7 +14,7 @@ const CustomDropdown = ({
   boxbg = colors.gray_100,
   defaultOption,
   enableSearch,
-  save,
+  save = 'key',
   autofill = false
 }) => {
   const renderDropdownItem = (item) => {
@@ -115,7 +115,7 @@ const CustomDropdown = ({
           search={enableSearch ? enableSearch : false}
           setSelected={(val) => setSelected(val)}
           data={data}
-          save={save ? save : 'key'}
+          save={save}
           placeholder={placeholder}
           defaultOption={defaultOption ? defaultOption : null}
           boxStyles={{

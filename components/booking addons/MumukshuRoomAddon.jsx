@@ -1,5 +1,4 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { useGlobalContext } from '../../context/GlobalProvider';
 import { colors, icons, dropdowns } from '../../constants';
 import CustomDropdown from '../CustomDropdown';
 import moment from 'moment';
@@ -13,23 +12,15 @@ const MumukshuRoomAddon = ({
   setRoomForm,
   addRoomForm,
   updateRoomForm,
+  resetRoomForm,
   reomveRoomForm,
   mumukshu_dropdown,
-  INITIAL_ROOM_FORM,
   isDatePickerVisible,
   setDatePickerVisibility
 }) => {
-  const { setMumukshuData } = useGlobalContext();
-
   return (
     <AddonItem
-      onCollapse={() => {
-        setRoomForm(INITIAL_ROOM_FORM);
-        setMumukshuData((prev) => {
-          const { room, ...rest } = prev;
-          return rest;
-        });
-      }}
+      onCollapse={resetRoomForm}
       visibleContent={
         <View className="flex flex-row items-center space-x-4">
           <Image

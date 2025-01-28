@@ -79,18 +79,18 @@ const MumukshuFoodAddon = ({
           })
         }
         text={'End Date'}
-        date={new Date(foodForm.foodEnd)}
+        date={new Date(foodForm.endDay)}
         minimumDate={moment(foodForm.startDay).toDate()}
         value={
-          foodForm.foodEnd
-            ? moment(foodForm.foodEnd).format('Do MMMM YYYY')
+          foodForm.endDay
+            ? moment(foodForm.endDay).format('Do MMMM YYYY')
             : 'End Date'
         }
         isDatePickerVisible={isDatePickerVisible.foodEnd}
         onDateSelect={(date) => {
           setFoodForm({
             ...foodForm,
-            foodEnd:
+            endDay:
               moment(date) < moment().add(1, 'days').toDate()
                 ? moment().add(1, 'days').format('YYYY-MM-DD')
                 : moment(date).format('YYYY-MM-DD')

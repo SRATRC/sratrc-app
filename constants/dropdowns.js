@@ -1,11 +1,11 @@
 const ROOM_TYPE_LIST = [
-  { key: 'ac', value: 'AC' },
-  { key: 'nac', value: 'Non AC' }
+  { key: 'nac', value: 'Non AC' },
+  { key: 'ac', value: 'AC' }
 ];
 
 const FLOOR_TYPE_LIST = [
-  { key: 'SC', value: 'Yes' },
-  { key: 'n', value: 'No' }
+  { key: 'n', value: 'No' },
+  { key: 'SC', value: 'Yes' }
 ];
 
 const FOOD_TYPE_LIST = [
@@ -53,6 +53,13 @@ const BOOKING_TYPE_LIST = [
   { key: 'full', value: 'Full Car' }
 ];
 
+const GUEST_TYPE_LIST = [
+  { key: 'driver', value: 'Driver' },
+  { key: 'vip', value: 'VIP' },
+  { key: 'friend', value: 'Friend' },
+  { key: 'family', value: 'Family' }
+];
+
 const GUEST_FOOD_TYPE_LIST = [
   { value: 'breakfast', label: 'Breakfast' },
   { value: 'lunch', label: 'Lunch' },
@@ -79,6 +86,7 @@ export default {
   LOCATION_LIST,
   LUGGAGE_LIST,
   BOOKING_TYPE_LIST,
+  GUEST_TYPE_LIST,
   GUEST_FOOD_TYPE_LIST,
   GUEST_SPICE_LIST,
   GUEST_HIGHTEA_LIST

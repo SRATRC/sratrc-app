@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../constants';
@@ -23,10 +23,19 @@ const mumukshuBookingConfirmation = () => {
     const transformMumukshuGroup = (mumukshuGroup) =>
       mumukshuGroup.map((group) => {
         const transformed = {};
+        if (group.cardno) return group.cardno;
         if (group.roomType) transformed.roomType = group.roomType;
         if (group.floorType && group.floorType !== 'n')
           transformed.floorType = group.floorType;
-        if (group.mumukshus) transformed.mumukshus = [...group.mumukshus];
+        if (group.mumukshus)
+          transformed.mumukshus = group.mumukshus.map(
+            (mumukshu) => mumukshu.cardno
+          );
+        if (group.pickup) transformed.pickup_point = group.pickup;
+        if (group.drop) transformed.drop_point = group.drop;
+        if (group.luggage) transformed.luggage = group.luggage;
+        if (group.type) transformed.type = group.type;
+        if (group.special_request) transformed.comments = group.special_request;
         if (group.meals) transformed.meals = group.meals;
         if (group.spicy !== undefined) transformed.spicy = group.spicy;
         if (group.hightea) transformed.high_tea = group.hightea;
@@ -35,6 +44,7 @@ const mumukshuBookingConfirmation = () => {
 
     const primaryBookingDetails = (primaryKey) => {
       const primaryData = input[primaryKey];
+
       switch (primaryKey) {
         case 'room':
           return {
@@ -59,7 +69,15 @@ const mumukshuBookingConfirmation = () => {
             booking_type: 'adhyayan',
             details: {
               shibir_ids: [primaryData.adhyayan.id],
-              mumukshus: [...primaryData.mumukshuGroup]
+              mumukshus: transformMumukshuGroup(primaryData.mumukshuGroup)
+            }
+          };
+        case 'travel':
+          return {
+            booking_type: 'travel',
+            details: {
+              date: primaryData.date,
+              mumukshuGroup: transformMumukshuGroup(primaryData.mumukshuGroup)
             }
           };
         default:
@@ -99,7 +117,9 @@ const mumukshuBookingConfirmation = () => {
                 booking_type: key,
                 details: {
                   shibir_ids: [input[key].adhyayan.id],
-                  mumukshus: [...input[key].mumukshus]
+                  mumukshus: input[key].mumukshus.map(
+                    (mumukshu) => mumukshu.cardno
+                  )
                 }
               };
             case 'travel':
@@ -127,21 +147,19 @@ const mumukshuBookingConfirmation = () => {
       addons: transformAddons(input)
     };
   };
+
   const transformedData = transformData(
     JSON.parse(JSON.stringify(mumukshuData))
   );
-
-  console.log(JSON.stringify(transformedData));
-
   const fetchValidation = async () => {
     return new Promise((resolve, reject) => {
       handleAPICall(
         'POST',
-        '/guest/validate',
+        '/mumukshu/validate',
         null,
         transformedData,
         (res) => {
-          setGuestData((prev) => ({ ...prev, validationData: res.data }));
+          setMumukshuData((prev) => ({ ...prev, validationData: res.data }));
           resolve(res.data);
         },
         () =>
@@ -150,15 +168,20 @@ const mumukshuBookingConfirmation = () => {
     });
   };
 
-  // const {
-  //   isLoading: isValidationDataLoading,
-  //   isError: isValidationDataError,
-  //   error: validationDataError,
-  //   data: validationData
-  // } = useQuery({
-  //   queryKey: ['guestValidations', user.cardno],
-  //   queryFn: fetchValidation
-  // });
+  const {
+    isLoading: isValidationDataLoading,
+    isError: isValidationDataError,
+    error: validationDataError,
+    data: validationData
+  } = useQuery({
+    queryKey: ['mumukshuValidations', user.cardno],
+    queryFn: fetchValidation,
+    retry: false
+  });
+
+  useEffect(() => {
+    console.log('VALIDATION DATA: ', validationData);
+  }, [validationData]);
 
   return (
     <SafeAreaView className="h-full bg-white">
@@ -181,7 +204,7 @@ const mumukshuBookingConfirmation = () => {
           <MumukshuTravelBookingDetails containerStyles={'mt-6'} />
         )}
 
-        {/* {validationData && (
+        {validationData && (
           <View className="w-full px-4 mt-4">
             <Text className="text-xl font-psemibold text-secondary mb-4">
               Charges
@@ -199,7 +222,7 @@ const mumukshuBookingConfirmation = () => {
                   validationData.roomDetails.reduce(
                     (total, room) => total + room.charge,
                     0
-                  ) > 0 && (
+                  ) >= 0 && (
                     <View className="flex-row justify-between items-center">
                       <Text className="text-gray-500 font-pregular text-base">
                         Room Charge
@@ -213,13 +236,23 @@ const mumukshuBookingConfirmation = () => {
                       </Text>
                     </View>
                   )}
-                {validationData.foodDetails?.charge && (
+                {/* {validationData.foodDetails?.charge && (
                   <View className="flex-row justify-between items-center">
                     <Text className="text-gray-500 font-pregular text-base">
                       Food Charge
                     </Text>
                     <Text className="text-black font-pregular text-base">
                       ₹ {validationData.foodDetails.charge}
+                    </Text>
+                  </View>
+                )} */}
+                {validationData.travelDetails?.charge >= 0 && (
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-gray-500 font-pregular text-base">
+                      Travel Charge
+                    </Text>
+                    <Text className="text-black font-pregular text-base">
+                      ₹ {validationData.travelDetails.charge}
                     </Text>
                   </View>
                 )}
@@ -263,7 +296,7 @@ const mumukshuBookingConfirmation = () => {
               </View>
             </View>
           </View>
-        )} */}
+        )}
 
         <View className="w-full px-4 mt-6">
           <CustomButton
@@ -280,7 +313,7 @@ const mumukshuBookingConfirmation = () => {
 
               await handleAPICall(
                 'POST',
-                '/guest/booking',
+                '/mumukshu/booking',
                 null,
                 transformedData,
                 onSuccess,
@@ -289,6 +322,7 @@ const mumukshuBookingConfirmation = () => {
             }}
             containerStyles="mb-8 min-h-[62px]"
             isLoading={isSubmitting}
+            isDisabled={!validationData || validationDataError}
           />
         </View>
       </ScrollView>
