@@ -32,7 +32,7 @@ const Home = () => {
           resizeMode="contain"
         >
           <Text className="text-secondary font-pbold text-lg px-4 pt-6">
-            JSDV {user.issuedto.split(' ')[0]}!
+            JSDV, {user.issuedto.split(' ')[0]}!
           </Text>
           <Text className="max-w-[63%] font-plight text-xs px-4 pt-4">
             "Every living being is capable of becoming Self-realised; one who

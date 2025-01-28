@@ -99,7 +99,6 @@ const wifi = () => {
       wifiList.push(newCode);
       refetch();
     } catch (error) {
-      console.error('Error generating new WiFi code:', error);
     } finally {
       if (wifiList.length < 4) setIsSubmitting(false);
     }
@@ -166,18 +165,9 @@ const wifi = () => {
           </Text>
         </View>
       )}
-    </View>
-  );
 
-  const renderFooter = () => (
-    <View className="w-full h-full">
-      {isLoading && (
-        <View className="items-center justify-center">
-          <ActivityIndicator />
-        </View>
-      )}
-      {wifiList?.length == 0 ? (
-        <View className="w-full h-full flex flex-col px-4 items-center justify-center space-y-6">
+      {wifiList?.length == 0 && (
+        <View className="w-full h-full flex-1 flex-col px-4 items-center justify-center space-y-6">
           <CustomEmptyMessage
             lottiePath={require('../../assets/lottie/empty.json')}
             message={'No WiFi code generated Yet!'}
@@ -190,16 +180,25 @@ const wifi = () => {
             isLoading={isSubmitting}
           />
         </View>
-      ) : (
-        !isLoading && (
-          <CustomButton
-            text={'Generate WiFi Code'}
-            handlePress={handleGenerateCode}
-            containerStyles={'px-4 py-2 mt-10 min-h-[56px]'}
-            textStyles={'text-base font-pregular'}
-            isLoading={isSubmitting || wifiList?.length >= 4}
-          />
-        )
+      )}
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View className="w-full h-full">
+      {isLoading && (
+        <View className="items-center justify-center">
+          <ActivityIndicator />
+        </View>
+      )}
+      {wifiList?.length != 0 && !isLoading && (
+        <CustomButton
+          text={'Generate WiFi Code'}
+          handlePress={handleGenerateCode}
+          containerStyles={'px-4 py-2 mt-10 min-h-[56px]'}
+          textStyles={'text-base font-pregular'}
+          isLoading={isSubmitting || wifiList?.length >= 4}
+        />
       )}
     </View>
   );

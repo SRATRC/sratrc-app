@@ -35,6 +35,7 @@ const OtherMumukshuForm = ({
               );
               if (mumukshuIndex !== -1) {
                 updatedMumukshus[mumukshuIndex] = {
+                  ...updatedMumukshus[mumukshuIndex],
                   ...res.data,
                   mobno: mobno
                 };
@@ -69,6 +70,8 @@ const OtherMumukshuForm = ({
         } = mumukshu.mobno?.length === 10
           ? mumukshuQueries[index]
           : { data: null, isLoading: false, isError: false };
+
+        console.log('MUMUKSHU: ', JSON.stringify(mumukshu));
 
         return (
           <View key={index} className="mt-8">

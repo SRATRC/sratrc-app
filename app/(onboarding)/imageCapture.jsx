@@ -3,46 +3,45 @@ import {
   Text,
   ScrollView,
   Image,
-  TouchableWithoutFeedback,
-  Platform
+  TouchableWithoutFeedback
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, icons, images } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
-import * as Brightness from 'expo-brightness';
+// import * as Brightness from 'expo-brightness';
 import handleAPICall from '../../utils/HandleApiCall';
 import Toast from 'react-native-toast-message';
 
 const ImageCaptureOnboarding = () => {
   const { user, setUser, removeItem } = useGlobalContext();
-  const [permissionResponse, requestPermission] = Brightness.usePermissions();
+  // const [permissionResponse, requestPermission] = Brightness.usePermissions();
   const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
 
   // const handleNextStep = () => setCurrentStep((prev) => prev + 1);
   // const handlePrevStep = () => setCurrentStep((prev) => prev - 1);
 
-  useEffect(() => {
-    if (permissionResponse?.status === 'granted') {
-      setCurrentStep(2);
-    } else {
-      setCurrentStep(1);
-    }
-  }, [permissionResponse]);
+  // useEffect(() => {
+  //   if (permissionResponse?.status === 'granted') {
+  //     setCurrentStep(2);
+  //   } else {
+  //     setCurrentStep(1);
+  //   }
+  // }, [permissionResponse]);
 
   const steps = [
-    {
-      title: 'We need Permission to manage your brightness',
-      description:
-        "For smooth functioning of application we need to manage the phone's brightness.",
-      btnText: 'Provide Permission',
-      action: () => {
-        requestPermission();
-      }
-    },
+    // {
+    //   title: 'We need Permission to manage your brightness',
+    //   description:
+    //     "For smooth functioning of application we need to manage the phone's brightness.",
+    //   btnText: 'Provide Permission',
+    //   action: () => {
+    //     requestPermission();
+    //   }
+    // },
     {
       title: 'Help Us Verify Your Identity',
       description:
@@ -86,7 +85,7 @@ const ImageCaptureOnboarding = () => {
             >
               <View
                 style={{
-                  width: `${(currentStep / 2) * 100}%`,
+                  width: `${(currentStep / steps.length) * 100}%`,
                   height: '100%',
                   backgroundColor: colors.orange,
                   borderRadius: 3

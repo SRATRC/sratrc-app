@@ -1,5 +1,5 @@
 import { View, Alert, Text } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { dropdowns } from '../../constants';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -11,12 +11,6 @@ import CustomChipGroup from '../CustomChipGroup';
 import CustomModal from '../CustomModal';
 import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
-
-const FOOD_TYPE_LIST = [
-  { label: 'Breakfast', value: 'breakfast' },
-  { label: 'Lunch', value: 'lunch' },
-  { label: 'Dinner', value: 'dinner' }
-];
 
 const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 
@@ -383,8 +377,6 @@ const FoodBooking = () => {
                     guests: updatedGuests
                   });
 
-                  console.log(JSON.stringify(transformedData));
-
                   await handleAPICall(
                     'POST',
                     '/guest/booking',
@@ -432,7 +424,7 @@ const FoodBooking = () => {
                   otherStyles="mt-5"
                   text={`Select Meals`}
                   placeholder="Select Meals"
-                  data={FOOD_TYPE_LIST}
+                  data={dropdowns.GUEST_FOOD_TYPE_LIST}
                   value={mumukshuForm.mumukshus[index].meals}
                   setSelected={(val) =>
                     handleMumukshuFormChange(index, 'meals', val)
@@ -475,6 +467,31 @@ const FoodBooking = () => {
                 setModalVisible(true);
                 return;
               }
+
+              const transformedData = transformMumukshuData(
+                JSON.parse(JSON.stringify(mumukshuForm))
+              );
+
+              await handleAPICall(
+                'POST',
+                '/mumukshu/booking',
+                null,
+                {
+                  cardno: user.cardno,
+                  // transaction_type: 'upi',
+                  // transaction_ref: '7XAB46098628492',
+                  primary_booking: {
+                    booking_type: 'food',
+                    details: transformedData
+                  }
+                },
+                (_data) => {
+                  Alert.alert('Booking Successful');
+                },
+                () => {
+                  setIsSubmitting(false);
+                }
+              );
             }}
             containerStyles="mt-7 w-full px-1 min-h-[62px]"
             isLoading={isSubmitting}
@@ -523,6 +540,41 @@ function transformGuestData(inputData) {
     start_date: startDay,
     end_date: endDay,
     guestGroup
+  };
+}
+
+function transformMumukshuData(inputData) {
+  const { startDay, endDay, mumukshus } = inputData;
+
+  // Group mumukshus by shared attributes
+  const groupedMumukshus = mumukshus.reduce((acc, mumukshu) => {
+    const key = JSON.stringify({
+      meals: mumukshu.meals,
+      spicy: mumukshu.spicy,
+      hightea: mumukshu.hightea
+    });
+
+    if (!acc[key]) {
+      acc[key] = {
+        mumukshus: [],
+        meals: mumukshu.meals,
+        spicy: mumukshu.spicy,
+        high_tea: mumukshu.hightea
+      };
+    }
+
+    acc[key].mumukshus.push(mumukshu.cardno);
+
+    return acc;
+  }, {});
+
+  // Transform grouped data into an array
+  const mumukshuGroup = Object.values(groupedMumukshus);
+
+  return {
+    start_date: startDay,
+    end_date: endDay,
+    mumukshuGroup
   };
 }
 

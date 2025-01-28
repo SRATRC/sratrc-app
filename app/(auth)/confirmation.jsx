@@ -26,7 +26,7 @@ const Confirmation = () => {
         return;
       }
 
-      const onSuccess = async (_data) => {
+      const onSuccess = async (data) => {
         await setCurrentUser(user);
         await handleUserNavigation(user, router);
       };
@@ -71,7 +71,7 @@ const Confirmation = () => {
 
         <FormDisplayField
           text="Centre"
-          value={user.centre}
+          value={user.center}
           otherStyles="mt-7"
         />
 
