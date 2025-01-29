@@ -12,7 +12,7 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import AddonItem from '../AddonItem';
 import handleAPICall from '../../utils/HandleApiCall';
 import HorizontalSeparator from '../HorizontalSeparator';
-import LottieView from 'lottie-react-native';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
 
@@ -169,20 +169,10 @@ const AdhyayanAddon = ({
       containerStyles={'mt-3'}
     >
       {!isLoading && !isError && adhyayanList.length == 0 && (
-        <View className="flex flex-col items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 200
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/notFound.json')}
-          />
-          <Text className="text-md font-psemibold text-secondary">
-            No adhyayans available on selected dates!
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No Adhyayans available on selected dates!'}
+        />
       )}
       <FlatList
         className="py-2 mt-2 w-full"

@@ -12,10 +12,10 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import AddonItem from '../AddonItem';
 import handleAPICall from '../../utils/HandleApiCall';
 import HorizontalSeparator from '../HorizontalSeparator';
-import LottieView from 'lottie-react-native';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
 import CustomMultiSelectDropdown from '../CustomMultiSelectDropdown';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 
 const MumukshuAdhyayanAddon = ({
   adhyayanForm,
@@ -168,20 +168,10 @@ const MumukshuAdhyayanAddon = ({
       containerStyles={'mt-3'}
     >
       {!isLoading && !isError && adhyayanList?.length == 0 && (
-        <View className="flex flex-col items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 200
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/notFound.json')}
-          />
-          <Text className="text-md font-psemibold text-secondary">
-            No adhyayans available on selected dates!
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No Adhyayans available on selected dates!'}
+        />
       )}
       {(adhyayanList?.length > 0 || isError) && (
         <View className="w-full flex-col items-center justify-center">

@@ -24,6 +24,7 @@ import moment from 'moment';
 import CustomChipGroup from '../CustomChipGroup';
 import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 
 const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
 
@@ -428,21 +429,10 @@ const AdhyayanBooking = () => {
         }}
       />
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg font-pregular text-secondary">
-            There are no upcoming adhyayans at the moment
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No upcoming Adhyayans at this moment!'}
+        />
       )}
     </View>
   );

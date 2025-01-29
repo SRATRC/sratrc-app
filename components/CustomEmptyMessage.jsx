@@ -15,7 +15,7 @@ const CustomEmptyMessage = ({ lottiePath, message }) => {
         loop
         source={lottiePath}
       />
-      <Text className="text-base font-pregular px-8 text-secondary text-center">
+      <Text className="text-lg font-pmedium text-secondary text-center w-[80%]">
         {message}
       </Text>
     </View>

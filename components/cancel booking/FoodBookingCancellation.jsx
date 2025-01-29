@@ -29,7 +29,7 @@ import handleAPICall from '../../utils/HandleApiCall';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import * as Haptics from 'expo-haptics';
-import LottieView from 'lottie-react-native';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 import BottomSheetFilter from '../BottomSheetFilter';
 
 const FOOD_TYPE_LIST = [
@@ -569,21 +569,10 @@ const FoodBookingCancellation = () => {
         }}
       />
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg font-pregular text-secondary">
-            Nothing to show for selected filter
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No food bookings to show!'}
+        />
       )}
       <BottomSheetFilter
         ref={sheetRef}

@@ -13,7 +13,7 @@ import ExpandableItem from '../ExpandableItem';
 import HorizontalSeparator from '../HorizontalSeparator';
 import moment from 'moment';
 import CustomTag from '../CustomTag';
-import LottieView from 'lottie-react-native';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 
 const RoomBookingCancellation = () => {
   const { user } = useGlobalContext();
@@ -293,21 +293,10 @@ const RoomBookingCancellation = () => {
         }}
       />
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg font-pregular text-secondary">
-            You have not booked any rooms yet
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No room bookings to show!'}
+        />
       )}
     </View>
   );

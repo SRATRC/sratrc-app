@@ -13,7 +13,7 @@ import ExpandableItem from '../ExpandableItem';
 import CustomTag from '../CustomTag';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
-import LottieView from 'lottie-react-native';
+import CustomEmptyMessage from '../CustomEmptyMessage';
 
 const TravelBookingCancellation = () => {
   const { user } = useGlobalContext();
@@ -306,21 +306,10 @@ const TravelBookingCancellation = () => {
         }}
       />
       {!isFetchingNextPage && data?.pages?.[0]?.length == 0 && (
-        <View className="flex-1 items-center justify-center">
-          <LottieView
-            style={{
-              width: 200,
-              height: 350,
-              alignSelf: 'center'
-            }}
-            autoPlay
-            loop
-            source={require('../../assets/lottie/empty.json')}
-          />
-          <Text className="text-lg font-pregular text-secondary">
-            You have not booked any travels yet
-          </Text>
-        </View>
+        <CustomEmptyMessage
+          lottiePath={require('../../assets/lottie/empty.json')}
+          message={'No travel bookings to show!'}
+        />
       )}
     </View>
   );
