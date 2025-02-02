@@ -1,4 +1,4 @@
-import { View, Text, Image, Alert } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { icons, images } from '../../constants';
@@ -10,6 +10,7 @@ import handleAPICall from '../../utils/HandleApiCall';
 import FormDisplayField from '../../components/FormDisplayField';
 import CustomButton from '../../components/CustomButton';
 import PageHeader from '../../components/PageHeader';
+import Toast from 'react-native-toast-message';
 
 const Confirmation = () => {
   const { user, setCurrentUser } = useGlobalContext();
@@ -20,34 +21,31 @@ const Confirmation = () => {
 
   const submit = async () => {
     setIsSubmitting(true);
-    try {
-      if (!expoPushToken) {
-        Alert.alert('Error', 'Please enable push notifications');
-        return;
-      }
-
-      const onSuccess = async (data) => {
-        await setCurrentUser(user);
-        await handleUserNavigation(user, router);
-      };
-
-      const onFinally = () => {
-        setIsSubmitting(false);
-      };
-
-      await handleAPICall(
-        'POST',
-        '/client/login',
-        null,
-        { cardno: user.cardno, token: expoPushToken },
-        onSuccess,
-        onFinally
-      );
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setIsSubmitting(false);
+    if (!expoPushToken) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enable push notifications'
+      });
     }
+
+    const onSuccess = async (data) => {
+      await setCurrentUser(user);
+      await handleUserNavigation(user, router);
+    };
+
+    const onFinally = () => {
+      setIsSubmitting(false);
+    };
+
+    await handleAPICall(
+      'POST',
+      '/client/login',
+      null,
+      { cardno: user.cardno, token: expoPushToken },
+      onSuccess,
+      onFinally
+    );
   };
 
   return (

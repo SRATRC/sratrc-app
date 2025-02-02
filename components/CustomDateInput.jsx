@@ -1,6 +1,5 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
 import FormDisplayField from './FormDisplayField';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';

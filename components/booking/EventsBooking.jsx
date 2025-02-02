@@ -8,11 +8,12 @@ import {
   Image,
   FlatList,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { icons, status } from '../../constants';
+import { colors, icons, status } from '../../constants';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
 import CustomButton from '../CustomButton';
@@ -27,8 +28,9 @@ import CustomDropdown from '../CustomDropdown';
 import Toast from 'react-native-toast-message';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 import CustomEmptyMessage from '../CustomEmptyMessage';
+import RazorpayCheckout from 'react-native-razorpay';
 
-const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
+const CHIPS = ['Self', 'Guest', 'Mumukshus'];
 const ARRIVAL = [
   { key: 'car', value: 'Self Car' },
   { key: 'raj pravas', value: 'Raj Pravas' },
@@ -45,7 +47,6 @@ const INITIAL_SELF_FORM = {
 };
 
 const INITIAL_GUEST_FORM = {
-  adhyayan: null,
   guests: [
     {
       name: '',
@@ -61,8 +62,6 @@ const INITIAL_GUEST_FORM = {
 };
 
 const INITIAL_MUMUKSHU_FORM = {
-  startDay: '',
-  endDay: '',
   mumukshus: [
     {
       mobno: '',
@@ -76,6 +75,8 @@ const INITIAL_MUMUKSHU_FORM = {
 
 const EventBooking = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const { user } = useGlobalContext();
 
   const [selectedItem, setSelectedItem] = useState(null);
@@ -177,17 +178,16 @@ const EventBooking = () => {
   };
 
   const isMumukshuFormValid = () => {
-    if (!mumukshuForm.arrival == 'raj pravas' && !mumukshuForm.carno) {
-      return false;
-    }
-
     return mumukshuForm.mumukshus.every((mumukshu) => {
+      if (mumukshu.arrival == ARRIVAL[0].key && !mumukshu.carno) {
+        return false;
+      }
       return (
         mumukshu.mobno &&
         mumukshu.mobno?.length == 10 &&
+        mumukshu.cardno &&
         mumukshu.package &&
-        mumukshu.arrival &&
-        mumukshu.other
+        mumukshu.arrival
       );
     });
   };
@@ -563,6 +563,49 @@ const EventBooking = () => {
                         handlePress={async () => {
                           setIsSubmitting(true);
                           if (selectedChip == CHIPS[0]) {
+                            const onSuccess = (data) => {
+                              var options = {
+                                key: `${process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID}`,
+                                name: 'Vitraag Vigyaan',
+                                image:
+                                  'https://vitraagvigyaan.org/img/logo.png',
+                                description: 'Payment for Vitraag Vigyaan',
+                                amount: `${data.data.amount}`,
+                                currency: 'INR',
+                                order_id: `${data.data.id}`,
+                                prefill: {
+                                  email: `${user.email}`,
+                                  contact: `${user.mobno}`,
+                                  name: `${user.issuedto}`
+                                },
+                                theme: { color: colors.orange }
+                              };
+                              RazorpayCheckout.open(options)
+                                .then((rzrpayData) => {
+                                  // handle success
+                                  setIsSubmitting(false);
+                                  console.log(JSON.stringify(rzrpayData));
+                                  router.replace(
+                                    '/booking/paymentConfirmation'
+                                  );
+                                })
+                                .catch((error) => {
+                                  // handle failure
+                                  setIsSubmitting(false);
+                                  Toast.show({
+                                    type: 'error',
+                                    text1: 'An error occurred!',
+                                    text2: error.reason
+                                  });
+                                  console.log(JSON.stringify(error));
+                                });
+                            };
+
+                            const onFinally = () => {
+                              setIsSubmitting(false);
+                              setIsModalVisible(false);
+                            };
+
                             handleAPICall(
                               'POST',
                               '/utsav/booking',
@@ -572,25 +615,54 @@ const EventBooking = () => {
                                 utsavid: selectedItem.id,
                                 packageid: selfForm.package
                               },
-                              (res) => {
-                                if (res.status == 200) {
-                                  setIsModalVisible(false);
-                                  setIsSubmitting(false);
-                                  queryClient.invalidateQueries([
-                                    'utsavBooking',
-                                    user.cardno
-                                  ]);
-                                  Toast.show({
-                                    text1: 'Booking Successful!'
-                                  });
-                                }
-                              },
-                              () => {
-                                setIsSubmitting(false);
-                              }
+                              onSuccess,
+                              onFinally
                             );
                           }
                           if (selectedChip == CHIPS[1]) {
+                            const onSuccess = (data) => {
+                              var options = {
+                                key: `${process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID}`,
+                                name: 'Vitraag Vigyaan',
+                                image:
+                                  'https://vitraagvigyaan.org/img/logo.png',
+                                description: 'Payment for Vitraag Vigyaan',
+                                amount: `${data.data.amount}`,
+                                currency: 'INR',
+                                order_id: `${data.data.id}`,
+                                prefill: {
+                                  email: `${user.email}`,
+                                  contact: `${user.mobno}`,
+                                  name: `${user.issuedto}`
+                                },
+                                theme: { color: colors.orange }
+                              };
+                              RazorpayCheckout.open(options)
+                                .then((rzrpayData) => {
+                                  // handle success
+                                  setIsSubmitting(false);
+                                  console.log(JSON.stringify(rzrpayData));
+                                  router.replace(
+                                    '/booking/paymentConfirmation'
+                                  );
+                                })
+                                .catch((error) => {
+                                  // handle failure
+                                  setIsSubmitting(false);
+                                  Toast.show({
+                                    type: 'error',
+                                    text1: 'An error occurred!',
+                                    text2: error.reason
+                                  });
+                                  console.log(JSON.stringify(error));
+                                });
+                            };
+
+                            const onFinally = () => {
+                              setIsSubmitting(false);
+                              setIsModalVisible(false);
+                            };
+
                             handleAPICall(
                               'POST',
                               '/utsav/guest',
@@ -610,25 +682,62 @@ const EventBooking = () => {
                                   other: guest.other
                                 }))
                               },
-                              (res) => {
-                                if (res.status == 200) {
-                                  setIsModalVisible(false);
-                                  setIsSubmitting(false);
-                                  queryClient.invalidateQueries([
-                                    'utsavBooking',
-                                    user.cardno
-                                  ]);
-                                  Toast.show({
-                                    text1: 'Booking Successful!'
-                                  });
-                                }
-                              },
-                              () => {
-                                setIsSubmitting(false);
-                              }
+                              onSuccess,
+                              onFinally
                             );
                           }
                           if (selectedChip == CHIPS[2]) {
+                            if (!isMumukshuFormValid()) {
+                              Alert.alert(
+                                'Validation Error',
+                                'Please fill all required fields'
+                              );
+                              setIsSubmitting(false);
+                              return;
+                            }
+
+                            const onSuccess = (data) => {
+                              var options = {
+                                key: `${process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID}`,
+                                name: 'Vitraag Vigyaan',
+                                image:
+                                  'https://vitraagvigyaan.org/img/logo.png',
+                                description: 'Payment for Vitraag Vigyaan',
+                                amount: `${data.data.amount}`,
+                                currency: 'INR',
+                                order_id: `${data.data.id}`,
+                                prefill: {
+                                  email: `${user.email}`,
+                                  contact: `${user.mobno}`,
+                                  name: `${user.issuedto}`
+                                },
+                                theme: { color: colors.orange }
+                              };
+                              RazorpayCheckout.open(options)
+                                .then((rzrpayData) => {
+                                  // handle success
+                                  setIsSubmitting(false);
+                                  console.log(JSON.stringify(rzrpayData));
+                                  router.replace(
+                                    '/booking/paymentConfirmation'
+                                  );
+                                })
+                                .catch((error) => {
+                                  // handle failure
+                                  setIsSubmitting(false);
+                                  Toast.show({
+                                    type: 'error',
+                                    text1: 'An error occurred!',
+                                    text2: error.reason
+                                  });
+                                  console.log(JSON.stringify(error));
+                                });
+                            };
+
+                            const onFinally = () => {
+                              setIsSubmitting(false);
+                              setIsModalVisible(false);
+                            };
                             handleAPICall(
                               'POST',
                               '/utsav/mumukshu',
@@ -638,7 +747,7 @@ const EventBooking = () => {
                                 utsavid: selectedItem.id,
                                 mumukshus: mumukshuForm.mumukshus.map(
                                   (mumukshu) => ({
-                                    mobno: mumukshu.mobno,
+                                    cardno: mumukshu.cardno,
                                     packageid: mumukshu.package,
                                     arrival: mumukshu.arrival,
                                     carno: mumukshu.carno,
@@ -646,24 +755,14 @@ const EventBooking = () => {
                                   })
                                 )
                               },
-                              (res) => {
-                                if (res.status == 200) {
-                                  setIsModalVisible(false);
-                                  setIsSubmitting(false);
-                                  queryClient.invalidateQueries([
-                                    'utsavBooking',
-                                    user.cardno
-                                  ]);
-                                  Toast.show({
-                                    text1: 'Booking Successful!'
-                                  });
-                                }
-                              },
-                              () => {
-                                setIsSubmitting(false);
-                              }
+                              onSuccess,
+                              onFinally
                             );
                           }
+                          queryClient.invalidateQueries([
+                            'utsavBooking',
+                            user.cardno
+                          ]);
                           setSelectedItem(null);
                           setSelectedChip('Self');
                           toggleModal();

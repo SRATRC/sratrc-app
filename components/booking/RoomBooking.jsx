@@ -15,7 +15,7 @@ import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 
 const SWITCH_OPTIONS = ['Select Dates', 'One Day Visit'];
-const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
+const CHIPS = ['Self', 'Guest', 'Mumukshus'];
 
 const INITIAL_SIGNLE_DAY_GUEST_FORM = {
   guests: [
@@ -406,7 +406,6 @@ const RoomBooking = () => {
                       setSelected={(val) =>
                         handleGuestFormChange(index, 'roomType', val)
                       }
-                      autofill={true}
                     />
 
                     <CustomDropdown
@@ -418,7 +417,6 @@ const RoomBooking = () => {
                       setSelected={(val) =>
                         handleGuestFormChange(index, 'floorType', val)
                       }
-                      autofill={true}
                     />
                   </>
                 )}

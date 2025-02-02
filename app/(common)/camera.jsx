@@ -113,7 +113,7 @@ const camera = () => {
           enableTorch={false}
           enableZoomGesture={false}
           photoQuality={0.8}
-          style={{ transform: [{ scaleX: -1 }] }} // Uncomment to handle mirroring
+          // style={{ transform: [{ scaleX: -1 }] }}
         >
           <TouchableOpacity
             className="absolute bottom-16 self-center"

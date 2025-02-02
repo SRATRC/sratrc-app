@@ -26,7 +26,7 @@ import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 import CustomEmptyMessage from '../CustomEmptyMessage';
 
-const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
+const CHIPS = ['Self', 'Guest', 'Mumukshus'];
 
 const INITIAL_GUEST_FORM = {
   adhyayan: null,

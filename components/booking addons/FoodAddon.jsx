@@ -8,7 +8,6 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import FormDisplayField from '../FormDisplayField';
 import AddonItem from '../AddonItem';
 import CustomMultiSelectDropdown from '../CustomMultiSelectDropdown';
-import CustomDateInput from '../CustomDateInput';
 
 const FoodAddon = ({
   foodForm,
@@ -46,22 +45,30 @@ const FoodAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <CustomDateInput
-        openDatePicker={() =>
+      <TouchableOpacity
+        onPress={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodStart: true
           })
         }
-        text={'Start Date'}
-        date={new Date(foodForm.startDay)}
-        value={
-          foodForm.startDay
-            ? moment(foodForm.startDay).format('Do MMMM YYYY')
-            : 'Start Date'
-        }
-        isDatePickerVisible={isDatePickerVisible.foodStart}
-        onDateSelect={(date) => {
+      >
+        <FormDisplayField
+          text="Start Date"
+          value={
+            foodForm.startDay
+              ? moment(foodForm.startDay).format('Do MMMM YYYY')
+              : 'Start Date'
+          }
+          otherStyles="mt-5"
+          backgroundColor="bg-gray-100"
+        />
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible.foodStart}
+        mode="date"
+        onConfirm={(date) => {
+          if (isNaN(date)) date = moment().add(1, 'days').toDate();
           setFoodForm({
             ...foodForm,
             startDay:
@@ -74,34 +81,43 @@ const FoodAddon = ({
             foodStart: false
           });
         }}
-        onDateCancel={() =>
+        onCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodStart: false
           })
         }
+        minimumDate={moment().add(1, 'days').toDate()}
       />
 
-      <CustomDateInput
-        openDatePicker={() =>
+      <TouchableOpacity
+        disabled={foodForm.startDay == ''}
+        onPress={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodEnd: true
           })
         }
-        text={'End Date'}
-        date={new Date(foodForm.foodEnd)}
-        minimumDate={moment(foodForm.startDay).toDate()}
-        value={
-          foodForm.foodEnd
-            ? moment(foodForm.foodEnd).format('Do MMMM YYYY')
-            : 'End Date'
-        }
-        isDatePickerVisible={isDatePickerVisible.foodEnd}
-        onDateSelect={(date) => {
+      >
+        <FormDisplayField
+          text="End Date"
+          value={
+            foodForm.endDay
+              ? moment(foodForm.endDay).format('Do MMMM YYYY')
+              : 'End Date'
+          }
+          otherStyles="mt-5"
+          backgroundColor="bg-gray-100"
+        />
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible.foodEnd}
+        mode="date"
+        onConfirm={(date) => {
+          if (isNaN(date)) date = moment(foodForm.startDay).toDate();
           setFoodForm({
             ...foodForm,
-            foodEnd:
+            endDay:
               moment(date) < moment().add(1, 'days').toDate()
                 ? moment().add(1, 'days').format('YYYY-MM-DD')
                 : moment(date).format('YYYY-MM-DD')
@@ -111,13 +127,13 @@ const FoodAddon = ({
             foodEnd: false
           });
         }}
-        onDateCancel={() =>
+        onCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             foodEnd: false
           })
         }
-        isDisabled={foodForm.startDay == ''}
+        minimumDate={moment(foodForm.startDay).toDate()}
       />
 
       <CustomMultiSelectDropdown

@@ -70,7 +70,7 @@ const fetchCities = (country, state) => {
   });
 };
 
-// // TODO: cities and states should clear out when country changes
+// TODO: cities and states should clear out when country changes
 const profileDetails = () => {
   const { user, setUser, setCurrentUser } = useGlobalContext();
   const router = useRouter();

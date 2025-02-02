@@ -11,7 +11,7 @@ import CustomModal from '../CustomModal';
 import CustomChipGroup from '../CustomChipGroup';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 
-const CHIPS = ['Self', 'Other Mumukshus'];
+const CHIPS = ['Self', 'Mumukshus'];
 
 const INITIAL_MUMUKSHU_FORM = {
   date: '',

@@ -2,11 +2,12 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { icons, colors, dropdowns } from '../../constants';
 import CustomDropdown from '../CustomDropdown';
 import CustomMultiSelectDropdowm from '../CustomMultiSelectDropdown';
-import CustomDateInput from '../CustomDateInput';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import FormField from '../FormField';
 import AddonItem from '../AddonItem';
 import moment from 'moment';
 import HorizontalSeparator from '../HorizontalSeparator';
+import FormDisplayField from '../FormDisplayField';
 
 const MumukshuTravelAddon = ({
   travelForm,
@@ -36,22 +37,29 @@ const MumukshuTravelAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <CustomDateInput
-        openDatePicker={() =>
+      <TouchableOpacity
+        onPress={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             travel: true
           })
         }
-        text={'Date'}
-        date={new Date(travelForm.date)}
-        value={
-          travelForm.date
-            ? moment(travelForm.date).format('Do MMMM YYYY')
-            : 'Date'
-        }
-        isDatePickerVisible={isDatePickerVisible.travel}
-        onDateSelect={(date) => {
+      >
+        <FormDisplayField
+          text="Date"
+          value={
+            travelForm.date
+              ? moment(travelForm.date).format('Do MMMM YYYY')
+              : 'Date'
+          }
+          otherStyles="mt-7"
+          backgroundColor="bg-gray-100"
+        />
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible.travel}
+        mode="date"
+        onConfirm={(date) => {
           setTravelForm({
             ...travelForm,
             date:
@@ -64,12 +72,13 @@ const MumukshuTravelAddon = ({
             travel: false
           });
         }}
-        onDateCancel={() =>
+        onCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             travel: false
           })
         }
+        minimumDate={moment().add(1, 'days').toDate()}
       />
 
       {travelForm.mumukshuGroup.map((assignment, index) => (

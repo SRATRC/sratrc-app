@@ -2,10 +2,11 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { colors, icons, dropdowns } from '../../constants';
 import CustomDropdown from '../CustomDropdown';
 import moment from 'moment';
-import CustomDateInput from '../CustomDateInput';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import AddonItem from '../AddonItem';
 import CustomMultiSelectDropdown from '../CustomMultiSelectDropdown';
 import HorizontalSeparator from '../HorizontalSeparator';
+import FormDisplayField from '../FormDisplayField';
 
 const MumukshuRoomAddon = ({
   roomForm,
@@ -33,22 +34,31 @@ const MumukshuRoomAddon = ({
       }
       containerStyles={'mt-3'}
     >
-      <CustomDateInput
-        openDatePicker={() =>
+      <TouchableOpacity
+        onPress={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: true
           })
         }
-        text={'Checkin Date'}
-        date={new Date(roomForm.startDay)}
-        value={
-          roomForm.startDay
-            ? moment(roomForm.startDay).format('Do MMMM YYYY')
-            : 'Checkin Date'
-        }
-        isDatePickerVisible={isDatePickerVisible.checkin}
-        onDateSelect={(date) => {
+      >
+        <FormDisplayField
+          text="Checkin Date"
+          value={
+            roomForm.startDay
+              ? moment(roomForm.startDay).format('Do MMMM YYYY')
+              : 'Checkin Date'
+          }
+          otherStyles="mt-5"
+          backgroundColor="bg-gray-100"
+        />
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible.checkin}
+        mode="date"
+        onConfirm={(date) => {
+          if (isNaN(date)) date = moment().add(1, 'days').toDate();
+
           setRoomForm({
             ...roomForm,
             startDay:
@@ -61,31 +71,41 @@ const MumukshuRoomAddon = ({
             checkin: false
           });
         }}
-        onDateCancel={() =>
+        onCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkin: false
           })
         }
+        minimumDate={moment().add(1, 'days').toDate()}
       />
 
-      <CustomDateInput
-        openDatePicker={() =>
+      <TouchableOpacity
+        disabled={roomForm.startDay === ''}
+        onPress={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: true
           })
         }
-        text={'Checkout Date'}
-        date={new Date(roomForm.endDay)}
-        minimumDate={moment(roomForm.startDay).toDate()}
-        value={
-          roomForm.endDay
-            ? moment(roomForm.endDay).format('Do MMMM YYYY')
-            : 'Checkout Date'
-        }
-        isDatePickerVisible={isDatePickerVisible.checkout}
-        onDateSelect={(date) => {
+      >
+        <FormDisplayField
+          text="Checkout Date"
+          value={
+            roomForm.endDay
+              ? moment(roomForm.endDay).format('Do MMMM YYYY')
+              : 'Checkout Date'
+          }
+          otherStyles="mt-5"
+          backgroundColor="bg-gray-100"
+        />
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible.checkout}
+        mode="date"
+        onConfirm={(date) => {
+          if (isNaN(date)) date = moment(roomForm.startDay).toDate();
+
           setRoomForm({
             ...roomForm,
             endDay:
@@ -98,13 +118,13 @@ const MumukshuRoomAddon = ({
             checkout: false
           });
         }}
-        onDateCancel={() =>
+        onCancel={() =>
           setDatePickerVisibility({
             ...isDatePickerVisible,
             checkout: false
           })
         }
-        isDisabled={roomForm.startDay === ''}
+        minimumDate={moment(roomForm.startDay).toDate()}
       />
 
       {roomForm.mumukshuGroup.map((assignment, index) => (

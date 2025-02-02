@@ -12,30 +12,39 @@ import { useState } from 'react';
 import { images } from '../../constants';
 import { router } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { RectButton } from 'react-native-gesture-handler';
+import { useNotification } from '../../context/NotificationContext';
+import { handleUserNavigation } from '../../utils/navigationValidations';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
 
 const SignIn = () => {
   const [form, setForm] = useState({
-    phone: ''
+    phone: '',
+    password: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { setUser } = useGlobalContext();
+  const { user, setUser, setCurrentUser } = useGlobalContext();
+  const { expoPushToken } = useNotification();
 
   const submit = async () => {
-    if (!form.phone || form.phone.length < 10) {
+    setIsSubmitting(true);
+
+    if (!form.phone || form.phone.length < 10 || !form.password) {
       Alert.alert('Error', 'Please fill the fields corectly');
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
-
-    const onSuccess = (data) => {
-      setUser(data.data);
-      router.push('/confirmation');
+    const onSuccess = async (data) => {
+      setUser((prevUser) => {
+        const updatedUser = data.data;
+        setCurrentUser(updatedUser);
+        handleUserNavigation(updatedUser, router);
+        return updatedUser;
+      });
     };
 
     const onFinally = () => {
@@ -43,10 +52,14 @@ const SignIn = () => {
     };
 
     await handleAPICall(
-      'GET',
-      '/client/verify',
-      { mobno: form.phone },
+      'POST',
+      '/client/verifyAndLogin',
       null,
+      {
+        mobno: form.phone,
+        password: form.password,
+        token: expoPushToken
+      },
       onSuccess,
       onFinally
     );
@@ -79,24 +92,35 @@ const SignIn = () => {
               maxLength={10}
             />
 
+            <FormField
+              text="Password"
+              value={form.password}
+              handleChangeText={(e) => setForm({ ...form, password: e })}
+              otherStyles="mt-7"
+              inputStyles="font-pmedium text-base text-gray-400"
+              keyboardType="default"
+              placeholder="Enter Your Password"
+            />
+
             <CustomButton
               text="Sign In"
               handlePress={submit}
               containerStyles="mt-7 min-h-[62px]"
               isLoading={isSubmitting}
+              isDisabled={!form.phone || !form.password}
             />
 
-            <View className="flex flex-row items-center justify-start mt-2 space-x-2">
+            {/* <View className="flex flex-row items-center justify-start mt-2 space-x-2">
               <Text className="text-sm font-pregular">
                 Do not have an account?
               </Text>
 
-              <RectButton onPress={() => router.push('/guestReferral')}>
+              <Pressable onPress={() => router.push('/guestReferral')}>
                 <Text className="text-secondary-100 text-sm font-pmedium">
                   sign up
                 </Text>
-              </RectButton>
-            </View>
+              </Pressable>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -51,7 +51,7 @@ const RootLayout = () => {
   }, [fontsLoaded, error]);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync('#FFFFFF');
+    NavigationBar.setBackgroundColorAsync('#FFFCF5');
     NavigationBar.setButtonStyleAsync('dark');
   }, []);
 

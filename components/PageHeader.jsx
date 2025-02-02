@@ -1,16 +1,12 @@
-import { View, Text, Image, Platform } from 'react-native';
+import { View, Text, Image, Platform, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '../constants';
-import { RectButton } from 'react-native-gesture-handler';
 
 const PageHeader = ({ title, icon, onPress }) => {
   const router = useRouter();
   return (
     <View className="w-full px-4 mt-6 flex-row items-center">
-      <RectButton
-        onPress={onPress ? onPress : () => router.back()}
-        activeOpacity={0}
-      >
+      <Pressable onPress={onPress ? onPress : () => router.back()}>
         <Image
           source={icon ? icon : icons.backArrow}
           className={`p-1 mx-2 ${
@@ -19,7 +15,7 @@ const PageHeader = ({ title, icon, onPress }) => {
           resizeMode="contain"
           tintColor={'#000000'}
         />
-      </RectButton>
+      </Pressable>
       <Text className="text-2xl font-psemibold">{title}</Text>
     </View>
   );

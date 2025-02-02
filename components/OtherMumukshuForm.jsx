@@ -71,8 +71,6 @@ const OtherMumukshuForm = ({
           ? mumukshuQueries[index]
           : { data: null, isLoading: false, isError: false };
 
-        console.log('MUMUKSHU: ', JSON.stringify(mumukshu));
-
         return (
           <View key={index} className="mt-8">
             <View className="flex flex-row justify-between">

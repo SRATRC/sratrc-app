@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { icons } from '../../constants';
+import { colors, icons } from '../../constants';
 import { useQuery } from '@tanstack/react-query';
 import GuestRoomBookingDetails from '../../components/booking details cards/GuestRoomBookingDetails';
 import GuestAdhyayanBookingDetails from '../../components/booking details cards/GuestAdhyayanBookingDetails';
@@ -11,6 +11,7 @@ import GuestFoodBookingDetails from '../../components/booking details cards/Gues
 import PageHeader from '../../components/PageHeader';
 import CustomButton from '../../components/CustomButton';
 import handleAPICall from '../../utils/HandleApiCall';
+import RazorpayCheckout from 'react-native-razorpay';
 
 const guestBookingConfirmation = () => {
   const router = useRouter();
@@ -144,7 +145,7 @@ const guestBookingConfirmation = () => {
   });
 
   return (
-    <SafeAreaView className="h-full bg-white">
+    <SafeAreaView className="h-full bg-white" edges={['top', 'right', 'left']}>
       <ScrollView
         alwaysBounceVertical={false}
         showsVerticalScrollIndicator={false}
@@ -246,8 +247,43 @@ const guestBookingConfirmation = () => {
             text="Proceed to Payment"
             handlePress={async () => {
               setIsSubmitting(true);
-              const onSuccess = (_data) => {
-                router.replace('/booking/paymentConfirmation');
+              const onSuccess = (data) => {
+                if (data.data.amount == 0)
+                  router.replace('/booking/paymentConfirmation');
+                else {
+                  var options = {
+                    key: `${process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID}`,
+                    name: 'Vitraag Vigyaan',
+                    image: 'https://vitraagvigyaan.org/img/logo.png',
+                    description: 'Payment for Vitraag Vigyaan',
+                    amount: `${data.data.amount}`,
+                    currency: 'INR',
+                    order_id: `${data.data.id}`,
+                    prefill: {
+                      email: `${user.email}`,
+                      contact: `${user.mobno}`,
+                      name: `${user.issuedto}`
+                    },
+                    theme: { color: colors.orange }
+                  };
+                  RazorpayCheckout.open(options)
+                    .then((rzrpayData) => {
+                      // handle success
+                      setIsSubmitting(false);
+                      console.log(JSON.stringify(rzrpayData));
+                      router.replace('/booking/paymentConfirmation');
+                    })
+                    .catch((error) => {
+                      // handle failure
+                      setIsSubmitting(false);
+                      Toast.show({
+                        type: 'error',
+                        text1: 'An error occurred!',
+                        text2: error.reason
+                      });
+                      console.log(JSON.stringify(error));
+                    });
+                }
               };
 
               const onFinally = () => {

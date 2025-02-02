@@ -12,7 +12,7 @@ import CustomModal from '../CustomModal';
 import GuestForm from '../GuestForm';
 import OtherMumukshuForm from '../OtherMumukshuForm';
 
-const CHIPS = ['Self', 'Guest', 'Other Mumukshus'];
+const CHIPS = ['Self', 'Guest', 'Mumukshus'];
 
 const FoodBooking = () => {
   const { user } = useGlobalContext();

@@ -17,7 +17,10 @@ export default {
       supportsTablet: true,
       package: 'com.vandit.sratrc',
       bundleIdentifier: 'com.vandit.sratrc',
-      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST,
+      infoPlist: {
+        LSApplicationQueriesSchemes: ['tez', 'phonepe', 'paytmmp']
+      }
     },
     android: {
       adaptiveIcon: {

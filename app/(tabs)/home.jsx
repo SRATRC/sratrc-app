@@ -80,7 +80,6 @@ const Home = () => {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row mt-3 px-4 mb-6">
-            {/* FIXME: icon missing */}
             <CustomHomeIcon
               image={icons.satshrut}
               title={'Satshrut'}

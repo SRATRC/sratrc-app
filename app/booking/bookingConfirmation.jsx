@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { icons } from '../../constants';
+import { colors, icons } from '../../constants';
 import RoomBookingDetails from '../../components/booking details cards/RoomBookingDetails';
 import PageHeader from '../../components/PageHeader';
 import TravelBookingDetails from '../../components/booking details cards/TravelBookingDetails';
@@ -12,6 +12,8 @@ import AdhyayanBookingDetails from '../../components/booking details cards/Adhya
 import CustomButton from '../../components/CustomButton';
 import FoodBookingDetails from '../../components/booking details cards/FoodBookingDetails';
 import handleAPICall from '../../utils/HandleApiCall';
+import RazorpayCheckout from 'react-native-razorpay';
+import Toast from 'react-native-toast-message';
 
 const bookingConfirmation = () => {
   const router = useRouter();
@@ -21,9 +23,7 @@ const bookingConfirmation = () => {
 
   const prepareRequestBody = () => {
     const payload = {
-      cardno: user.cardno,
-      transaction_type: 'upi',
-      transaction_ref: 'none'
+      cardno: user.cardno
     };
 
     if (data.primary === 'room') {
@@ -111,11 +111,10 @@ const bookingConfirmation = () => {
 
     return payload;
   };
+  const payload = prepareRequestBody();
 
   const fetchValidation = async () => {
     return new Promise((resolve, reject) => {
-      const payload = prepareRequestBody();
-
       handleAPICall(
         'POST',
         '/unified/validate',
@@ -138,11 +137,12 @@ const bookingConfirmation = () => {
     data: validationData
   } = useQuery({
     queryKey: ['validations', user.cardno],
-    queryFn: fetchValidation
+    queryFn: fetchValidation,
+    retry: false
   });
 
   return (
-    <SafeAreaView className="h-full bg-white">
+    <SafeAreaView className="h-full bg-white" edges={['top', 'right', 'left']}>
       <ScrollView
         alwaysBounceVertical={false}
         showsVerticalScrollIndicator={false}
@@ -231,10 +231,43 @@ const bookingConfirmation = () => {
             handlePress={async () => {
               setIsSubmitting(true);
 
-              const payload = prepareRequestBody();
-
-              const onSuccess = (_data) => {
-                router.replace('/booking/paymentConfirmation');
+              const onSuccess = (data) => {
+                if (data.data.amount == 0)
+                  router.replace('/booking/paymentConfirmation');
+                else {
+                  var options = {
+                    key: `${process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID}`,
+                    name: 'Vitraag Vigyaan',
+                    image: 'https://vitraagvigyaan.org/img/logo.png',
+                    description: 'Payment for Vitraag Vigyaan',
+                    amount: `${data.data.amount}`,
+                    currency: 'INR',
+                    order_id: `${data.data.id}`,
+                    prefill: {
+                      email: `${user.email}`,
+                      contact: `${user.mobno}`,
+                      name: `${user.issuedto}`
+                    },
+                    theme: { color: colors.orange }
+                  };
+                  RazorpayCheckout.open(options)
+                    .then((rzrpayData) => {
+                      // handle success
+                      setIsSubmitting(false);
+                      console.log(JSON.stringify(rzrpayData));
+                      router.replace('/booking/paymentConfirmation');
+                    })
+                    .catch((error) => {
+                      // handle failure
+                      setIsSubmitting(false);
+                      Toast.show({
+                        type: 'error',
+                        text1: 'An error occurred!',
+                        text2: error.reason
+                      });
+                      console.log(JSON.stringify(error));
+                    });
+                }
               };
 
               const onFinally = () => {

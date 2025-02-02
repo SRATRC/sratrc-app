@@ -1,5 +1,5 @@
 import { Text, View, Image, Platform, TouchableOpacity } from 'react-native';
-import { icons, images } from '../../constants';
+import { colors, icons, images } from '../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useRouter } from 'expo-router';
@@ -98,8 +98,13 @@ const Profile = () => {
       >
         <Image
           source={user.pfp ? { uri: user.pfp } : images.pfp}
-          className="w-[150] h-[150] rounded-full border-2 border-secondary"
+          className="w-[150] h-[150] rounded-full"
           resizeMode="cover"
+          style={{
+            borderWidth: 2,
+            borderColor: colors.orange,
+            borderRadius: 100
+          }}
         />
       </TouchableOpacity>
       <Text className="text-base font-psemibold mt-2">{user.issuedto}</Text>
